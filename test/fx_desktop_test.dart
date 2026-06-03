@@ -192,5 +192,38 @@ nav    content
       await tester.tap(find.text('Open'));
       expect(selected, (rowId: 'r1', columnId: 'status'));
     });
+
+    testWidgets(
+      'basic controls render enabled, disabled, and tristate states',
+      (tester) async {
+        await tester.pumpWidget(
+          const MaterialApp(
+            home: Scaffold(
+              body: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    FxTextField(label: 'Enabled field'),
+                    FxTextField(label: 'Disabled field', enabled: false),
+                    FxCheckBox(label: 'Checked', value: true),
+                    FxCheckBox(label: 'Unchecked', value: false),
+                    FxCheckBox(
+                      label: 'Indeterminate',
+                      value: null,
+                      tristate: true,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+
+        expect(find.text('Enabled field'), findsOneWidget);
+        expect(find.text('Disabled field'), findsOneWidget);
+        expect(find.text('Checked'), findsOneWidget);
+        expect(find.text('Unchecked'), findsOneWidget);
+        expect(find.text('Indeterminate'), findsOneWidget);
+      },
+    );
   });
 }

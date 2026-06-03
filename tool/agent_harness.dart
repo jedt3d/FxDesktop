@@ -10,6 +10,7 @@ Future<void> main() async {
   await _run('flutter', ['pub', 'publish', '--dry-run'], failures);
   await _run('flutter', ['pub', 'get'], failures, workingDirectory: 'example');
   await _run('flutter', ['analyze'], failures, workingDirectory: 'example');
+  await _run('flutter', ['test'], failures, workingDirectory: 'example');
 
   _checkNoMachineLocalPaths(failures);
   _checkPublicApiDoesNotLeakDependencies(failures);

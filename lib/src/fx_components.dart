@@ -201,17 +201,21 @@ class FxCheckBox extends StatelessWidget {
     super.key,
     required this.label,
     required this.value,
-    required this.onChanged,
+    this.onChanged,
+    this.tristate = false,
   });
 
   /// Visible label.
   final String label;
 
   /// Current value.
-  final bool value;
+  final bool? value;
 
   /// Change callback.
   final ValueChanged<bool?>? onChanged;
+
+  /// Whether the checkbox supports an indeterminate value.
+  final bool tristate;
 
   @override
   Widget build(BuildContext context) {
@@ -219,7 +223,8 @@ class FxCheckBox extends StatelessWidget {
       dense: true,
       contentPadding: EdgeInsets.zero,
       title: Text(label),
-      value: value,
+      tristate: tristate,
+      value: tristate ? value : value ?? false,
       onChanged: onChanged,
       controlAffinity: ListTileControlAffinity.leading,
     );
@@ -236,6 +241,7 @@ class FxTextField extends StatelessWidget {
     this.helpText,
     this.controller,
     this.onChanged,
+    this.enabled = true,
   });
 
   /// Visible label.
@@ -253,10 +259,14 @@ class FxTextField extends StatelessWidget {
   /// Change callback.
   final ValueChanged<String>? onChanged;
 
+  /// Whether the text field is enabled.
+  final bool enabled;
+
   @override
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
+      enabled: enabled,
       onChanged: onChanged,
       decoration: InputDecoration(
         border: const OutlineInputBorder(),
@@ -281,6 +291,7 @@ class FxTextArea extends StatelessWidget {
     this.onChanged,
     this.minLines = 3,
     this.maxLines = 6,
+    this.enabled = true,
   });
 
   /// Visible label.
@@ -304,10 +315,14 @@ class FxTextArea extends StatelessWidget {
   /// Maximum visible lines.
   final int maxLines;
 
+  /// Whether the text area is enabled.
+  final bool enabled;
+
   @override
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
+      enabled: enabled,
       maxLines: maxLines,
       minLines: minLines,
       onChanged: onChanged,

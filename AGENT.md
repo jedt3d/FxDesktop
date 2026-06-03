@@ -58,6 +58,19 @@ Every new public component needs:
 - a test or example demonstrating intended use
 - a short note when it maps to a Xojo component
 
+## Example Harness Rules
+
+- Keep the visual test app as a vertical component harness.
+- Show one component family per row.
+- Include a short component name label for every row.
+- Show useful state variants inside that row, such as enabled, disabled,
+  checked, unchecked, selected, and indeterminate.
+- Put the scrollbar on the outer window viewport, not next to a constrained
+  inner content column.
+- Avoid complex navigation or dashboards in the basic harness. Add a sidebar
+  component browser only after the component count makes a single vertical list
+  hard to scan.
+
 ## Xojo Bridge Rules
 
 - `FxLayoutSpec` is the shared contract for AI agents, JinjaX, and Xojo
