@@ -1,9 +1,12 @@
 # Miscellaneous
+.DS_Store
 *.class
+*.iml
 *.lock
 *.log
 *.pyc
 *.swp
+.idea/
 .buildlog/
 .history
 
