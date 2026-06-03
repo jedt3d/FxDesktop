@@ -113,6 +113,180 @@ void main() {
       expect(committedText, 'Omega SA');
     });
 
+    testWidgets('filters numeric, alpha, and alphanumeric constraints', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: Column(
+              children: [
+                FxTextField(
+                  label: 'Numeric',
+                  constraints: FxTextInputConstraints(
+                    kind: FxTextInputConstraintKind.numeric,
+                  ),
+                ),
+                FxTextField(
+                  label: 'Alpha',
+                  constraints: FxTextInputConstraints(
+                    kind: FxTextInputConstraintKind.alpha,
+                  ),
+                ),
+                FxTextField(
+                  label: 'Code',
+                  constraints: FxTextInputConstraints(
+                    kind: FxTextInputConstraintKind.alphanumeric,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      final fields = find.byType(TextField);
+      await tester.enterText(fields.at(0), '12ab-34');
+      await tester.enterText(fields.at(1), 'AB12-cd');
+      await tester.enterText(fields.at(2), 'AB12-cd!');
+
+      expect(tester.widget<TextField>(fields.at(0)).controller?.text, '1234');
+      expect(tester.widget<TextField>(fields.at(1)).controller?.text, 'ABcd');
+      expect(tester.widget<TextField>(fields.at(2)).controller?.text, 'AB12cd');
+    });
+
+    testWidgets('enforces max length and can show character count', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: FxTextField(
+              label: 'Reference',
+              constraints: FxTextInputConstraints(
+                maxLength: 5,
+                showCharacterCount: true,
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.enterText(find.byType(TextField), 'ABCDEFG');
+      await tester.pump();
+
+      final field = tester.widget<TextField>(find.byType(TextField));
+      expect(field.controller?.text, 'ABCDE');
+      expect(field.maxLength, 5);
+      expect(find.text('5/5'), findsOneWidget);
+    });
+
+    testWidgets('rejects forbidden characters and patterns', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: Column(
+              children: [
+                FxTextField(
+                  label: 'Slug',
+                  constraints: FxTextInputConstraints(
+                    forbiddenCharacters: [' ', '/'],
+                  ),
+                ),
+                FxTextField(
+                  label: 'Name',
+                  constraints: FxTextInputConstraints(
+                    forbiddenPattern: r'admin',
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      final fields = find.byType(TextField);
+      await tester.enterText(fields.at(0), 'sales / north');
+      await tester.enterText(fields.at(1), 'team');
+      await tester.enterText(fields.at(1), 'admin');
+
+      expect(
+        tester.widget<TextField>(fields.at(0)).controller?.text,
+        'salesnorth',
+      );
+      expect(tester.widget<TextField>(fields.at(1)).controller?.text, 'team');
+    });
+
+    testWidgets('formats phone pattern without committing live edits', (
+      tester,
+    ) async {
+      String? changedText;
+      String? committedText;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: FxTextField(
+              label: 'Phone',
+              format: const FxTextInputFormat.pattern('#-####-####'),
+              onChanged: (value) => changedText = value,
+              onCommit: (value) => committedText = value,
+            ),
+          ),
+        ),
+      );
+
+      await tester.enterText(find.byType(TextField), '912345678');
+      expect(changedText, '9-1234-5678');
+      expect(committedText, isNull);
+
+      tester.widget<TextField>(find.byType(TextField)).onSubmitted?.call('');
+      expect(committedText, '9-1234-5678');
+    });
+
+    testWidgets('formats fixed decimal display only on commit', (tester) async {
+      String? committedText;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: FxTextField(
+              label: 'Amount',
+              format: const FxTextInputFormat.number(decimalDigits: 2),
+              onCommit: (value) => committedText = value,
+            ),
+          ),
+        ),
+      );
+
+      await tester.enterText(find.byType(TextField), '1234.5');
+      expect(
+        tester.widget<TextField>(find.byType(TextField)).controller?.text,
+        '1234.5',
+      );
+      expect(committedText, isNull);
+
+      tester.widget<TextField>(find.byType(TextField)).onSubmitted?.call('');
+      expect(
+        tester.widget<TextField>(find.byType(TextField)).controller?.text,
+        '1,234.50',
+      );
+      expect(committedText, '1,234.50');
+    });
+
+    testWidgets('shows required indicator in the input label', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: FxTextField(label: 'Customer', requiredInput: true),
+          ),
+        ),
+      );
+
+      final field = tester.widget<TextField>(find.byType(TextField));
+      expect(field.decoration?.labelText, 'Customer *');
+    });
+
     testWidgets('distinguishes disabled and read-only behavior', (
       tester,
     ) async {
@@ -162,8 +336,19 @@ void main() {
           'enabled': false,
           'readOnly': true,
           'obscureText': true,
+          'required': false,
+          'showRequiredIndicator': true,
           'hasPrefixIcon': true,
           'hasSuffixIcon': true,
+          'constraints': null,
+          'format': {
+            'type': 'none',
+            'pattern': null,
+            'decimalDigits': null,
+            'groupingSeparator': ',',
+            'decimalSeparator': '.',
+            'allowNegative': false,
+          },
         },
       );
     });
@@ -266,6 +451,43 @@ void main() {
       expect(committedText, 'Line 1\nLine 2');
     });
 
+    testWidgets(
+      'enforces multiline constraints and preserves allowTab metadata',
+      (tester) async {
+        await tester.pumpWidget(
+          const MaterialApp(
+            home: Scaffold(
+              body: FxTextArea(
+                label: 'Notes',
+                constraints: FxTextInputConstraints(
+                  maxLength: 10,
+                  forbiddenCharacters: ['#'],
+                  allowTab: true,
+                  showCharacterCount: true,
+                ),
+              ),
+            ),
+          ),
+        );
+
+        await tester.enterText(find.byType(TextField), 'A#\tBCDEFGHIJK');
+        await tester.pump();
+
+        final area = tester.widget<TextField>(find.byType(TextField));
+        expect(area.controller?.text, 'A\tBCDEFGHI');
+        expect(area.maxLength, 10);
+        expect(find.text('10/10'), findsOneWidget);
+
+        expect(
+          const FxTextArea(
+            label: 'Notes',
+            constraints: FxTextInputConstraints(allowTab: true),
+          ).toTemplateMap()['constraints'],
+          containsPair('allowTab', true),
+        );
+      },
+    );
+
     test('exports template metadata', () {
       final scrollController = ScrollController();
       expect(
@@ -289,9 +511,12 @@ void main() {
           'errorText': 'Notes required.',
           'enabled': false,
           'readOnly': true,
+          'required': false,
+          'showRequiredIndicator': true,
           'minLines': 4,
           'maxLines': 8,
           'hasScrollController': true,
+          'constraints': null,
         },
       );
       scrollController.dispose();

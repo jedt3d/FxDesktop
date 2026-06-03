@@ -70,6 +70,7 @@ GitHub Release before the next phase starts.
 | 2.2 | `v0.2.2` | Navigation and indexed containers, delivered |
 | 2.3 | `v0.2.3` | Desktop utility controls, delivered |
 | 2.4 | `v0.2.4` | Text input depth, delivered |
+| 2.5 | `v0.2.5` | Text input constraints and formats, delivered |
 
 Because FxDesktop is still pre-1.0, the `0.2.x` release line represents
 Milestone 2, and the patch number maps to each phase.
@@ -313,6 +314,44 @@ Validation:
 - Undo tests for committed value changes, redo invalidation, batches, scoped
   controller lookup, and controls that commit on blur, submit, picker confirm,
   or drag end.
+- `dart run tool/agent_harness.dart` must pass.
+- The macOS example app must build and open successfully when UI changes are
+  included.
+
+### Phase 2.5: Text Input Constraints And Formats
+
+Status: delivered in `v0.2.5`.
+
+Improve existing text-entry controls only:
+
+- `FxTextField`: required indicator, constraint metadata, max length,
+  character counter, numeric/alpha/alphanumeric filtering, forbidden
+  characters, forbidden patterns, digit pattern masks, and fixed decimal
+  commit-time formatting.
+- `FxTextArea`: required indicator, constraint metadata, max length, character
+  counter, forbidden characters, forbidden patterns, and tab-preservation
+  metadata.
+
+Demo presentation:
+
+- Keep `FxTextField` and `FxTextArea` as separate rows.
+- Show required fields, character counts, numeric/alphanumeric constraints,
+  forbidden input, a phone-style mask, fixed decimal formatting, and multiline
+  constraint states.
+- Save screenshots under `doc/screenshots/v0.2.5/` and attach them to the
+  GitHub Release.
+
+Phase 2.5 screenshot targets:
+
+- `fxdesktop-phase-2-5-text-field-constraints.png`
+- `fxdesktop-phase-2-5-text-area-constraints.png`
+
+Validation:
+
+- Widget tests for constraint filtering, max length, counters, forbidden input,
+  required indicators, format masks, and number formatting.
+- Undo tests proving masks and number formatting still commit one semantic app
+  value after submit or focus loss.
 - `dart run tool/agent_harness.dart` must pass.
 - The macOS example app must build and open successfully when UI changes are
   included.
