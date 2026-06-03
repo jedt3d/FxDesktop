@@ -21,6 +21,11 @@ is semantic and generation-oriented, not a native-control equivalence.
 | `FxPagePanel` | `DesktopPagePanel` | generation/custom | Comparable |
 | `FxCardContainer` | PagePanel/container-stack pattern | generation/custom | Custom |
 | `FxDisclosureTriangle` | `DesktopDisclosureTriangle` | generation/custom | Comparable |
+| `FxColorPicker` | `DesktopColorPicker` | generation/custom | Comparable |
+| `FxProgressBar` | `DesktopProgressBar` | generation/custom | Comparable |
+| `FxProgressWheel` | `DesktopProgressWheel` | generation/custom | Comparable |
+| `FxSeparator` | `DesktopSeparator` | generation/custom | Comparable |
+| `FxStyledLabel` | styled label pattern | generation/custom | Custom |
 | `FxGroupBox` | `DesktopGroupBox` | custom group container | Near |
 | `FxFlexLayout` | `DesktopFlexLayoutManager` | `WebFlexLayoutManager` | Custom bridge |
 | `FxGridLayout` | layout/generation contract | layout/generation contract | Custom bridge |
@@ -38,7 +43,8 @@ is semantic and generation-oriented, not a native-control equivalence.
 ## Milestone 2 Delivered Mappings
 
 Phase 2.1 delivered the first set of core form controls in `v0.2.1`. Phase 2.2
-delivered navigation and indexed container controls in `v0.2.2`.
+delivered navigation and indexed container controls in `v0.2.2`. Phase 2.3
+delivered compact utility and display controls in `v0.2.3`.
 
 | FxDesktop | Xojo Desktop | Notes |
 |---|---|---|
@@ -54,16 +60,18 @@ delivered navigation and indexed container controls in `v0.2.2`.
 | `FxPagePanel` | `DesktopPagePanel` | Headless indexed page container without visible tab headers. |
 | `FxCardContainer` | PagePanel/container-stack pattern | Generator-friendly card stack controlled by another widget. |
 | `FxDisclosureTriangle` | `DesktopDisclosureTriangle` | Collapsible section control with expanded, collapsed, and disabled states. |
+| `FxColorPicker` | `DesktopColorPicker` | Color value preview and picker trigger. |
+| `FxProgressBar` | `DesktopProgressBar` | Determinate progress indicator. |
+| `FxProgressWheel` | `DesktopProgressWheel` | Indeterminate loading indicator. |
+| `FxSeparator` | `DesktopSeparator` | Horizontal or vertical visual separator. |
+| `FxStyledLabel` | styled label pattern | Rich label/help text with mixed text spans. |
 
 ## Milestone 2 Planned Mappings
 
 | FxDesktop | Xojo Desktop | Notes |
 |---|---|---|
-| `FxStyledLabel` | styled label pattern | Rich text spans for labels/help text. |
-| `FxColorPicker` | `DesktopColorPicker` | Color value selector with preview. |
-| `FxProgressBar` | `DesktopProgressBar` | Determinate progress. |
-| `FxProgressWheel` | `DesktopProgressWheel` | Indeterminate progress/loading. |
-| `FxSeparator` | `DesktopSeparator` | Horizontal or vertical separator. |
+| `FxTextField` depth | `DesktopTextField` | Phase 2.4 validation state, prefix/suffix icons, password mode. |
+| `FxTextArea` depth | `DesktopTextArea` | Phase 2.4 validation state and predictable multiline scrolling. |
 
 ## Milestone 2 Documented Non-Duplication Candidates
 

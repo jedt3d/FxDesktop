@@ -20,7 +20,7 @@ multi-size desktop workflows.
 
 ```yaml
 dependencies:
-  fx_desktop: ^0.2.2
+  fx_desktop: ^0.2.3
 ```
 
 ## Quick Start
@@ -87,15 +87,19 @@ class OrderPanel extends StatelessWidget {
 | `FxPagePanel` | `DesktopPagePanel` | generation/custom |
 | `FxCardContainer` | PagePanel/container-stack pattern | generation/custom |
 | `FxDisclosureTriangle` | `DesktopDisclosureTriangle` | generation/custom |
+| `FxColorPicker` | `DesktopColorPicker` | generation/custom |
+| `FxProgressBar` | `DesktopProgressBar` | generation/custom |
+| `FxProgressWheel` | `DesktopProgressWheel` | generation/custom |
+| `FxSeparator` | `DesktopSeparator` | generation/custom |
+| `FxStyledLabel` | styled label pattern | generation/custom |
 | `FxGroupBox` | `DesktopGroupBox` | custom/group container |
 
 `FxGridLayout` is a CSS Grid-like layout manager. `FxGrid` is a data/cell grid
 control comparable to Xojo `DesktopGrid`.
 
-Milestone 2 extends Xojo Desktop control parity in phase releases. `v0.2.2`
-adds navigation and indexed containers after the first core form controls:
-segmented buttons, visible tab panels, headless page panels, generator-friendly
-card containers, and disclosure triangles.
+Milestone 2 extends Xojo Desktop control parity in phase releases. `v0.2.3`
+adds compact utility and display controls after the form and navigation phases:
+color pickers, progress indicators, separators, and styled labels.
 See [Milestone 2: Xojo Desktop Control Parity](https://github.com/jedt3d/FxDesktop/blob/main/doc/milestone-2-control-parity.md).
 
 ## Agent And Generator Use
