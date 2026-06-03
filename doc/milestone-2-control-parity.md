@@ -80,6 +80,12 @@ Milestone 2 can use multiple sub-agents, but only with clear ownership. Parallel
 agents should build isolated component groups and avoid editing shared
 integration files at the same time.
 
+Starting with Phase 2.2, every phase must explicitly decide whether to use
+sub-agents before implementation starts. Use sub-agents when the phase contains
+independent component families, separate test surfaces, or parallelizable docs
+and demo work. If a phase stays single-agent, record the reason in the plan or
+PR description.
+
 Use one coordinator/integrator agent for each phase. The coordinator owns:
 
 - phase branch management
@@ -300,16 +306,24 @@ Each phase release follows the same sequence:
 2. Add or update the relevant rows in the vertical example harness.
 3. Add component registry entries, component-map docs, dartdoc, and tests.
 4. Build and run the macOS example app for visual verification.
-5. Capture screenshots at a stable desktop viewport and save them under
+5. Check screenshot navigation before capture:
+   - identify whether the harness has one outer scrollbar or nested scrollbars
+   - verify whether the current input method uses normal or natural scroll
+     direction
+   - use deterministic Flutter screenshot offsets if macOS scroll automation
+     cannot reliably reach the target rows
+6. Capture screenshots at a stable desktop viewport and save them under
    `doc/screenshots/vX.Y.Z/`.
-6. Update `CHANGELOG.md` with human-readable release notes for that phase.
-7. Update `pubspec.yaml`, README install instructions, and any versioned docs to
+   Each newly created component must appear in at least one screenshot, and the
+   screenshot filenames should name the component group being shown.
+7. Update `CHANGELOG.md` with human-readable release notes for that phase.
+8. Update `pubspec.yaml`, README install instructions, and any versioned docs to
    the phase version.
-8. Run `dart run tool/agent_harness.dart`.
-9. Merge to `main`.
-10. Tag the release as `vX.Y.Z`.
-11. Create a GitHub Release and attach the screenshots.
-12. Delete the completed phase branch.
+9. Run `dart run tool/agent_harness.dart`.
+10. Merge to `main`.
+11. Tag the release as `vX.Y.Z`.
+12. Create a GitHub Release and attach the screenshots.
+13. Delete the completed phase branch.
 
 ## Version And Release Checkpoint
 
@@ -323,7 +337,8 @@ When each Milestone 2 phase implementation is complete and accepted:
 - update `CHANGELOG.md`
 - update this milestone document so the completed phase is marked delivered
 - update component mapping docs so planned items become implemented items
-- add screenshots for the released phase
+- add screenshots for the released phase, with every new component visible in
+  at least one screenshot
 - run `dart run tool/agent_harness.dart`
 - tag the release as `vX.Y.Z`
 - create a GitHub Release and attach screenshots
