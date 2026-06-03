@@ -219,14 +219,17 @@ class FxCheckBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CheckboxListTile(
-      dense: true,
-      contentPadding: EdgeInsets.zero,
-      title: Text(label),
-      tristate: tristate,
-      value: tristate ? value : value ?? false,
-      onChanged: onChanged,
-      controlAffinity: ListTileControlAffinity.leading,
+    return Material(
+      type: MaterialType.transparency,
+      child: CheckboxListTile(
+        dense: true,
+        contentPadding: EdgeInsets.zero,
+        title: Text(label),
+        tristate: tristate,
+        value: tristate ? value : value ?? false,
+        onChanged: onChanged,
+        controlAffinity: ListTileControlAffinity.leading,
+      ),
     );
   }
 }
