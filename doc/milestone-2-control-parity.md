@@ -68,7 +68,7 @@ GitHub Release before the next phase starts.
 |---|---|---|
 | 2.1 | `v0.2.1` | Core form inputs, delivered |
 | 2.2 | `v0.2.2` | Navigation and indexed containers, delivered |
-| 2.3 | `v0.2.3` | Desktop utility controls |
+| 2.3 | `v0.2.3` | Desktop utility controls, delivered |
 | 2.4 | `v0.2.4` | Text input depth |
 
 Because FxDesktop is still pre-1.0, the `0.2.x` release line represents
@@ -222,6 +222,8 @@ Validation:
 
 ### Phase 2.3: Desktop Utility Controls
 
+Status: delivered in `v0.2.3`.
+
 Build smaller desktop controls that complete common dialogs and inspectors.
 Phase 2.3 must first decide whether a control needs a new FxDesktop public
 widget, a thin adapter around an existing Flutter widget, or documentation only.
@@ -238,10 +240,10 @@ Decision candidates:
 
 | Candidate | Xojo Desktop Counterpart | Phase 2.3 Decision | Reason |
 |---|---|---|---|
-| `FxPopupArrow` | `DesktopPopupArrow` | Document or thin adapter first | Flutter already has `PopupMenuButton`, `MenuAnchor`, and trailing icon patterns. Build a standalone widget only if Xojo export needs a separate `DesktopPopupArrow` component or the demo needs a compact menu-only control. |
-| `FxUpDownArrows` | `DesktopUpDownArrows` | Prefer numeric stepper accessory | Flutter does not have a direct desktop up/down arrow control, but a standalone widget is rarely useful without a numeric field. Prefer an `FxNumberField` or stepper accessory unless Xojo generation explicitly needs the standalone component. |
-| `FxVerticalScrollBar` | `DesktopScrollbar` | Do not duplicate by default | Flutter `Scrollbar` already attaches to scrollable regions and handles thumb behavior. Add an FxDesktop wrapper only for consistent desktop styling or generator metadata, not as a separate manual scrollbar control. |
-| `FxHorizontalScrollBar` | `DesktopScrollbar` | Do not duplicate by default | Flutter can show horizontal scrollbars for horizontal scroll views. Add only a wrapper/metadata helper when table, grid, or design-preview export requires it. |
+| `FxPopupArrow` | `DesktopPopupArrow` | Documentation-only in Phase 2.3 | Flutter already has `PopupMenuButton`, `MenuAnchor`, and trailing icon patterns. Build a standalone widget only if Xojo export later needs a separate `DesktopPopupArrow` component or the demo needs a compact menu-only control. |
+| `FxUpDownArrows` | `DesktopUpDownArrows` | Documentation-only in Phase 2.3 | Flutter does not have a direct desktop up/down arrow control, but a standalone widget is rarely useful without a numeric field. Prefer an `FxNumberField` or stepper accessory unless Xojo generation explicitly needs the standalone component. |
+| `FxVerticalScrollBar` | `DesktopScrollbar` | Documentation-only in Phase 2.3 | Flutter `Scrollbar` already attaches to scrollable regions and handles thumb behavior. Add an FxDesktop wrapper only for consistent desktop styling or generator metadata, not as a separate manual scrollbar control. |
+| `FxHorizontalScrollBar` | `DesktopScrollbar` | Documentation-only in Phase 2.3 | Flutter can show horizontal scrollbars for horizontal scroll views. Add only a wrapper/metadata helper when table, grid, or design-preview export requires it. |
 
 Demo presentation:
 
@@ -256,6 +258,13 @@ Demo presentation:
   widgets for them.
 - Save screenshots under `doc/screenshots/v0.2.3/` and attach them to the
   GitHub Release.
+
+Phase 2.3 screenshot targets:
+
+- `fxdesktop-phase-2-3-picker-controls.png`
+- `fxdesktop-phase-2-3-progress-controls.png`
+- `fxdesktop-phase-2-3-separator-controls.png`
+- `fxdesktop-phase-2-3-styled-text-display.png`
 
 Validation:
 

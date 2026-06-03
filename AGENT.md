@@ -102,6 +102,9 @@ checks:
   can move in opposite directions depending on the input method. If automation
   cannot reliably reach the target component, use a deterministic Flutter
   screenshot/golden harness with explicit scroll offsets.
+- When using a Flutter screenshot/golden harness, load both a readable text font
+  and the Material Icons font. Otherwise icon-based controls can render as
+  placeholder boxes in release screenshots even when the app itself is correct.
 - Capture evidence for every newly created component. A release screenshot set
   must show the new components themselves, not only older controls that happen
   to appear near the top of the harness.

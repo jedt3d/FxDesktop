@@ -1,17 +1,19 @@
-# fx_desktop_example
+# FxDesktop Example
 
-A new Flutter project.
+This macOS Flutter app is the visual harness for FxDesktop components.
 
-## Getting Started
+It presents component families in a single vertical list so new controls can be
+checked quickly for enabled, disabled, selected, collapsed, expanded, and other
+important desktop states.
 
-This project is a starting point for a Flutter application.
+Run it from this directory:
 
-A few resources to get you started if this is your first Flutter project:
+```bash
+flutter run -d macos
+```
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+For release-quality local builds, use the repository's Flutter macOS desktop
+workflow and Developer ID signing script from the package root.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Screenshot evidence for phase releases is stored under `doc/screenshots/` in
+the package root.

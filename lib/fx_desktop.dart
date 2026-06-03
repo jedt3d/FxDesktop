@@ -11,5 +11,7 @@ export 'src/fx_form_inputs.dart';
 export 'src/fx_layout.dart';
 export 'src/fx_navigation_containers.dart';
 export 'src/fx_navigation_controls.dart';
+export 'src/fx_styled_text.dart';
 export 'src/fx_tables.dart';
 export 'src/fx_theme.dart';
+export 'src/fx_utility_controls.dart';

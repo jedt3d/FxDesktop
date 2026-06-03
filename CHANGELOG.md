@@ -4,6 +4,54 @@
 
 No unreleased changes.
 
+## 0.2.3
+
+Phase 2.3 fills in the compact utility controls that usually sit around forms,
+dialogs, inspectors, and status panels. The release adds color selection,
+progress display, separators, and rich display text without adding standalone
+widgets for controls that Flutter already handles well through standard
+scrollbars, menu anchors, or future numeric-field accessories.
+
+This phase keeps FxDesktop focused on Xojo-style semantic parity rather than
+duplicating every native control one-for-one. `FxPopupArrow`, standalone
+up/down arrows, and manual vertical/horizontal scrollbars remain documented
+decision points instead of public widgets in this release.
+
+### Added
+
+- Added `FxColorPicker` for desktop color value preview and selection metadata,
+  comparable to Xojo `DesktopColorPicker`.
+- Added `FxProgressBar` for determinate progress with min, max, disabled state,
+  and safe value normalization.
+- Added `FxProgressWheel` for compact indeterminate progress/loading states.
+- Added `FxSeparator` for horizontal and vertical separators in dense desktop
+  layouts.
+- Added `FxStyledLabel` for rich label/help text using mixed spans, wrapping,
+  alignment, and disabled appearance.
+- Added Phase 2.3 rows to the example harness for picker, progress, separator,
+  and styled text/display groups.
+- Added component registry entries and Xojo mapping documentation for every
+  Phase 2.3 public component.
+
+### Clarified
+
+- Clarified that `FxPopupArrow` remains documentation-only in Phase 2.3 because
+  Flutter already provides mature popup menu patterns.
+- Clarified that `DesktopUpDownArrows` should be revisited as a numeric field or
+  stepper accessory rather than a standalone widget.
+- Clarified that vertical and horizontal scrollbars should normally use
+  Flutter `Scrollbar` attached to the owning scrollable instead of manual
+  FxDesktop scrollbar widgets.
+
+### Validated
+
+- Added focused widget tests for utility control rendering, disabled states,
+  callbacks, orientation, and template metadata.
+- Expanded registry tests so Phase 2.3 controls remain mapped to the intended
+  Xojo Desktop concepts.
+- Verified the release with the local Flutter quality path and macOS demo
+  harness before tagging.
+
 ## 0.2.2
 
 Phase 2.2 adds the controls needed to move between modes, pages, and compact

@@ -50,6 +50,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
   int selectedCardIndex = 0;
   bool orderExpanded = true;
   bool auditExpanded = false;
+  Color? accentColor = const Color(0xff2563eb);
 
   @override
   void dispose() {
@@ -717,6 +718,154 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                           ),
                         ),
                         _ComponentRow(
+                          name: 'FxColorPicker',
+                          child: _StateSamples(
+                            sampleWidth: 300,
+                            children: [
+                              _StateSample(
+                                label: 'Selected color',
+                                child: FxColorPicker(
+                                  label: 'Accent',
+                                  value: accentColor,
+                                  onChanged: (value) {
+                                    setState(() => accentColor = value);
+                                  },
+                                ),
+                              ),
+                              _StateSample(
+                                label: 'No color',
+                                child: FxColorPicker(
+                                  label: 'Optional',
+                                  onChanged: (value) {
+                                    setState(() => accentColor = value);
+                                  },
+                                ),
+                              ),
+                              const _StateSample(
+                                label: 'Disabled',
+                                child: FxColorPicker(
+                                  label: 'Disabled',
+                                  value: Color(0xff64748b),
+                                  enabled: false,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        _ComponentRow(
+                          name: 'FxProgressBar / FxProgressWheel',
+                          child: _StateSamples(
+                            sampleWidth: 300,
+                            children: const [
+                              _StateSample(
+                                label: 'Minimum',
+                                child: FxProgressBar(value: 0),
+                              ),
+                              _StateSample(
+                                label: 'Partial',
+                                child: FxProgressBar(value: 62),
+                              ),
+                              _StateSample(
+                                label: 'Complete',
+                                child: FxProgressBar(value: 100),
+                              ),
+                              _StateSample(
+                                label: 'Disabled progress',
+                                child: FxProgressBar(value: 40, enabled: false),
+                              ),
+                              _StateSample(
+                                label: 'Loading wheel',
+                                child: FxProgressWheel(size: 28),
+                              ),
+                              _StateSample(
+                                label: 'Disabled wheel',
+                                child: FxProgressWheel(
+                                  enabled: false,
+                                  size: 28,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        _ComponentRow(
+                          name: 'FxSeparator',
+                          child: _StateSamples(
+                            sampleWidth: 360,
+                            children: const [
+                              _StateSample(
+                                label: 'Horizontal rule',
+                                child: _SeparatorHorizontalSample(),
+                              ),
+                              _StateSample(
+                                label: 'Vertical rule',
+                                child: _SeparatorVerticalSample(),
+                              ),
+                            ],
+                          ),
+                        ),
+                        _ComponentRow(
+                          name: 'FxStyledLabel',
+                          child: _StateSamples(
+                            sampleWidth: 420,
+                            children: const [
+                              _StateSample(
+                                label: 'Rich label',
+                                child: FxStyledLabel(
+                                  text: 'Status: priority order is overdue',
+                                  spans: [
+                                    FxStyledTextSpan(text: 'Status: '),
+                                    FxStyledTextSpan(
+                                      text: 'priority order',
+                                      style: TextStyle(
+                                        color: Color(0xffbe123c),
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    FxStyledTextSpan(text: ' is overdue'),
+                                  ],
+                                ),
+                              ),
+                              _StateSample(
+                                label: 'Wrapped help text',
+                                child: FxStyledLabel(
+                                  text:
+                                      'Use styled labels for compact help text with emphasized terms.',
+                                  spans: [
+                                    FxStyledTextSpan(
+                                      text:
+                                          'Use styled labels for compact help text with ',
+                                    ),
+                                    FxStyledTextSpan(
+                                      text: 'emphasized terms.',
+                                      style: TextStyle(
+                                        fontStyle: FontStyle.italic,
+                                        color: Color(0xff0f766e),
+                                      ),
+                                    ),
+                                  ],
+                                  softWrap: true,
+                                ),
+                              ),
+                              _StateSample(
+                                label: 'Disabled',
+                                child: FxStyledLabel(
+                                  text: 'Disabled styled label',
+                                  enabled: false,
+                                  spans: [
+                                    FxStyledTextSpan(text: 'Disabled '),
+                                    FxStyledTextSpan(
+                                      text: 'styled label',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        _ComponentRow(
                           name: 'FxGroupBox',
                           child: _StateSamples(
                             sampleWidth: 420,
@@ -1094,6 +1243,48 @@ class _NavigationContentPanel extends StatelessWidget {
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SeparatorHorizontalSample extends StatelessWidget {
+  const _SeparatorHorizontalSample();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 86,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: const [
+          Text('Billing'),
+          SizedBox(height: 10),
+          FxSeparator(),
+          SizedBox(height: 10),
+          Text('Delivery'),
+        ],
+      ),
+    );
+  }
+}
+
+class _SeparatorVerticalSample extends StatelessWidget {
+  const _SeparatorVerticalSample();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 86,
+      child: Row(
+        children: const [
+          Expanded(child: Text('Left pane')),
+          SizedBox(width: 12),
+          FxSeparator(orientation: FxSeparatorOrientation.vertical),
+          SizedBox(width: 12),
+          Expanded(child: Text('Right pane')),
         ],
       ),
     );

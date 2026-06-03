@@ -98,6 +98,14 @@ nav    content
         byName['FxDisclosureTriangle']?.xojoDesktopClass,
         'DesktopDisclosureTriangle',
       );
+      expect(byName['FxColorPicker']?.xojoDesktopClass, 'DesktopColorPicker');
+      expect(byName['FxProgressBar']?.xojoDesktopClass, 'DesktopProgressBar');
+      expect(
+        byName['FxProgressWheel']?.xojoDesktopClass,
+        'DesktopProgressWheel',
+      );
+      expect(byName['FxSeparator']?.xojoDesktopClass, 'DesktopSeparator');
+      expect(byName['FxStyledLabel']?.xojoDesktopClass, 'DesktopLabel');
       expect(byName['FxListBox']?.xojoDesktopClass, 'DesktopListBox');
       expect(byName['FxGrid']?.xojoDesktopClass, 'DesktopGrid');
     });
