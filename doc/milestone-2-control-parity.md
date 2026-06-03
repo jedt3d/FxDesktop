@@ -48,15 +48,15 @@ Some Xojo controls look similar but carry different intent:
 | 10 | `FxPagePanel` | `DesktopPagePanel` | Headless indexed page container. |
 | 11 | `FxCardContainer` | PagePanel/container-stack pattern | Headless indexed card stack for generator workflows. |
 | 12 | `FxDisclosureTriangle` | `DesktopDisclosureTriangle` | Collapsible section control. |
-| 13 | `FxPopupArrow` | `DesktopPopupArrow` | Compact menu/action disclosure control. |
-| 14 | `FxUpDownArrows` | `DesktopUpDownArrows` | Small stepper control for numeric fields. |
-| 15 | `FxVerticalScrollBar` | `DesktopScrollbar` | Explicit vertical scrollbar control when needed as a widget. |
-| 16 | `FxHorizontalScrollBar` | `DesktopScrollbar` | Explicit horizontal scrollbar control when needed as a widget. |
-| 17 | `FxColorPicker` | `DesktopColorPicker` | Color selection field/button with value preview. |
-| 18 | `FxProgressBar` | `DesktopProgressBar` | Determinate progress. |
-| 19 | `FxProgressWheel` | `DesktopProgressWheel` | Indeterminate progress/loading. |
-| 20 | `FxSeparator` | `DesktopSeparator` | Horizontal and vertical separators for dense forms. |
-| 21 | `FxStyledLabel` | Styled text label pattern | Rich text label using spans and paragraph styles. |
+| 13 | `FxColorPicker` | `DesktopColorPicker` | Color selection field/button with value preview. |
+| 14 | `FxProgressBar` | `DesktopProgressBar` | Determinate progress. |
+| 15 | `FxProgressWheel` | `DesktopProgressWheel` | Indeterminate progress/loading. |
+| 16 | `FxSeparator` | `DesktopSeparator` | Horizontal and vertical separators for dense forms. |
+| 17 | `FxStyledLabel` | Styled text label pattern | Rich text label using spans and paragraph styles. |
+| 18 | `FxPopupArrow` | `DesktopPopupArrow` | Decision required; Flutter menu widgets may already cover this intent. |
+| 19 | `FxUpDownArrows` | `DesktopUpDownArrows` | Decision required; may be a numeric-field accessory rather than standalone widget. |
+| 20 | `FxVerticalScrollBar` | `DesktopScrollbar` | Decision required; Flutter `Scrollbar` usually owns this behavior already. |
+| 21 | `FxHorizontalScrollBar` | `DesktopScrollbar` | Decision required; Flutter `Scrollbar` usually owns this behavior already. |
 
 ## Phased Development
 
@@ -207,26 +207,38 @@ Validation:
 
 ### Phase 2.3: Desktop Utility Controls
 
-Build smaller desktop controls that complete common dialogs and inspectors:
+Build smaller desktop controls that complete common dialogs and inspectors.
+Phase 2.3 must first decide whether a control needs a new FxDesktop public
+widget, a thin adapter around an existing Flutter widget, or documentation only.
+Do not duplicate Flutter behavior when the standard widget already works well
+for desktop preview and Xojo generation.
 
-- `FxPopupArrow`
-- `FxUpDownArrows`
-- `FxVerticalScrollBar`
-- `FxHorizontalScrollBar`
 - `FxColorPicker`
 - `FxProgressBar`
 - `FxProgressWheel`
 - `FxSeparator`
 - `FxStyledLabel`
 
+Decision candidates:
+
+| Candidate | Xojo Desktop Counterpart | Phase 2.3 Decision | Reason |
+|---|---|---|---|
+| `FxPopupArrow` | `DesktopPopupArrow` | Document or thin adapter first | Flutter already has `PopupMenuButton`, `MenuAnchor`, and trailing icon patterns. Build a standalone widget only if Xojo export needs a separate `DesktopPopupArrow` component or the demo needs a compact menu-only control. |
+| `FxUpDownArrows` | `DesktopUpDownArrows` | Prefer numeric stepper accessory | Flutter does not have a direct desktop up/down arrow control, but a standalone widget is rarely useful without a numeric field. Prefer an `FxNumberField` or stepper accessory unless Xojo generation explicitly needs the standalone component. |
+| `FxVerticalScrollBar` | `DesktopScrollbar` | Do not duplicate by default | Flutter `Scrollbar` already attaches to scrollable regions and handles thumb behavior. Add an FxDesktop wrapper only for consistent desktop styling or generator metadata, not as a separate manual scrollbar control. |
+| `FxHorizontalScrollBar` | `DesktopScrollbar` | Do not duplicate by default | Flutter can show horizontal scrollbars for horizontal scroll views. Add only a wrapper/metadata helper when table, grid, or design-preview export requires it. |
+
 Demo presentation:
 
-- Group compact utility controls into rows by family: pickers, steppers,
-  scrolling, progress, and text/display.
-- Show min/max/disabled states for steppers, scrollbars, and sliders.
+- Group compact utility controls into rows by family: pickers, progress, and
+  text/display. Include stepper or scrollbar rows only after the decision table
+  says they need public FxDesktop widgets.
+- Show min/max/disabled states for any utility control that exposes a numeric
+  range or explicit state.
 - Show determinate and indeterminate progress states.
-- Capture screenshots for picker, stepper, scrolling, progress, and text/display
-  groups.
+- Capture screenshots for picker, progress, and text/display groups. Capture
+  stepper or scrolling groups only when Phase 2.3 explicitly creates public
+  widgets for them.
 - Save screenshots under `doc/screenshots/v0.2.3/` and attach them to the
   GitHub Release.
 
