@@ -319,11 +319,19 @@ Each phase release follows the same sequence:
 7. Update `CHANGELOG.md` with human-readable release notes for that phase.
 8. Update `pubspec.yaml`, README install instructions, and any versioned docs to
    the phase version.
-9. Run `dart run tool/agent_harness.dart`.
-10. Merge to `main`.
-11. Tag the release as `vX.Y.Z`.
-12. Create a GitHub Release and attach the screenshots.
-13. Delete the completed phase branch.
+9. Review and update process guidance:
+   - update the active Flutter desktop skill with lessons learned from the
+     phase
+   - update `AGENT.md`
+   - update `README.md`
+   - confirm `CHANGELOG.md` describes the phase in human-readable release notes
+   If any of these files do not need changes, explain that in the PR
+   description.
+10. Run `dart run tool/agent_harness.dart`.
+11. Merge to `main`.
+12. Tag the release as `vX.Y.Z`.
+13. Create a GitHub Release and attach the screenshots.
+14. Delete the completed phase branch.
 
 ## Version And Release Checkpoint
 
@@ -335,6 +343,8 @@ When each Milestone 2 phase implementation is complete and accepted:
 - update `pubspec.yaml`
 - update README install instructions
 - update `CHANGELOG.md`
+- review and update the active Flutter desktop skill, `AGENT.md`, and README so
+  the workflow lessons from the phase are preserved
 - update this milestone document so the completed phase is marked delivered
 - update component mapping docs so planned items become implemented items
 - add screenshots for the released phase, with every new component visible in

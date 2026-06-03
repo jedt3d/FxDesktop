@@ -127,3 +127,9 @@ dry-run checks, and public API policy checks.
 Version tags and optional GitHub Releases are created only after a milestone is
 implemented, documented, validated, and accepted. See
 [Release Versioning](https://github.com/jedt3d/FxDesktop/blob/main/doc/release-versioning.md).
+
+For phase work after `v0.2.1`, each implementation phase must keep the process
+docs current as part of the release: review the active Flutter desktop skill,
+update `AGENT.md`, update `CHANGELOG.md`, update README when user-facing usage
+or workflow changes, then merge, tag, and create the GitHub Release from the
+accepted phase branch.

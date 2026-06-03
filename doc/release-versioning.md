@@ -13,6 +13,10 @@ When a milestone is accepted for release, update these surfaces together:
 - `pubspec.yaml` package version
 - README install snippet
 - `CHANGELOG.md`
+- `AGENT.md` when the phase changes agent workflow, validation, screenshots, or
+  release discipline
+- the active Flutter desktop skill when the phase teaches a reusable Flutter
+  macOS build, validation, screenshot, signing, or release lesson
 - release notes or milestone documentation
 - example app documentation when the demo changes
 - generated API docs when publishing or archiving release documentation
@@ -29,7 +33,8 @@ Milestone 2 uses the `0.2.x` release line:
 - Phase 2.4: `v0.2.4`
 
 Each phase release must include the demo harness updates, screenshots, quality
-checks, version bump, tag, and GitHub Release for that phase.
+checks, version bump, documentation/process-surface updates, tag, and GitHub
+Release for that phase.
 
 ## Changelog Style
 
@@ -59,6 +64,8 @@ Create the tag only after:
 
 - the release commit is complete
 - `dart run tool/agent_harness.dart` passes
+- `AGENT.md`, `CHANGELOG.md`, README, and the active Flutter desktop skill have
+  been reviewed and updated or explicitly marked as no-change in the PR
 - the example app has been checked when UI changes are included
 - phase screenshots have been captured when UI changes are included
 - the changelog describes the release

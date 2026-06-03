@@ -2,7 +2,12 @@
 
 ## Unreleased
 
-No unreleased changes.
+### Clarified
+
+- Clarified the phase release discipline for future work: every implementation
+  phase must review the active Flutter desktop skill, keep `AGENT.md`,
+  `CHANGELOG.md`, and README current, and finish with branch management, version
+  tagging, and a GitHub Release.
 
 ## 0.2.1
 
