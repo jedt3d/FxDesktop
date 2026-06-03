@@ -19,6 +19,18 @@ When a milestone is accepted for release, update these surfaces together:
 
 All version references in the repository should describe the same release.
 
+## Milestone 2 Phase Versions
+
+Milestone 2 uses the `0.2.x` release line:
+
+- Phase 2.1: `v0.2.1`
+- Phase 2.2: `v0.2.2`
+- Phase 2.3: `v0.2.3`
+- Phase 2.4: `v0.2.4`
+
+Each phase release must include the demo harness updates, screenshots, quality
+checks, version bump, tag, and GitHub Release for that phase.
+
 ## Changelog Style
 
 `CHANGELOG.md` is a communication document, not a compressed commit log.
@@ -48,6 +60,7 @@ Create the tag only after:
 - the release commit is complete
 - `dart run tool/agent_harness.dart` passes
 - the example app has been checked when UI changes are included
+- phase screenshots have been captured when UI changes are included
 - the changelog describes the release
 
 Prefer tagging the branch that will be merged or has already been merged. Do
@@ -66,6 +79,10 @@ Create a GitHub Release when:
 - CI and local harness checks pass
 
 GitHub Releases are optional for small documentation-only updates.
+
+Milestone 2 implementation phases are not small documentation-only updates, so
+each Phase 2.1 through 2.4 release should create a GitHub Release and attach the
+phase screenshots.
 
 ## Pub.dev
 

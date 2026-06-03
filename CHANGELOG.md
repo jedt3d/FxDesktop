@@ -34,6 +34,13 @@ forms feel complete.
 - Clarified that planning-only changes should not create version tags. Tags and
   optional GitHub Releases belong to accepted implementation milestones after
   the harness passes and all versioned docs are synchronized.
+- Clarified that Milestone 2 implementation will ship as phase releases:
+  `v0.2.1` through `v0.2.4`. Each phase must update the demo harness, capture
+  screenshots, pass quality checks, tag the version, and create a GitHub
+  Release.
+- Added a parallel sub-agent workflow for Milestone 2 so multiple component
+  groups can be implemented at the same time without letting release, registry,
+  demo, and versioning work fragment across branches.
 
 ## 0.1.0
 
