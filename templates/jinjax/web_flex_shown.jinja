@@ -1,0 +1,10 @@
+' Web Shown event layout setup generated from FxLayoutSpec.
+Var {{ layout_id }} As New WebFlexLayoutManager
+{{ layout_id }}.Direction = "{{ direction }}"
+{{ layout_id }}.Gap = {{ gap }}
+
+{% for child in flexChildren %}
+{{ layout_id }}.AddControl({{ child.id }}, {{ child.grow }})
+{% endfor %}
+
+{{ layout_id }}.ApplyLayout()

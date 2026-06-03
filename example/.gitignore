@@ -1,0 +1,49 @@
+# Operating system files
+.DS_Store
+.AppleDouble
+._*
+Thumbs.db
+Desktop.ini
+
+# Local editor and IDE files
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+*.swp
+*.swo
+
+# Dart, Flutter, and pub
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub/
+.pub-cache/
+pubspec.lock
+build/
+coverage/
+doc/api/
+
+# Flutter platform generated files
+**/GeneratedPluginRegistrant.*
+macos/Flutter/ephemeral/
+ios/Flutter/ephemeral/
+ios/Flutter/.last_build_id
+ios/Flutter/App.framework
+ios/Flutter/Flutter.framework
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+android/local.properties
+
+# Xcode and Apple platform local state
+**/Pods/
+**/DerivedData/
+**/xcuserdata/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+*.bak

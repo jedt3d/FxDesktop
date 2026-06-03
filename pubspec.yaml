@@ -1,0 +1,37 @@
+name: fx_desktop
+description: Desktop-first Flutter components and CSS-like layout contracts for Xojo-style UI design.
+version: 0.1.0
+homepage: https://github.com/jedt3d/FxDesktop
+repository: https://github.com/jedt3d/FxDesktop
+issue_tracker: https://github.com/jedt3d/FxDesktop/issues
+
+environment:
+  sdk: ^3.11.5
+  flutter: ">=3.35.0"
+
+platforms:
+  linux:
+  macos:
+  web:
+  windows:
+
+topics:
+  - desktop
+  - flutter
+  - layout
+  - xojo
+
+dependencies:
+  flexiblebox: ^1.0.4
+  flutter:
+    sdk: flutter
+  flutter_layout_grid: ^2.0.8
+  two_dimensional_scrollables: ^0.5.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  dartdoc: ^9.0.2
+
+flutter:
