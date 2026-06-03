@@ -77,6 +77,16 @@ nav    content
         byName['FxFlexLayout']?.xojoDesktopClass,
         'DesktopFlexLayoutManager',
       );
+      expect(byName['FxLabel']?.xojoDesktopClass, 'DesktopLabel');
+      expect(byName['FxPopupMenu']?.xojoDesktopClass, 'DesktopPopupMenu');
+      expect(byName['FxComboBox']?.xojoDesktopClass, 'DesktopComboBox');
+      expect(byName['FxRadioButton']?.xojoDesktopClass, 'DesktopRadioButton');
+      expect(byName['FxRadioGroup']?.xojoDesktopClass, 'DesktopRadioGroup');
+      expect(
+        byName['FxDateTimePicker']?.xojoDesktopClass,
+        'DesktopDateTimePicker',
+      );
+      expect(byName['FxSlider']?.xojoDesktopClass, 'DesktopSlider');
       expect(byName['FxListBox']?.xojoDesktopClass, 'DesktopListBox');
       expect(byName['FxGrid']?.xojoDesktopClass, 'DesktopGrid');
     });

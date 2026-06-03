@@ -20,7 +20,7 @@ multi-size desktop workflows.
 
 ```yaml
 dependencies:
-  fx_desktop: ^0.1.0
+  fx_desktop: ^0.2.1
 ```
 
 ## Quick Start
@@ -74,11 +74,23 @@ class OrderPanel extends StatelessWidget {
 | `FxGridLayout` | generation/layout contract | generation/layout contract |
 | `FxListBox` | `DesktopListBox` | `WebListBox` |
 | `FxGrid` | `DesktopGrid` | future/custom |
+| `FxLabel` | `DesktopLabel` | `WebLabel` |
 | `FxTextField` | `DesktopTextField` | `WebTextField` |
+| `FxPopupMenu` | `DesktopPopupMenu` | `WebPopupMenu` |
+| `FxComboBox` | `DesktopComboBox` | `WebComboBox` |
+| `FxRadioButton` | `DesktopRadioButton` | `WebRadioButton` |
+| `FxRadioGroup` | `DesktopRadioGroup` | `WebRadioGroup` |
+| `FxDateTimePicker` | `DesktopDateTimePicker` | `WebDatePicker` |
+| `FxSlider` | `DesktopSlider` | `WebSlider` |
 | `FxGroupBox` | `DesktopGroupBox` | custom/group container |
 
 `FxGridLayout` is a CSS Grid-like layout manager. `FxGrid` is a data/cell grid
 control comparable to Xojo `DesktopGrid`.
+
+Milestone 2 extends Xojo Desktop control parity in phase releases. `v0.2.1`
+adds the first core form controls: labels, fixed popup menus, editable combo
+boxes, radio controls, date/time picking, and sliders.
+See [Milestone 2: Xojo Desktop Control Parity](https://github.com/jedt3d/FxDesktop/blob/main/doc/milestone-2-control-parity.md).
 
 ## Agent And Generator Use
 
@@ -111,3 +123,7 @@ dart run tool/agent_harness.dart
 
 The harness runs formatting checks, static analysis, tests, Dartdoc, pub.dev
 dry-run checks, and public API policy checks.
+
+Version tags and optional GitHub Releases are created only after a milestone is
+implemented, documented, validated, and accepted. See
+[Release Versioning](https://github.com/jedt3d/FxDesktop/blob/main/doc/release-versioning.md).

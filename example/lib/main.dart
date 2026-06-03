@@ -37,6 +37,14 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
   bool active = true;
   bool inactive = false;
   bool? optional;
+  String? popupStatus = 'Open';
+  String comboValue = 'Bangkok';
+  String? radioChoice = 'standard';
+  String? radioGroupChoice = 'email';
+  double priority = 40;
+  DateTime? dueDate = DateTime(2026, 6, 4);
+  DateTime? reminderTime = DateTime(2026, 6, 4, 9, 30);
+  DateTime? appointment = DateTime(2026, 6, 4, 14, 15);
 
   @override
   void dispose() {
@@ -166,6 +174,108 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                           ),
                         ),
                         _ComponentRow(
+                          name: 'FxLabel',
+                          child: _StateSamples(
+                            sampleWidth: 340,
+                            children: const [
+                              _StateSample(
+                                label: 'Enabled',
+                                child: FxLabel(
+                                  text:
+                                      'Order summary label with wrapping enabled.',
+                                ),
+                              ),
+                              _StateSample(
+                                label: 'Centered',
+                                child: FxLabel(
+                                  text: 'Centered label',
+                                  alignment: TextAlign.center,
+                                  style: TextStyle(fontWeight: FontWeight.w700),
+                                ),
+                              ),
+                              _StateSample(
+                                label: 'Disabled',
+                                child: FxLabel(
+                                  text: 'Disabled label',
+                                  enabled: false,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        _ComponentRow(
+                          name: 'FxPopupMenu',
+                          child: _StateSamples(
+                            sampleWidth: 320,
+                            children: [
+                              _StateSample(
+                                label: 'Selected fixed choice',
+                                child: FxPopupMenu(
+                                  label: 'Status',
+                                  options: const ['Open', 'Pending', 'Closed'],
+                                  selectedValue: popupStatus,
+                                  onChanged: (value) {
+                                    setState(() => popupStatus = value);
+                                  },
+                                ),
+                              ),
+                              const _StateSample(
+                                label: 'Empty options',
+                                child: FxPopupMenu(
+                                  label: 'Status',
+                                  options: [],
+                                  emptyText: 'No statuses',
+                                ),
+                              ),
+                              const _StateSample(
+                                label: 'Disabled',
+                                child: FxPopupMenu(
+                                  label: 'Status',
+                                  options: ['Open', 'Pending', 'Closed'],
+                                  selectedValue: 'Pending',
+                                  enabled: false,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        _ComponentRow(
+                          name: 'FxComboBox',
+                          child: _StateSamples(
+                            sampleWidth: 360,
+                            children: [
+                              _StateSample(
+                                label: 'Editable with autocomplete',
+                                child: FxComboBox(
+                                  label: 'City',
+                                  value: comboValue,
+                                  options: const [
+                                    'Bangkok',
+                                    'Boston',
+                                    'Berlin',
+                                    'Zurich',
+                                  ],
+                                  onChanged: (value) {
+                                    setState(() => comboValue = value);
+                                  },
+                                  onOptionSelected: (value) {
+                                    setState(() => comboValue = value);
+                                  },
+                                ),
+                              ),
+                              const _StateSample(
+                                label: 'Disabled',
+                                child: FxComboBox(
+                                  label: 'City',
+                                  value: 'Zurich',
+                                  options: ['Bangkok', 'Boston', 'Berlin'],
+                                  enabled: false,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        _ComponentRow(
                           name: 'FxCheckBox',
                           child: _StateSamples(
                             sampleWidth: 220,
@@ -206,6 +316,194 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                                 child: FxCheckBox(
                                   label: 'Disabled',
                                   value: true,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        _ComponentRow(
+                          name: 'FxRadioButton',
+                          child: _StateSamples(
+                            sampleWidth: 240,
+                            children: [
+                              _StateSample(
+                                label: 'Selected',
+                                child: FxRadioButton<String>(
+                                  label: 'Standard',
+                                  value: 'standard',
+                                  groupValue: radioChoice,
+                                  onChanged: (value) {
+                                    setState(() => radioChoice = value);
+                                  },
+                                ),
+                              ),
+                              _StateSample(
+                                label: 'Unselected',
+                                child: FxRadioButton<String>(
+                                  label: 'Express',
+                                  value: 'express',
+                                  groupValue: radioChoice,
+                                  onChanged: (value) {
+                                    setState(() => radioChoice = value);
+                                  },
+                                ),
+                              ),
+                              const _StateSample(
+                                label: 'Disabled',
+                                child: FxRadioButton<String>(
+                                  label: 'Disabled',
+                                  value: 'disabled',
+                                  selected: false,
+                                  enabled: false,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        _ComponentRow(
+                          name: 'FxRadioGroup',
+                          child: _StateSamples(
+                            sampleWidth: 420,
+                            children: [
+                              _StateSample(
+                                label: 'Vertical group',
+                                child: FxRadioGroup<String>(
+                                  value: radioGroupChoice,
+                                  options: const [
+                                    FxRadioOption(
+                                      value: 'email',
+                                      label: 'Email',
+                                    ),
+                                    FxRadioOption(
+                                      value: 'phone',
+                                      label: 'Phone',
+                                    ),
+                                    FxRadioOption(
+                                      value: 'letter',
+                                      label: 'Letter',
+                                      enabled: false,
+                                    ),
+                                  ],
+                                  onChanged: (value) {
+                                    setState(() => radioGroupChoice = value);
+                                  },
+                                ),
+                              ),
+                              _StateSample(
+                                label: 'Horizontal group',
+                                child: FxRadioGroup<String>(
+                                  value: radioGroupChoice,
+                                  orientation: FxChoiceOrientation.horizontal,
+                                  options: const [
+                                    FxRadioOption(
+                                      value: 'email',
+                                      label: 'Email',
+                                    ),
+                                    FxRadioOption(
+                                      value: 'phone',
+                                      label: 'Phone',
+                                    ),
+                                  ],
+                                  onChanged: (value) {
+                                    setState(() => radioGroupChoice = value);
+                                  },
+                                ),
+                              ),
+                              const _StateSample(
+                                label: 'Disabled group',
+                                child: FxRadioGroup<String>(
+                                  value: 'email',
+                                  enabled: false,
+                                  options: [
+                                    FxRadioOption(
+                                      value: 'email',
+                                      label: 'Email',
+                                    ),
+                                    FxRadioOption(
+                                      value: 'phone',
+                                      label: 'Phone',
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        _ComponentRow(
+                          name: 'FxDateTimePicker',
+                          child: _StateSamples(
+                            sampleWidth: 340,
+                            children: [
+                              _StateSample(
+                                label: 'Date',
+                                child: FxDateTimePicker(
+                                  label: 'Due Date',
+                                  value: dueDate,
+                                  onChanged: (value) {
+                                    setState(() => dueDate = value);
+                                  },
+                                ),
+                              ),
+                              _StateSample(
+                                label: 'Time',
+                                child: FxDateTimePicker(
+                                  label: 'Reminder',
+                                  mode: FxDateTimePickerMode.time,
+                                  value: reminderTime,
+                                  onChanged: (value) {
+                                    setState(() => reminderTime = value);
+                                  },
+                                ),
+                              ),
+                              _StateSample(
+                                label: 'Date and time',
+                                child: FxDateTimePicker(
+                                  label: 'Appointment',
+                                  mode: FxDateTimePickerMode.dateTime,
+                                  value: appointment,
+                                  onChanged: (value) {
+                                    setState(() => appointment = value);
+                                  },
+                                ),
+                              ),
+                              const _StateSample(
+                                label: 'Disabled',
+                                child: FxDateTimePicker(
+                                  label: 'Disabled Date',
+                                  value: null,
+                                  enabled: false,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        _ComponentRow(
+                          name: 'FxSlider',
+                          child: _StateSamples(
+                            sampleWidth: 420,
+                            children: [
+                              _StateSample(
+                                label: 'Range with divisions',
+                                child: FxSlider(
+                                  value: priority,
+                                  min: 0,
+                                  max: 100,
+                                  divisions: 10,
+                                  valueLabel: '${priority.round()}%',
+                                  onChanged: (value) {
+                                    setState(() => priority = value);
+                                  },
+                                ),
+                              ),
+                              const _StateSample(
+                                label: 'Disabled',
+                                child: FxSlider(
+                                  value: 25,
+                                  min: 0,
+                                  max: 100,
+                                  divisions: 4,
+                                  valueLabel: '25%',
+                                  enabled: false,
                                 ),
                               ),
                             ],

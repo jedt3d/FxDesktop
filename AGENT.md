@@ -58,6 +58,32 @@ Every new public component needs:
 - a test or example demonstrating intended use
 - a short note when it maps to a Xojo component
 
+For Milestone 2 component work, follow
+`doc/milestone-2-control-parity.md`. Preserve important Xojo semantics:
+`FxComboBox` is editable with autocomplete, `FxPopupMenu` is fixed-choice,
+`FxTabPanel` has visible tabs, and `FxPagePanel`/`FxCardContainer` are
+indexed containers without visible tab headers.
+
+## Version And Release Rules
+
+- Do not bump versions or create tags for planning-only changes.
+- When a milestone is implemented and accepted, update all versioned surfaces in
+  one change: `pubspec.yaml`, README install snippet, CHANGELOG, release notes,
+  and any docs that mention the current version.
+- For Milestone 2, release each implementation phase separately:
+  `v0.2.1`, `v0.2.2`, `v0.2.3`, and `v0.2.4`.
+- For every Milestone 2 phase, update the example harness, capture screenshots,
+  run the full quality harness, tag the version, and create a GitHub Release
+  with screenshots attached.
+- For Milestone 2 parallel work, use component sub-agent branches for isolated
+  implementation and one coordinator/integrator branch for exports, registry,
+  demo harness, screenshots, changelog, version bump, tag, and release.
+- Create tags as `vX.Y.Z` only after the quality harness passes on the release
+  commit.
+- Create a GitHub Release when the milestone has meaningful release notes,
+  screenshots, demo app changes, or a pub.dev publish candidate.
+- Follow `doc/release-versioning.md` for the full checklist.
+
 ## Example Harness Rules
 
 - Keep the visual test app as a vertical component harness.
