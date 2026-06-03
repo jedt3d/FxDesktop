@@ -67,7 +67,7 @@ GitHub Release before the next phase starts.
 | Phase | Release tag | Release focus |
 |---|---|---|
 | 2.1 | `v0.2.1` | Core form inputs, delivered |
-| 2.2 | `v0.2.2` | Navigation and indexed containers |
+| 2.2 | `v0.2.2` | Navigation and indexed containers, delivered |
 | 2.3 | `v0.2.3` | Desktop utility controls |
 | 2.4 | `v0.2.4` | Text input depth |
 
@@ -183,6 +183,8 @@ Validation:
 
 ### Phase 2.2: Navigation And Indexed Containers
 
+Status: delivered in `v0.2.2`.
+
 Build controls used to switch page or mode:
 
 - `FxSegmentedButton`
@@ -193,20 +195,27 @@ Build controls used to switch page or mode:
 
 Demo presentation:
 
-- Add a container demo row that shows three approaches side by side:
+- Added a container demo row that shows three approaches side by side:
   `FxTabPanel`, `FxPagePanel`, and `FxSegmentedButton` controlling
   `FxCardContainer`.
-- Show collapsed and expanded states for `FxDisclosureTriangle`.
+- Show collapsed, expanded, and disabled states for `FxDisclosureTriangle`.
 - Capture screenshots that compare the visible tab approach, headless indexed
-  page approach, and segmented-card approach.
+  page approach, and segmented-card approach, including an alternate selected
+  state where the visible content changes.
 - Save screenshots under `doc/screenshots/v0.2.2/` and attach them to the
   GitHub Release.
+
+Phase 2.2 screenshot targets:
+
+- `fxdesktop-phase-2-2-navigation-containers.png`
+- `fxdesktop-phase-2-2-navigation-containers-alt-selection.png`
+- `fxdesktop-phase-2-2-disclosure-triangle.png`
 
 Validation:
 
 - Selected-index tests.
 - Page/card preservation tests.
-- Keyboard/focus tests for tab and segmented navigation when supported.
+- Callback, disabled-state, and template-map tests for navigation controls.
 - `dart run tool/agent_harness.dart` must pass.
 - The macOS example app must build and open successfully when UI changes are
   included.

@@ -139,6 +139,42 @@ const fxComponentRegistry = <FxComponentDescriptor>[
     supportLevel: FxComponentSupportLevel.comparable,
   ),
   FxComponentDescriptor(
+    id: 'fx.segmented_button',
+    name: 'FxSegmentedButton',
+    xojoDesktopClass: 'DesktopSegmentedButton',
+    supportLevel: FxComponentSupportLevel.comparable,
+    notes: 'Mode selector, often used to switch pages or cards.',
+  ),
+  FxComponentDescriptor(
+    id: 'fx.tab_panel',
+    name: 'FxTabPanel',
+    xojoDesktopClass: 'DesktopTabPanel',
+    supportLevel: FxComponentSupportLevel.comparable,
+    notes: 'Visible tab headers choose indexed pages.',
+  ),
+  FxComponentDescriptor(
+    id: 'fx.page_panel',
+    name: 'FxPagePanel',
+    xojoDesktopClass: 'DesktopPagePanel',
+    supportLevel: FxComponentSupportLevel.comparable,
+    notes: 'Headless indexed page container without visible tab headers.',
+  ),
+  FxComponentDescriptor(
+    id: 'fx.card_container',
+    name: 'FxCardContainer',
+    xojoDesktopClass: 'DesktopPagePanel',
+    supportLevel: FxComponentSupportLevel.custom,
+    notes:
+        'Generator-friendly indexed card stack controlled by another widget.',
+  ),
+  FxComponentDescriptor(
+    id: 'fx.disclosure_triangle',
+    name: 'FxDisclosureTriangle',
+    xojoDesktopClass: 'DesktopDisclosureTriangle',
+    supportLevel: FxComponentSupportLevel.comparable,
+    notes: 'Collapsible section control.',
+  ),
+  FxComponentDescriptor(
     id: 'fx.flex_layout',
     name: 'FxFlexLayout',
     xojoDesktopClass: 'DesktopFlexLayoutManager',

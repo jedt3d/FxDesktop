@@ -9,5 +9,7 @@ export 'src/fx_choice_controls.dart';
 export 'src/fx_datetime_controls.dart';
 export 'src/fx_form_inputs.dart';
 export 'src/fx_layout.dart';
+export 'src/fx_navigation_containers.dart';
+export 'src/fx_navigation_controls.dart';
 export 'src/fx_tables.dart';
 export 'src/fx_theme.dart';

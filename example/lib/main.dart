@@ -45,6 +45,11 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
   DateTime? dueDate = DateTime(2026, 6, 4);
   DateTime? reminderTime = DateTime(2026, 6, 4, 9, 30);
   DateTime? appointment = DateTime(2026, 6, 4, 14, 15);
+  int selectedTabIndex = 0;
+  int selectedPageIndex = 0;
+  int selectedCardIndex = 0;
+  bool orderExpanded = true;
+  bool auditExpanded = false;
 
   @override
   void dispose() {
@@ -510,6 +515,208 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                           ),
                         ),
                         _ComponentRow(
+                          name:
+                              'FxTabPanel / FxPagePanel / FxSegmentedButton + FxCardContainer',
+                          child: _StateSamples(
+                            sampleWidth: 340,
+                            children: [
+                              _StateSample(
+                                label: 'Visible tabs',
+                                child: FxTabPanel(
+                                  tabs: const [
+                                    'Overview',
+                                    'Pricing',
+                                    'History',
+                                  ],
+                                  selectedIndex: selectedTabIndex,
+                                  onChanged: (index) {
+                                    setState(() => selectedTabIndex = index);
+                                  },
+                                  children: const [
+                                    _NavigationContentPanel(
+                                      title: 'Overview',
+                                      body: 'Three open orders need review.',
+                                      accentColor: Color(0xff2563eb),
+                                    ),
+                                    _NavigationContentPanel(
+                                      title: 'Pricing',
+                                      body: 'Discount cap is set to 12%.',
+                                      accentColor: Color(0xff16a34a),
+                                    ),
+                                    _NavigationContentPanel(
+                                      title: 'History',
+                                      body: 'Last edited by Cindy on Tuesday.',
+                                      accentColor: Color(0xffb45309),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              _StateSample(
+                                label: 'Headless indexed pages',
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    FxSegmentedButton<int>(
+                                      value: selectedPageIndex,
+                                      options: const [
+                                        FxSegmentedOption(
+                                          value: 0,
+                                          label: 'Form',
+                                        ),
+                                        FxSegmentedOption(
+                                          value: 1,
+                                          label: 'Rows',
+                                        ),
+                                        FxSegmentedOption(
+                                          value: 2,
+                                          label: 'Notes',
+                                        ),
+                                      ],
+                                      onChanged: (index) {
+                                        setState(
+                                          () => selectedPageIndex = index,
+                                        );
+                                      },
+                                    ),
+                                    const SizedBox(height: 8),
+                                    FxPagePanel(
+                                      selectedIndex: selectedPageIndex,
+                                      children: const [
+                                        _NavigationContentPanel(
+                                          title: 'Form Page',
+                                          body:
+                                              'Customer fields are shown here.',
+                                          accentColor: Color(0xff7c3aed),
+                                        ),
+                                        _NavigationContentPanel(
+                                          title: 'Table Page',
+                                          body:
+                                              'Line item rows replace the form.',
+                                          accentColor: Color(0xff0f766e),
+                                        ),
+                                        _NavigationContentPanel(
+                                          title: 'Notes Page',
+                                          body:
+                                              'Internal comments use this page.',
+                                          accentColor: Color(0xffbe123c),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              _StateSample(
+                                label: 'Segmented cards',
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    FxSegmentedButton<int>(
+                                      value: selectedCardIndex,
+                                      options: const [
+                                        FxSegmentedOption(
+                                          value: 0,
+                                          label: 'Summary',
+                                        ),
+                                        FxSegmentedOption(
+                                          value: 1,
+                                          label: 'Files',
+                                        ),
+                                        FxSegmentedOption(
+                                          value: 2,
+                                          label: 'Tasks',
+                                        ),
+                                      ],
+                                      onChanged: (index) {
+                                        setState(
+                                          () => selectedCardIndex = index,
+                                        );
+                                      },
+                                    ),
+                                    const SizedBox(height: 8),
+                                    FxCardContainer(
+                                      selectedIndex: selectedCardIndex,
+                                      children: const [
+                                        _NavigationContentPanel(
+                                          title: 'Summary Card',
+                                          body:
+                                              'Current campaign is confirmed.',
+                                          accentColor: Color(0xff0891b2),
+                                        ),
+                                        _NavigationContentPanel(
+                                          title: 'Files Card',
+                                          body: 'Four proofs are attached.',
+                                          accentColor: Color(0xff4f46e5),
+                                        ),
+                                        _NavigationContentPanel(
+                                          title: 'Tasks Card',
+                                          body: 'Two approvals remain open.',
+                                          accentColor: Color(0xffca8a04),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        _ComponentRow(
+                          name: 'FxDisclosureTriangle',
+                          child: _StateSamples(
+                            sampleWidth: 340,
+                            children: [
+                              _StateSample(
+                                label: 'Expanded',
+                                child: FxDisclosureTriangle(
+                                  expanded: orderExpanded,
+                                  title: 'Order details',
+                                  onChanged: (value) {
+                                    setState(() => orderExpanded = value);
+                                  },
+                                  child: const _NavigationContentPanel(
+                                    title: 'Visible Details',
+                                    body:
+                                        'Billing and delivery fields are open.',
+                                    accentColor: Color(0xff2563eb),
+                                  ),
+                                ),
+                              ),
+                              _StateSample(
+                                label: 'Collapsed',
+                                child: FxDisclosureTriangle(
+                                  expanded: auditExpanded,
+                                  title: 'Audit trail',
+                                  onChanged: (value) {
+                                    setState(() => auditExpanded = value);
+                                  },
+                                  child: const _NavigationContentPanel(
+                                    title: 'Audit Entries',
+                                    body: 'Three changes are ready to inspect.',
+                                    accentColor: Color(0xff16a34a),
+                                  ),
+                                ),
+                              ),
+                              const _StateSample(
+                                label: 'Disabled',
+                                child: FxDisclosureTriangle(
+                                  expanded: false,
+                                  title: 'Disabled section',
+                                  enabled: false,
+                                  child: _NavigationContentPanel(
+                                    title: 'Disabled Content',
+                                    body: 'This content stays hidden.',
+                                    accentColor: Color(0xff6b7280),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        _ComponentRow(
                           name: 'FxGroupBox',
                           child: _StateSamples(
                             sampleWidth: 420,
@@ -831,6 +1038,63 @@ class _DemoBox extends StatelessWidget {
       ),
       child: Center(
         child: Text(text, style: const TextStyle(fontWeight: FontWeight.w600)),
+      ),
+    );
+  }
+}
+
+class _NavigationContentPanel extends StatelessWidget {
+  const _NavigationContentPanel({
+    required this.title,
+    required this.body,
+    required this.accentColor,
+  });
+
+  final String title;
+  final String body;
+  final Color accentColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      constraints: const BoxConstraints(minHeight: 96),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: accentColor.withValues(alpha: 0.08),
+        border: Border.all(color: accentColor.withValues(alpha: 0.42)),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 4,
+            height: 46,
+            decoration: BoxDecoration(
+              color: accentColor,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title,
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(body, style: theme.textTheme.bodySmall),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

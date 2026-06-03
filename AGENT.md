@@ -105,6 +105,10 @@ checks:
 - Capture evidence for every newly created component. A release screenshot set
   must show the new components themselves, not only older controls that happen
   to appear near the top of the harness.
+- For tab, page, segmented, card, or other indexed navigation components, make
+  every selectable page visibly different in the demo. Screenshots should prove
+  that selected state changes the displayed content, not only the highlighted
+  tab or segment.
 
 Every implementation phase must also update the working process surfaces before
 release:
@@ -130,6 +134,9 @@ release:
 - For screenshot work, verify that each new component row can be reached and
   captured directly. Prefer filenames that identify the component group shown,
   such as `phase-2-2-tab-panel.png` or `phase-2-3-progress-controls.png`.
+- For navigation container rows, include at least one screenshot with the
+  default selection and one with an alternate selection when the component is
+  intended to switch content.
 - Avoid complex navigation or dashboards in the basic harness. Add a sidebar
   component browser only after the component count makes a single vertical list
   hard to scan.
