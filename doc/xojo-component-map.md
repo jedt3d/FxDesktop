@@ -7,8 +7,15 @@ is semantic and generation-oriented, not a native-control equivalence.
 |---|---|---|---|
 | `FxButton` | `DesktopButton` | `WebButton` | Comparable |
 | `FxCheckBox` | `DesktopCheckBox` | `WebCheckBox` | Comparable |
+| `FxLabel` | `DesktopLabel` | `WebLabel` | Comparable |
 | `FxTextField` | `DesktopTextField` | `WebTextField` | Comparable |
 | `FxTextArea` | `DesktopTextArea` | `WebTextArea` | Comparable |
+| `FxPopupMenu` | `DesktopPopupMenu` | `WebPopupMenu` | Comparable |
+| `FxComboBox` | `DesktopComboBox` | `WebComboBox` | Comparable |
+| `FxRadioButton` | `DesktopRadioButton` | `WebRadioButton` | Comparable |
+| `FxRadioGroup` | `DesktopRadioGroup` | `WebRadioGroup` | Comparable |
+| `FxDateTimePicker` | `DesktopDateTimePicker` | `WebDatePicker` | Comparable |
+| `FxSlider` | `DesktopSlider` | `WebSlider` | Comparable |
 | `FxGroupBox` | `DesktopGroupBox` | custom group container | Near |
 | `FxFlexLayout` | `DesktopFlexLayoutManager` | `WebFlexLayoutManager` | Custom bridge |
 | `FxGridLayout` | layout/generation contract | layout/generation contract | Custom bridge |
@@ -23,19 +30,26 @@ is semantic and generation-oriented, not a native-control equivalence.
 - `FxFlexLayoutManager` and `FxGridLayoutManager` are non-visual adapters that
   export layout specs for templates and generators.
 
-## Milestone 2 Planned Mappings
+## Milestone 2 Delivered Mappings
+
+Phase 2.1 delivered the first set of core form controls in `v0.2.1`.
 
 | FxDesktop | Xojo Desktop | Notes |
 |---|---|---|
 | `FxLabel` | `DesktopLabel` | Plain label, alignment, wrapping, disabled appearance. |
-| `FxStyledLabel` | styled label pattern | Rich text spans for labels/help text. |
 | `FxPopupMenu` | `DesktopPopupMenu` | Fixed-choice menu; not editable. |
 | `FxComboBox` | `DesktopComboBox` | Editable text plus list selection and autocomplete. |
 | `FxRadioButton` | `DesktopRadioButton` | Single radio option. |
 | `FxRadioGroup` | `DesktopRadioGroup` | Managed exclusive option group. |
 | `FxDateTimePicker` | `DesktopDateTimePicker` | Date, time, and date-time modes. |
-| `FxColorPicker` | `DesktopColorPicker` | Color value selector with preview. |
 | `FxSlider` | `DesktopSlider` | Numeric range input. |
+
+## Milestone 2 Planned Mappings
+
+| FxDesktop | Xojo Desktop | Notes |
+|---|---|---|
+| `FxStyledLabel` | styled label pattern | Rich text spans for labels/help text. |
+| `FxColorPicker` | `DesktopColorPicker` | Color value selector with preview. |
 | `FxSegmentedButton` | `DesktopSegmentedButton` | Mode selector, often used to switch pages/cards. |
 | `FxTabPanel` | `DesktopTabPanel` | Visible tab container. |
 | `FxPagePanel` | `DesktopPagePanel` | Indexed page container without visible tabs. |

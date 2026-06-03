@@ -66,7 +66,7 @@ GitHub Release before the next phase starts.
 
 | Phase | Release tag | Release focus |
 |---|---|---|
-| 2.1 | `v0.2.1` | Core form inputs |
+| 2.1 | `v0.2.1` | Core form inputs, delivered |
 | 2.2 | `v0.2.2` | Navigation and indexed containers |
 | 2.3 | `v0.2.3` | Desktop utility controls |
 | 2.4 | `v0.2.4` | Existing control depth |
@@ -143,6 +143,8 @@ Do not run release tasks from sub-agent branches. Release tasks happen only from
 the phase integration branch after all component work is merged and validated.
 
 ### Phase 2.1: Core Form Inputs
+
+Status: delivered in `v0.2.1`.
 
 Build the controls required for ordinary data-entry forms:
 

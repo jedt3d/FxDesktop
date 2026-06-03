@@ -2,45 +2,56 @@
 
 ## Unreleased
 
-This update turns Milestone 2 from a broad idea into an executable development
-plan for Xojo Desktop control parity. It captures the practical differences
-that matter when generating or previewing Xojo-style desktop UI in Flutter:
-editable ComboBox behavior, fixed-choice PopupMenu behavior, visible tabs,
-headless page/card containers, and the smaller desktop controls that make real
-forms feel complete.
+No unreleased changes.
+
+## 0.2.1
+
+Phase 2.1 makes FxDesktop more useful for real Xojo-style data-entry screens.
+The package now has the first set of core form controls that were missing after
+Milestone 1: labels, fixed-choice menus, editable combo boxes, radio choices,
+date/time picking, and sliders.
+
+This release also proves the parallel sub-agent workflow. Three focused
+component streams implemented independent control families, then the coordinator
+integrated the public exports, registry metadata, vertical demo harness, docs,
+tests, screenshots, version bump, tag, and GitHub Release from one phase branch.
 
 ### Added
 
-- Added `doc/milestone-2-control-parity.md`, a phased roadmap for the next set
-  of FxDesktop controls. The plan prioritizes core form inputs first, then
-  navigation containers, desktop utility controls, and deeper ListBox/Grid
-  behavior.
-- Added planned mappings for Xojo Desktop controls that FxDesktop does not yet
-  cover, including labels, styled labels, popup menus, combo boxes, radio
-  groups, date/time pickers, color pickers, sliders, segmented buttons, tab
-  panels, page panels, disclosure controls, scrollbars, progress controls, and
-  separators.
-- Added `doc/release-versioning.md`, a release checklist for version bumps,
-  tags, optional GitHub Releases, and pub.dev readiness.
+- Added `FxLabel` for plain desktop labels with wrapping, alignment, and
+  disabled appearance.
+- Added `FxPopupMenu` for fixed-choice selection. It intentionally does not
+  allow free text entry, matching the Xojo `DesktopPopupMenu` intent.
+- Added `FxComboBox` for editable text plus autocomplete suggestions, matching
+  the Xojo `DesktopComboBox` use case more closely than a normal dropdown.
+- Added `FxRadioButton` and `FxRadioGroup` for single radio options and managed
+  exclusive option groups.
+- Added `FxDateTimePicker` with date, time, and date-time modes. This keeps date
+  entry as a picker control instead of treating it as a plain text field.
+- Added `FxSlider` for numeric range input with min, max, divisions, enabled
+  state, and visible value label support.
+- Added Phase 2.1 component rows to the example harness. The harness continues
+  to use one component family per vertical row and shows useful enabled,
+  disabled, selected, empty, nullable, and range states.
+- Added component registry metadata and Xojo mapping documentation for every
+  Phase 2.1 control.
 
 ### Clarified
 
-- Clarified that `FxComboBox` and `FxPopupMenu` are not interchangeable:
-  ComboBox is editable and should support autocomplete, while PopupMenu is a
-  fixed-choice selector.
-- Clarified the container model for `FxTabPanel`, `FxPagePanel`, and
-  `FxCardContainer`: visible tabs, headless indexed pages, and generator-friendly
-  card stacks are different UI intents.
-- Clarified that planning-only changes should not create version tags. Tags and
-  optional GitHub Releases belong to accepted implementation milestones after
-  the harness passes and all versioned docs are synchronized.
-- Clarified that Milestone 2 implementation will ship as phase releases:
-  `v0.2.1` through `v0.2.4`. Each phase must update the demo harness, capture
-  screenshots, pass quality checks, tag the version, and create a GitHub
-  Release.
-- Added a parallel sub-agent workflow for Milestone 2 so multiple component
-  groups can be implemented at the same time without letting release, registry,
-  demo, and versioning work fragment across branches.
+- Clarified the delivered vs planned Milestone 2 mappings in
+  `doc/xojo-component-map.md`.
+- Clarified that Phase 2.1 is delivered in `v0.2.1`, while `v0.2.2` through
+  `v0.2.4` remain planned for navigation containers, utility controls, and
+  deeper ListBox/Grid behavior.
+
+### Validated
+
+- Added focused widget tests for the new form, choice, range, and date/time
+  controls.
+- Expanded registry tests so the Phase 2.1 controls remain mapped to the
+  intended Xojo Desktop classes.
+- Verified the release with the local Flutter quality path and macOS demo
+  harness before tagging.
 
 ## 0.1.0
 

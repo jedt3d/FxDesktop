@@ -56,8 +56,15 @@ class FxComponentDescriptor {
   }
 }
 
-/// Built-in component registry for FxDesktop milestone 1.
+/// Built-in component registry for FxDesktop.
 const fxComponentRegistry = <FxComponentDescriptor>[
+  FxComponentDescriptor(
+    id: 'fx.label',
+    name: 'FxLabel',
+    xojoDesktopClass: 'DesktopLabel',
+    xojoWebClass: 'WebLabel',
+    supportLevel: FxComponentSupportLevel.comparable,
+  ),
   FxComponentDescriptor(
     id: 'fx.button',
     name: 'FxButton',
@@ -91,6 +98,44 @@ const fxComponentRegistry = <FxComponentDescriptor>[
     name: 'FxComboBox',
     xojoDesktopClass: 'DesktopComboBox',
     xojoWebClass: 'WebComboBox',
+    supportLevel: FxComponentSupportLevel.comparable,
+    notes: 'Editable text input with autocomplete suggestions.',
+  ),
+  FxComponentDescriptor(
+    id: 'fx.popup_menu',
+    name: 'FxPopupMenu',
+    xojoDesktopClass: 'DesktopPopupMenu',
+    xojoWebClass: 'WebPopupMenu',
+    supportLevel: FxComponentSupportLevel.comparable,
+    notes: 'Fixed-choice selector without free text entry.',
+  ),
+  FxComponentDescriptor(
+    id: 'fx.radio_button',
+    name: 'FxRadioButton',
+    xojoDesktopClass: 'DesktopRadioButton',
+    xojoWebClass: 'WebRadioButton',
+    supportLevel: FxComponentSupportLevel.comparable,
+  ),
+  FxComponentDescriptor(
+    id: 'fx.radio_group',
+    name: 'FxRadioGroup',
+    xojoDesktopClass: 'DesktopRadioGroup',
+    xojoWebClass: 'WebRadioGroup',
+    supportLevel: FxComponentSupportLevel.comparable,
+  ),
+  FxComponentDescriptor(
+    id: 'fx.date_time_picker',
+    name: 'FxDateTimePicker',
+    xojoDesktopClass: 'DesktopDateTimePicker',
+    xojoWebClass: 'WebDatePicker',
+    supportLevel: FxComponentSupportLevel.comparable,
+    notes: 'Date, time, and date-time picker; not a plain text field.',
+  ),
+  FxComponentDescriptor(
+    id: 'fx.slider',
+    name: 'FxSlider',
+    xojoDesktopClass: 'DesktopSlider',
+    xojoWebClass: 'WebSlider',
     supportLevel: FxComponentSupportLevel.comparable,
   ),
   FxComponentDescriptor(
