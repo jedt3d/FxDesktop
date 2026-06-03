@@ -184,6 +184,8 @@ class FxSlider extends StatelessWidget {
     this.max = 100,
     this.divisions,
     this.onChanged,
+    this.onChangeStart,
+    this.onChangeEnd,
     this.enabled = true,
     this.valueLabel,
   }) : assert(min <= max, 'min must be less than or equal to max'),
@@ -208,6 +210,12 @@ class FxSlider extends StatelessWidget {
   /// Called when the slider value changes.
   final ValueChanged<double>? onChanged;
 
+  /// Called when a slider drag begins.
+  final ValueChanged<double>? onChangeStart;
+
+  /// Called when a slider drag is committed.
+  final ValueChanged<double>? onChangeEnd;
+
   /// Whether the slider is enabled.
   final bool enabled;
 
@@ -230,6 +238,8 @@ class FxSlider extends StatelessWidget {
             divisions: divisions,
             label: label,
             onChanged: isEnabled ? onChanged : null,
+            onChangeStart: isEnabled ? onChangeStart : null,
+            onChangeEnd: isEnabled ? onChangeEnd : null,
           ),
         ),
         if (label != null) ...[

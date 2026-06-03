@@ -14,4 +14,5 @@ export 'src/fx_navigation_controls.dart';
 export 'src/fx_styled_text.dart';
 export 'src/fx_tables.dart';
 export 'src/fx_theme.dart';
+export 'src/fx_undo.dart';
 export 'src/fx_utility_controls.dart';

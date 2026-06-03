@@ -69,7 +69,7 @@ GitHub Release before the next phase starts.
 | 2.1 | `v0.2.1` | Core form inputs, delivered |
 | 2.2 | `v0.2.2` | Navigation and indexed containers, delivered |
 | 2.3 | `v0.2.3` | Desktop utility controls, delivered |
-| 2.4 | `v0.2.4` | Text input depth |
+| 2.4 | `v0.2.4` | Text input depth, delivered |
 
 Because FxDesktop is still pre-1.0, the `0.2.x` release line represents
 Milestone 2, and the patch number maps to each phase.
@@ -277,10 +277,17 @@ Validation:
 
 ### Phase 2.4: Text Input Depth
 
+Status: delivered in `v0.2.4`.
+
 Improve existing text-entry controls only:
 
 - `FxTextField`: validation state, prefix/suffix icons, password mode.
 - `FxTextArea`: validation state and predictable scroll behavior.
+- `FxColorPicker`: optional no-color action, HSV slider fallback, and RGB
+  `#RRGGBB` entry as a Phase 2.3 polish folded into `v0.2.4`.
+- `FxUndoController`: app-level semantic undo/redo for committed desktop
+  workflow changes, including commit callbacks on text, combo, slider, and
+  color controls.
 
 Demo presentation:
 
@@ -293,11 +300,19 @@ Demo presentation:
 - Save screenshots under `doc/screenshots/v0.2.4/` and attach them to the
   GitHub Release.
 
+Phase 2.4 screenshot targets:
+
+- `fxdesktop-phase-2-4-text-field-depth.png`
+- `fxdesktop-phase-2-4-text-area-depth.png`
+
 Validation:
 
 - Interaction tests for validation, text entry, disabled/read-only behavior,
   password visibility, helper text, prefix/suffix icons, and multiline scrolling
   where practical.
+- Undo tests for committed value changes, redo invalidation, batches, scoped
+  controller lookup, and controls that commit on blur, submit, picker confirm,
+  or drag end.
 - `dart run tool/agent_harness.dart` must pass.
 - The macOS example app must build and open successfully when UI changes are
   included.

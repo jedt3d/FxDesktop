@@ -114,6 +114,7 @@ class FxComboBox extends StatefulWidget {
     this.value,
     this.controller,
     this.onChanged,
+    this.onCommit,
     this.onOptionSelected,
     this.enabled = true,
     this.label,
@@ -132,6 +133,9 @@ class FxComboBox extends StatefulWidget {
 
   /// Editable text change callback.
   final ValueChanged<String>? onChanged;
+
+  /// Called when editable text is committed by blur, submit, or option pick.
+  final ValueChanged<String>? onCommit;
 
   /// Callback fired when an autocomplete option is selected.
   final ValueChanged<String>? onOptionSelected;
@@ -155,6 +159,7 @@ class FxComboBox extends StatefulWidget {
 class _FxComboBoxState extends State<FxComboBox> {
   late final TextEditingController _ownedController;
   late final FocusNode _focusNode;
+  late String _lastCommittedText;
 
   TextEditingController get _controller =>
       widget.controller ?? _ownedController;
@@ -164,6 +169,8 @@ class _FxComboBoxState extends State<FxComboBox> {
     super.initState();
     _ownedController = TextEditingController(text: widget.value ?? '');
     _focusNode = FocusNode();
+    _lastCommittedText = _controller.text;
+    _focusNode.addListener(_handleFocusChanged);
   }
 
   @override
@@ -173,14 +180,31 @@ class _FxComboBoxState extends State<FxComboBox> {
         widget.value != oldWidget.value &&
         widget.value != _ownedController.text) {
       _ownedController.text = widget.value ?? '';
+      _lastCommittedText = _ownedController.text;
     }
   }
 
   @override
   void dispose() {
+    _focusNode.removeListener(_handleFocusChanged);
     _focusNode.dispose();
     _ownedController.dispose();
     super.dispose();
+  }
+
+  void _handleFocusChanged() {
+    if (!_focusNode.hasFocus) {
+      _commitIfChanged();
+    }
+  }
+
+  void _commitIfChanged() {
+    final currentText = _controller.text;
+    if (currentText == _lastCommittedText) {
+      return;
+    }
+    _lastCommittedText = currentText;
+    widget.onCommit?.call(currentText);
   }
 
   @override
@@ -205,6 +229,10 @@ class _FxComboBoxState extends State<FxComboBox> {
       onSelected: (option) {
         widget.onOptionSelected?.call(option);
         widget.onChanged?.call(option);
+        if (option != _lastCommittedText) {
+          _lastCommittedText = option;
+          widget.onCommit?.call(option);
+        }
       },
       fieldViewBuilder:
           (context, textEditingController, focusNode, onFieldSubmitted) {
@@ -213,6 +241,10 @@ class _FxComboBoxState extends State<FxComboBox> {
               enabled: widget.enabled,
               focusNode: focusNode,
               onChanged: widget.onChanged,
+              onSubmitted: (_) {
+                onFieldSubmitted();
+                _commitIfChanged();
+              },
               decoration: InputDecoration(
                 border: const OutlineInputBorder(),
                 hintText: widget.hintText,

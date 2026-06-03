@@ -44,7 +44,8 @@ is semantic and generation-oriented, not a native-control equivalence.
 
 Phase 2.1 delivered the first set of core form controls in `v0.2.1`. Phase 2.2
 delivered navigation and indexed container controls in `v0.2.2`. Phase 2.3
-delivered compact utility and display controls in `v0.2.3`.
+delivered compact utility and display controls in `v0.2.3`. Phase 2.4 deepened
+text inputs and polished nullable color selection in `v0.2.4`.
 
 | FxDesktop | Xojo Desktop | Notes |
 |---|---|---|
@@ -60,7 +61,7 @@ delivered compact utility and display controls in `v0.2.3`.
 | `FxPagePanel` | `DesktopPagePanel` | Headless indexed page container without visible tab headers. |
 | `FxCardContainer` | PagePanel/container-stack pattern | Generator-friendly card stack controlled by another widget. |
 | `FxDisclosureTriangle` | `DesktopDisclosureTriangle` | Collapsible section control with expanded, collapsed, and disabled states. |
-| `FxColorPicker` | `DesktopColorPicker` | Color value preview and picker trigger. |
+| `FxColorPicker` | `DesktopColorPicker` | Nullable color picker with explicit no-color action, HSV sliders, and RGB hex entry. |
 | `FxProgressBar` | `DesktopProgressBar` | Determinate progress indicator. |
 | `FxProgressWheel` | `DesktopProgressWheel` | Indeterminate loading indicator. |
 | `FxSeparator` | `DesktopSeparator` | Horizontal or vertical visual separator. |

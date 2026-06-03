@@ -1,6 +1,6 @@
 name: fx_desktop
 description: Desktop-first Flutter components and CSS-like layout contracts for Xojo-style UI design.
-version: 0.2.3
+version: 0.2.4
 homepage: https://github.com/jedt3d/FxDesktop
 repository: https://github.com/jedt3d/FxDesktop
 issue_tracker: https://github.com/jedt3d/FxDesktop/issues

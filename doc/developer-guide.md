@@ -11,6 +11,21 @@ FxDesktop keeps three layers separate:
 This separation keeps UI rendering testable while allowing future Xojo export
 adapters to evolve without breaking widgets.
 
+## Undo Architecture
+
+FxDesktop undo is semantic app history. Use `FxUndoController` to record
+committed changes to app state, component models, layout specs, tables, or
+forms. Do not place independent undo stacks inside leaf controls.
+
+Text input is the main exception: Flutter's focused text editing already
+provides native undo behavior for keystrokes. FxDesktop records only committed
+text values through callbacks such as `FxTextField.onCommit` and
+`FxTextArea.onCommit`.
+
+For complex components, group related changes as one action. Grid row edits,
+layout property changes, or multi-field form updates should be committed as
+one user-visible operation with a clear label.
+
 ## Adding A Component
 
 When adding a public component:

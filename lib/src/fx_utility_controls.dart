@@ -26,6 +26,7 @@ class FxColorPicker extends StatelessWidget {
     required this.label,
     this.value,
     this.onChanged,
+    this.onCommit,
     this.enabled = true,
     this.picker,
   });
@@ -36,8 +37,11 @@ class FxColorPicker extends StatelessWidget {
   /// Current selected color.
   final Color? value;
 
-  /// Called when a new color is selected.
-  final ValueChanged<Color>? onChanged;
+  /// Called when a new color is selected. `null` means no color.
+  final ValueChanged<Color?>? onChanged;
+
+  /// Called when the selected color is committed by the picker.
+  final ValueChanged<Color?>? onCommit;
 
   /// Whether the picker can be opened.
   final bool enabled;
@@ -109,38 +113,242 @@ class FxColorPicker extends StatelessWidget {
   }
 
   Future<void> _selectColor(BuildContext context) async {
-    final selectedColor = await (picker ?? _showDefaultColorPicker)(
-      context,
-      value,
-    );
-    if (selectedColor != null) {
-      onChanged?.call(selectedColor);
+    if (picker != null) {
+      _commitSelectedColor(await picker!(context, value));
+      return;
+    }
+
+    final result = await _showDefaultColorPicker(context, value);
+    if (result != null) {
+      _commitSelectedColor(result.color);
     }
   }
 
-  Future<Color?> _showDefaultColorPicker(
+  void _commitSelectedColor(Color? selectedColor) {
+    onChanged?.call(selectedColor);
+    if (selectedColor != value) {
+      onCommit?.call(selectedColor);
+    }
+  }
+
+  Future<_FxColorPickerResult?> _showDefaultColorPicker(
     BuildContext context,
     Color? selectedColor,
   ) {
-    return showDialog<Color>(
+    return showDialog<_FxColorPickerResult>(
       context: context,
       builder: (dialogContext) {
-        return AlertDialog(
-          title: Text(label),
-          content: Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (final color in _defaultPalette)
-                _FxPaletteButton(
-                  color: color,
-                  selected: color == selectedColor,
-                  onTap: () => Navigator.of(dialogContext).pop(color),
-                ),
-            ],
-          ),
-        );
+        return _FxColorPickerDialog(label: label, selectedColor: selectedColor);
       },
+    );
+  }
+}
+
+class _FxColorPickerResult {
+  const _FxColorPickerResult(this.color);
+
+  final Color? color;
+}
+
+class _FxColorPickerDialog extends StatefulWidget {
+  const _FxColorPickerDialog({
+    required this.label,
+    required this.selectedColor,
+  });
+
+  final String label;
+  final Color? selectedColor;
+
+  @override
+  State<_FxColorPickerDialog> createState() => _FxColorPickerDialogState();
+}
+
+class _FxColorPickerDialogState extends State<_FxColorPickerDialog> {
+  late Color _selectedColor;
+  late HSVColor _hsvColor;
+  late final TextEditingController _hexController;
+  String? _hexErrorText;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedColor = widget.selectedColor ?? const Color(0xff3b82f6);
+    _hsvColor = HSVColor.fromColor(_selectedColor);
+    _hexController = TextEditingController(
+      text: _formatRgbColor(_selectedColor),
+    );
+  }
+
+  @override
+  void dispose() {
+    _hexController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return AlertDialog(
+      title: Text(widget.label),
+      content: SizedBox(
+        width: 420,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final color in _defaultPalette)
+                  _FxPaletteButton(
+                    color: color,
+                    selected: color == _selectedColor,
+                    onTap: () => _setSelectedColor(color),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                _FxColorSwatch(color: _selectedColor, enabled: true),
+                const SizedBox(width: 8),
+                Text(
+                  'Preview: ${_formatColor(_selectedColor)}',
+                  style: theme.textTheme.bodySmall,
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _FxColorSlider(
+              label: 'Hue',
+              value: _hsvColor.hue,
+              min: 0,
+              max: 360,
+              onChanged: (value) {
+                _setHsvColor(_hsvColor.withHue(value == 360 ? 0 : value));
+              },
+            ),
+            _FxColorSlider(
+              label: 'Saturation',
+              value: _hsvColor.saturation,
+              min: 0,
+              max: 1,
+              onChanged: (value) {
+                _setHsvColor(_hsvColor.withSaturation(value));
+              },
+            ),
+            _FxColorSlider(
+              label: 'Value',
+              value: _hsvColor.value,
+              min: 0,
+              max: 1,
+              onChanged: (value) {
+                _setHsvColor(_hsvColor.withValue(value));
+              },
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _hexController,
+              decoration: InputDecoration(
+                labelText: 'RGB #RRGGBB',
+                errorText: _hexErrorText,
+                isDense: true,
+              ),
+              textCapitalization: TextCapitalization.characters,
+              onChanged: _setColorFromHex,
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop(const _FxColorPickerResult(null));
+          },
+          child: const Text('No Color'),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: _hexErrorText == null
+              ? () {
+                  Navigator.of(
+                    context,
+                  ).pop(_FxColorPickerResult(_selectedColor));
+                }
+              : null,
+          child: const Text('Apply'),
+        ),
+      ],
+    );
+  }
+
+  void _setSelectedColor(Color color) {
+    setState(() {
+      _selectedColor = color;
+      _hsvColor = HSVColor.fromColor(color);
+      _hexErrorText = null;
+      _hexController.text = _formatRgbColor(color);
+    });
+  }
+
+  void _setHsvColor(HSVColor hsvColor) {
+    _setSelectedColor(hsvColor.toColor());
+  }
+
+  void _setColorFromHex(String value) {
+    final color = _parseRgbHexColor(value);
+    setState(() {
+      if (color == null) {
+        _hexErrorText = 'Enter a color as #RRGGBB.';
+        return;
+      }
+
+      _selectedColor = color;
+      _hsvColor = HSVColor.fromColor(color);
+      _hexErrorText = null;
+    });
+  }
+}
+
+class _FxColorSlider extends StatelessWidget {
+  const _FxColorSlider({
+    required this.label,
+    required this.value,
+    required this.min,
+    required this.max,
+    required this.onChanged,
+  });
+
+  final String label;
+  final double value;
+  final double min;
+  final double max;
+  final ValueChanged<double> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final displayValue = max == 1 ? (value * 100).round() : value.round();
+
+    return Row(
+      children: [
+        SizedBox(width: 80, child: Text(label)),
+        Expanded(
+          child: Slider(
+            value: value.clamp(min, max),
+            min: min,
+            max: max,
+            onChanged: onChanged,
+          ),
+        ),
+        SizedBox(width: 44, child: Text('$displayValue')),
+      ],
     );
   }
 }
@@ -437,6 +645,25 @@ String _formatColor(Color? color) {
   }
 
   return '#${argb.toRadixString(16).padLeft(8, '0').toUpperCase()}';
+}
+
+String _formatRgbColor(Color color) {
+  final argb = color.toARGB32();
+  final red = (argb >> 16) & 0xff;
+  final green = (argb >> 8) & 0xff;
+  final blue = argb & 0xff;
+
+  return '#${[red, green, blue].map((channel) => channel.toRadixString(16).padLeft(2, '0')).join().toUpperCase()}';
+}
+
+Color? _parseRgbHexColor(String value) {
+  final normalized = value.trim();
+  final match = RegExp(r'^#([0-9a-fA-F]{6})$').firstMatch(normalized);
+  if (match == null) {
+    return null;
+  }
+
+  return Color(0xff000000 | int.parse(match.group(1)!, radix: 16));
 }
 
 String? _colorToTemplateValue(Color? color) {

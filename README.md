@@ -10,6 +10,7 @@ It provides:
   `FxGroupBox`
 - Xojo-first custom controls such as `FxListBox` and `FxGrid`
 - Serializable layout contracts for AI agents, JinjaX, and Xojo generation
+- App-level semantic undo primitives for desktop workflows
 
 FxDesktop is not a mobile design-system wrapper. Flutter already has strong
 mobile and tablet layout primitives. Responsive features are added here only
@@ -20,7 +21,7 @@ multi-size desktop workflows.
 
 ```yaml
 dependencies:
-  fx_desktop: ^0.2.3
+  fx_desktop: ^0.2.4
 ```
 
 ## Quick Start
@@ -97,9 +98,11 @@ class OrderPanel extends StatelessWidget {
 `FxGridLayout` is a CSS Grid-like layout manager. `FxGrid` is a data/cell grid
 control comparable to Xojo `DesktopGrid`.
 
-Milestone 2 extends Xojo Desktop control parity in phase releases. `v0.2.3`
-adds compact utility and display controls after the form and navigation phases:
-color pickers, progress indicators, separators, and styled labels.
+Milestone 2 extends Xojo Desktop control parity in phase releases. `v0.2.4`
+completes the Milestone 2 form-control surface with deeper text input behavior:
+validation state, helper text, read-only state, password fields, icons, and
+predictable multiline text areas. `FxColorPicker` also supports optional
+no-color values, HSV slider selection, and RGB `#RRGGBB` entry.
 See [Milestone 2: Xojo Desktop Control Parity](https://github.com/jedt3d/FxDesktop/blob/main/doc/milestone-2-control-parity.md).
 
 ## Agent And Generator Use
@@ -122,6 +125,34 @@ final context = FxFlexLayoutManager(spec: spec).toTemplateMap();
 
 The resulting map is intended for AI agents, JinjaX templates, and Xojo export
 adapters.
+
+## Undo And Redo
+
+FxDesktop provides `FxUndoController`, `FxUndoAction`, and `FxUndoScope` for
+desktop-style semantic undo. The undo layer records committed app-state changes,
+not every keystroke or transient widget frame.
+
+```dart
+final undo = FxUndoController();
+var status = 'Draft';
+
+undo.commitValue<String>(
+  'Change status',
+  oldValue: status,
+  newValue: 'Approved',
+  apply: (value) => status = value,
+);
+
+undo.undo();
+undo.redo();
+```
+
+Text controls can still use Flutter's native focused text-editing undo for
+typing. FxDesktop commit callbacks such as `FxTextField.onCommit` and
+`FxSlider.onChangeEnd` are for app-visible history entries like `Change
+customer` or `Change priority`.
+
+See [Undo Guide](https://github.com/jedt3d/FxDesktop/blob/main/doc/undo.md).
 
 ## Development
 

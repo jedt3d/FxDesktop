@@ -20,6 +20,10 @@ tablet layouts should normally use standard Flutter and adaptive patterns.
 - Do not leak third-party dependency types from public FxDesktop APIs.
 - Prefer immutable value objects and `const` constructors.
 - Keep component models separate from rendering widgets.
+- Keep undo history at the app/model layer. Leaf components may expose commit
+  callbacks, but they must not own independent undo stacks.
+- For nullable controls, provide an explicit UI action for the null state. Do
+  not rely on display text alone to represent values such as no color.
 - Use relative paths in source, docs, scripts, and CI.
 - Do not commit generated build outputs, platform caches, or machine-local paths.
 
@@ -57,6 +61,12 @@ Every new public component needs:
 - an entry in the component mapping docs
 - a test or example demonstrating intended use
 - a short note when it maps to a Xojo component
+
+When a component changes user-editable state, decide whether the existing
+`onChanged` callback is already a committed action or whether the component
+needs an explicit commit callback. Text input, sliders, color pickers, grids,
+and future layout editors should avoid recording every transient frame in
+`FxUndoController`.
 
 For Milestone 2 component work, follow
 `doc/milestone-2-control-parity.md`. Preserve important Xojo semantics:

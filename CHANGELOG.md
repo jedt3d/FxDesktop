@@ -4,6 +4,83 @@
 
 No unreleased changes.
 
+## 0.2.4
+
+Phase 2.4 completes the Milestone 2 form-control surface by deepening the
+existing text-entry controls instead of adding new component families. The
+release makes text input previews closer to real desktop forms by showing
+validation, helper text, read-only state, password entry, field icons, and
+predictable multiline text behavior.
+
+This phase keeps `FxTextField` and `FxTextArea` as the canonical text input
+components for Xojo-style form generation. The richer behavior belongs on those
+existing controls, not in separate replacement widgets.
+
+It also polishes `FxColorPicker` after Phase 2.3 by making optional colors
+usable from the control itself. A no-color state is now a real selectable value,
+and the default picker includes HSV sliders plus RGB hex entry for desktop
+environments without a native color wheel integration.
+
+This release also adds FxDesktop's semantic undo foundation. `FxUndoController`
+records committed app-state changes, while native Flutter text editing remains
+responsible for keystroke-level undo inside focused text fields.
+
+### Added
+
+- Added validation/error presentation to `FxTextField` and `FxTextArea`.
+- Added helper/help text support to both text-entry controls so AI-generated
+  forms can preserve text hints, balloon-help style notes, and validation
+  guidance.
+- Added read-only support for text fields and text areas.
+- Added password/obscured-entry support to `FxTextField`.
+- Added prefix and suffix icon support to `FxTextField`.
+- Added deterministic multiline text-area behavior for preview and testing.
+- Added an explicit `No Color` action to `FxColorPicker`.
+- Added a default HSV slider and `#RRGGBB` hex-entry picker to
+  `FxColorPicker`.
+- Added semantic undo/redo primitives for FxDesktop apps: `FxUndoAction`,
+  `FxUndoController`, and `FxUndoScope`.
+- Added value, batch, undo, redo, clear, label, and history-depth support to the
+  undo controller so apps can expose desktop-style Undo and Redo commands.
+- Added commit callbacks for controls where live editing should be separated
+  from committed app history: `FxTextField.onCommit`, `FxTextArea.onCommit`,
+  `FxComboBox.onCommit`, `FxSlider.onChangeStart`, `FxSlider.onChangeEnd`, and
+  `FxColorPicker.onCommit`.
+- Added an Undo/Redo section to the example harness showing committed checkbox,
+  popup, text field, slider, and tab changes.
+- Added Phase 2.4 demo rows that keep `FxTextField` and `FxTextArea` separate
+  while showing normal, disabled, read-only, validation, password, icon, and
+  multiline states.
+
+### Clarified
+
+- Clarified that Phase 2.4 is a depth release for existing text-entry controls,
+  not a new component-family release.
+- Clarified that nullable controls need an explicit UI action for clearing the
+  value, not just display text that says the value is missing.
+- Clarified that FxDesktop undo is app-level semantic undo, while Flutter's
+  native text editing undo remains responsible for keystroke-level editing
+  inside focused text fields.
+- Clarified that passive controls such as labels, progress indicators,
+  separators, group boxes, and theme extensions should not own undo history.
+- Clarified the delivered vs planned Milestone 2 mapping so Phase 3 can move on
+  to table and grid depth.
+
+### Validated
+
+- Added focused widget tests for text entry, validation, disabled/read-only
+  behavior, password obscuring, prefix/suffix icons, helper text, multiline
+  behavior, and template metadata.
+- Added focused widget tests for nullable color selection, HSV slider changes,
+  RGB hex entry, invalid hex handling, disabled behavior, and injected picker
+  behavior.
+- Added unit coverage for undo commit, undo, redo, redo invalidation,
+  unchanged-value suppression, batch actions, and scoped controller access.
+- Added widget coverage for checkbox, popup menu, radio group, text commit,
+  slider drag-end commit, tab/page/card index changes, and color picker commit.
+- Verified the release with the local Flutter quality path and macOS demo
+  harness before tagging.
+
 ## 0.2.3
 
 Phase 2.3 fills in the compact utility controls that usually sit around forms,
