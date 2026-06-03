@@ -80,6 +80,10 @@ class OrderPanel extends StatelessWidget {
 `FxGridLayout` is a CSS Grid-like layout manager. `FxGrid` is a data/cell grid
 control comparable to Xojo `DesktopGrid`.
 
+Milestone 2 will extend Xojo Desktop control parity with form inputs,
+selection controls, indexed containers, and small desktop utility controls.
+See [Milestone 2: Xojo Desktop Control Parity](https://github.com/jedt3d/FxDesktop/blob/main/doc/milestone-2-control-parity.md).
+
 ## Agent And Generator Use
 
 FxDesktop specs can be serialized and passed into Xojo-side generators:
@@ -111,3 +115,7 @@ dart run tool/agent_harness.dart
 
 The harness runs formatting checks, static analysis, tests, Dartdoc, pub.dev
 dry-run checks, and public API policy checks.
+
+Version tags and optional GitHub Releases are created only after a milestone is
+implemented, documented, validated, and accepted. See
+[Release Versioning](https://github.com/jedt3d/FxDesktop/blob/main/doc/release-versioning.md).
