@@ -106,6 +106,18 @@ checks:
   must show the new components themselves, not only older controls that happen
   to appear near the top of the harness.
 
+Every implementation phase must also update the working process surfaces before
+release:
+
+- Review and improve the active Flutter desktop skill used for the work. At a
+  minimum, carry forward any lesson learned about building, validating,
+  signing, screenshotting, or releasing Flutter macOS desktop software.
+- Keep `AGENT.md`, `CHANGELOG.md`, and `README.md` up to date with the phase.
+  If a file does not need content changes, say why in the PR description.
+- Manage the phase through Git: dedicated branch, review/merge path, version tag,
+  and GitHub Release. Do not treat a completed implementation phase as done
+  until the branch, tag, and release have been handled.
+
 ## Example Harness Rules
 
 - Keep the visual test app as a vertical component harness.
