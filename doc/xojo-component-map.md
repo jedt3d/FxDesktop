@@ -16,6 +16,11 @@ is semantic and generation-oriented, not a native-control equivalence.
 | `FxRadioGroup` | `DesktopRadioGroup` | `WebRadioGroup` | Comparable |
 | `FxDateTimePicker` | `DesktopDateTimePicker` | `WebDatePicker` | Comparable |
 | `FxSlider` | `DesktopSlider` | `WebSlider` | Comparable |
+| `FxSegmentedButton` | `DesktopSegmentedButton` | generation/custom | Comparable |
+| `FxTabPanel` | `DesktopTabPanel` | generation/custom | Comparable |
+| `FxPagePanel` | `DesktopPagePanel` | generation/custom | Comparable |
+| `FxCardContainer` | PagePanel/container-stack pattern | generation/custom | Custom |
+| `FxDisclosureTriangle` | `DesktopDisclosureTriangle` | generation/custom | Comparable |
 | `FxGroupBox` | `DesktopGroupBox` | custom group container | Near |
 | `FxFlexLayout` | `DesktopFlexLayoutManager` | `WebFlexLayoutManager` | Custom bridge |
 | `FxGridLayout` | layout/generation contract | layout/generation contract | Custom bridge |
@@ -32,7 +37,8 @@ is semantic and generation-oriented, not a native-control equivalence.
 
 ## Milestone 2 Delivered Mappings
 
-Phase 2.1 delivered the first set of core form controls in `v0.2.1`.
+Phase 2.1 delivered the first set of core form controls in `v0.2.1`. Phase 2.2
+delivered navigation and indexed container controls in `v0.2.2`.
 
 | FxDesktop | Xojo Desktop | Notes |
 |---|---|---|
@@ -43,6 +49,11 @@ Phase 2.1 delivered the first set of core form controls in `v0.2.1`.
 | `FxRadioGroup` | `DesktopRadioGroup` | Managed exclusive option group. |
 | `FxDateTimePicker` | `DesktopDateTimePicker` | Date, time, and date-time modes. |
 | `FxSlider` | `DesktopSlider` | Numeric range input. |
+| `FxSegmentedButton` | `DesktopSegmentedButton` | Single-selection mode selector, often used to switch pages or cards. |
+| `FxTabPanel` | `DesktopTabPanel` | Visible tab headers choose indexed content pages. |
+| `FxPagePanel` | `DesktopPagePanel` | Headless indexed page container without visible tab headers. |
+| `FxCardContainer` | PagePanel/container-stack pattern | Generator-friendly card stack controlled by another widget. |
+| `FxDisclosureTriangle` | `DesktopDisclosureTriangle` | Collapsible section control with expanded, collapsed, and disabled states. |
 
 ## Milestone 2 Planned Mappings
 
@@ -50,11 +61,6 @@ Phase 2.1 delivered the first set of core form controls in `v0.2.1`.
 |---|---|---|
 | `FxStyledLabel` | styled label pattern | Rich text spans for labels/help text. |
 | `FxColorPicker` | `DesktopColorPicker` | Color value selector with preview. |
-| `FxSegmentedButton` | `DesktopSegmentedButton` | Mode selector, often used to switch pages/cards. |
-| `FxTabPanel` | `DesktopTabPanel` | Visible tab container. |
-| `FxPagePanel` | `DesktopPagePanel` | Indexed page container without visible tabs. |
-| `FxCardContainer` | PagePanel/container-stack pattern | Generator-friendly indexed card stack. |
-| `FxDisclosureTriangle` | `DesktopDisclosureTriangle` | Collapsible section control. |
 | `FxProgressBar` | `DesktopProgressBar` | Determinate progress. |
 | `FxProgressWheel` | `DesktopProgressWheel` | Indeterminate progress/loading. |
 | `FxSeparator` | `DesktopSeparator` | Horizontal or vertical separator. |

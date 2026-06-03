@@ -87,6 +87,17 @@ nav    content
         'DesktopDateTimePicker',
       );
       expect(byName['FxSlider']?.xojoDesktopClass, 'DesktopSlider');
+      expect(
+        byName['FxSegmentedButton']?.xojoDesktopClass,
+        'DesktopSegmentedButton',
+      );
+      expect(byName['FxTabPanel']?.xojoDesktopClass, 'DesktopTabPanel');
+      expect(byName['FxPagePanel']?.xojoDesktopClass, 'DesktopPagePanel');
+      expect(byName['FxCardContainer']?.xojoDesktopClass, 'DesktopPagePanel');
+      expect(
+        byName['FxDisclosureTriangle']?.xojoDesktopClass,
+        'DesktopDisclosureTriangle',
+      );
       expect(byName['FxListBox']?.xojoDesktopClass, 'DesktopListBox');
       expect(byName['FxGrid']?.xojoDesktopClass, 'DesktopGrid');
     });

@@ -2,12 +2,57 @@
 
 ## Unreleased
 
+No unreleased changes.
+
+## 0.2.2
+
+Phase 2.2 adds the controls needed to move between modes, pages, and compact
+sections in a Xojo-style desktop interface. The release keeps the same visual
+harness discipline from Phase 2.1: every new component appears directly in the
+demo, and the navigation container examples use visibly different page content
+so screenshots prove that selection changes affect the displayed UI.
+
+This phase also used a split implementation workflow. Dedicated sub-agents built
+the navigation containers and navigation controls in separate files, while the
+coordinator handled exports, registry metadata, demo integration, documentation,
+screenshots, versioning, and release preparation from the phase branch.
+
+### Added
+
+- Added `FxSegmentedButton` and `FxSegmentedOption` for single-selection mode
+  switching comparable to Xojo `DesktopSegmentedButton`.
+- Added `FxTabPanel` for visible tab headers that select indexed content pages,
+  comparable to Xojo `DesktopTabPanel`.
+- Added `FxPagePanel` for headless indexed page switching comparable to Xojo
+  `DesktopPagePanel`.
+- Added `FxCardContainer` as a generator-friendly indexed card stack that can
+  be controlled by another widget, such as `FxSegmentedButton`.
+- Added `FxDisclosureTriangle` for compact collapsible sections with expanded,
+  collapsed, and disabled states.
+- Added Phase 2.2 rows to the example harness. The navigation row compares
+  visible tabs, headless pages, and segmented-card switching side by side; the
+  disclosure row shows expanded, collapsed, and disabled states.
+- Added component registry entries and Xojo mapping documentation for every
+  Phase 2.2 component.
+
 ### Clarified
 
 - Clarified the phase release discipline for future work: every implementation
   phase must review the active Flutter desktop skill, keep `AGENT.md`,
   `CHANGELOG.md`, and README current, and finish with branch management, version
   tagging, and a GitHub Release.
+- Clarified that Phase 2.2 screenshot work should capture the new navigation
+  rows directly and include an alternate selected state for tab/page/card
+  components.
+
+### Validated
+
+- Added focused widget tests for selected-index rendering, callbacks, state
+  preservation, disabled behavior, and template metadata.
+- Expanded registry tests so Phase 2.2 controls remain mapped to their intended
+  Xojo Desktop classes.
+- Verified the release with the local Flutter quality path and macOS demo
+  harness before tagging.
 
 ## 0.2.1
 
