@@ -41,8 +41,8 @@ tests, screenshots, version bump, tag, and GitHub Release from one phase branch.
 - Clarified the delivered vs planned Milestone 2 mappings in
   `doc/xojo-component-map.md`.
 - Clarified that Phase 2.1 is delivered in `v0.2.1`, while `v0.2.2` through
-  `v0.2.4` remain planned for navigation containers, utility controls, and
-  deeper ListBox/Grid behavior.
+  `v0.2.4` remain planned for navigation containers, utility controls, and text
+  input depth. Deeper ListBox/Grid behavior moves to Phase 3.
 
 ### Validated
 
