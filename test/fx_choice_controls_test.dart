@@ -132,6 +132,8 @@ void main() {
       tester,
     ) async {
       double? changed;
+      double? changeStart;
+      double? changeEnd;
 
       await tester.pumpWidget(
         MaterialApp(
@@ -145,6 +147,8 @@ void main() {
                 divisions: 10,
                 valueLabel: '50%',
                 onChanged: (value) => changed = value,
+                onChangeStart: (value) => changeStart = value,
+                onChangeEnd: (value) => changeEnd = value,
               ),
             ),
           ),
@@ -160,7 +164,11 @@ void main() {
       expect(find.text('50%'), findsOneWidget);
 
       slider.onChanged?.call(60);
+      slider.onChangeStart?.call(50);
+      slider.onChangeEnd?.call(60);
       expect(changed, 60);
+      expect(changeStart, 50);
+      expect(changeEnd, 60);
     });
 
     testWidgets('disables when requested', (tester) async {

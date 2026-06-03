@@ -99,6 +99,8 @@ nav    content
         'DesktopDisclosureTriangle',
       );
       expect(byName['FxColorPicker']?.xojoDesktopClass, 'DesktopColorPicker');
+      expect(byName['FxColorPicker']?.notes, contains('HSV'));
+      expect(byName['FxColorPicker']?.notes, contains('no-color'));
       expect(byName['FxProgressBar']?.xojoDesktopClass, 'DesktopProgressBar');
       expect(
         byName['FxProgressWheel']?.xojoDesktopClass,

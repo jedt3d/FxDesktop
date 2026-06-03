@@ -17,6 +17,16 @@ void main() {
       expect(find.byType(OutlinedButton), findsOneWidget);
     });
 
+    testWidgets('renders no color state', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(body: FxColorPicker(label: 'Optional')),
+        ),
+      );
+
+      expect(find.text('Optional: No color'), findsOneWidget);
+    });
+
     testWidgets('uses injected picker and reports selected color', (
       tester,
     ) async {
@@ -42,6 +52,151 @@ void main() {
       await tester.pump();
 
       expect(changedValue, const Color(0xff22cc88));
+    });
+
+    testWidgets('uses injected picker and reports no color', (tester) async {
+      Color? changedValue = const Color(0xff111111);
+      var committed = false;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: FxColorPicker(
+              label: 'Fill',
+              value: const Color(0xff111111),
+              onChanged: (value) => changedValue = value,
+              onCommit: (value) {
+                committed = true;
+                expect(value, isNull);
+              },
+              picker: (context, selectedColor) async {
+                expect(selectedColor, const Color(0xff111111));
+                return null;
+              },
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.byType(OutlinedButton));
+      await tester.pump();
+
+      expect(changedValue, isNull);
+      expect(committed, isTrue);
+    });
+
+    testWidgets('default picker can explicitly select no color', (
+      tester,
+    ) async {
+      Color? changedValue = const Color(0xff111111);
+      var committed = false;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: FxColorPicker(
+              label: 'Fill',
+              value: const Color(0xff111111),
+              onChanged: (value) => changedValue = value,
+              onCommit: (value) {
+                committed = true;
+                expect(value, isNull);
+              },
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.byType(OutlinedButton));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('No Color'));
+      await tester.pumpAndSettle();
+
+      expect(changedValue, isNull);
+      expect(committed, isTrue);
+    });
+
+    testWidgets('default picker applies RGB hex input', (tester) async {
+      Color? changedValue;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: FxColorPicker(
+              label: 'Fill',
+              value: const Color(0xff111111),
+              onChanged: (value) => changedValue = value,
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.byType(OutlinedButton));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), '#336699');
+      await tester.pumpAndSettle();
+
+      expect(find.text('Preview: #336699'), findsOneWidget);
+
+      await tester.tap(find.text('Apply'));
+      await tester.pumpAndSettle();
+
+      expect(changedValue, const Color(0xff336699));
+    });
+
+    testWidgets('default picker rejects invalid RGB hex input', (tester) async {
+      Color? changedValue;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: FxColorPicker(
+              label: 'Fill',
+              value: const Color(0xff111111),
+              onChanged: (value) => changedValue = value,
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.byType(OutlinedButton));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), '#GGGGGG');
+      await tester.pumpAndSettle();
+
+      expect(find.text('Enter a color as #RRGGBB.'), findsOneWidget);
+
+      final applyButton = tester.widget<FilledButton>(
+        find.widgetWithText(FilledButton, 'Apply'),
+      );
+      expect(applyButton.onPressed, isNull);
+      expect(changedValue, isNull);
+    });
+
+    testWidgets('default picker applies HSV slider changes', (tester) async {
+      Color? changedValue;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: FxColorPicker(
+              label: 'Fill',
+              value: const Color(0xffff0000),
+              onChanged: (value) => changedValue = value,
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.byType(OutlinedButton));
+      await tester.pumpAndSettle();
+      tester.widget<Slider>(find.byType(Slider).first).onChanged?.call(180);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Apply'));
+      await tester.pumpAndSettle();
+
+      expect(changedValue, isNotNull);
+      expect(changedValue, isNot(const Color(0xffff0000)));
     });
 
     testWidgets('ignores taps when disabled', (tester) async {

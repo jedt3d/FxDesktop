@@ -85,6 +85,8 @@ const fxComponentRegistry = <FxComponentDescriptor>[
     xojoDesktopClass: 'DesktopTextField',
     xojoWebClass: 'WebTextField',
     supportLevel: FxComponentSupportLevel.comparable,
+    notes:
+        'Single-line text input with validation, helper text, read-only, password, and icon states.',
   ),
   FxComponentDescriptor(
     id: 'fx.text_area',
@@ -92,6 +94,8 @@ const fxComponentRegistry = <FxComponentDescriptor>[
     xojoDesktopClass: 'DesktopTextArea',
     xojoWebClass: 'WebTextArea',
     supportLevel: FxComponentSupportLevel.comparable,
+    notes:
+        'Multiline text input with validation, helper text, read-only, and predictable scrolling.',
   ),
   FxComponentDescriptor(
     id: 'fx.combo_box',
@@ -179,7 +183,8 @@ const fxComponentRegistry = <FxComponentDescriptor>[
     name: 'FxColorPicker',
     xojoDesktopClass: 'DesktopColorPicker',
     supportLevel: FxComponentSupportLevel.comparable,
-    notes: 'Color value preview and picker trigger.',
+    notes:
+        'Nullable color picker with no-color, HSV sliders, and RGB hex input.',
   ),
   FxComponentDescriptor(
     id: 'fx.progress_bar',
@@ -351,16 +356,24 @@ class FxCheckBox extends StatelessWidget {
 }
 
 /// A labeled single-line text input comparable to DesktopTextField.
-class FxTextField extends StatelessWidget {
+class FxTextField extends StatefulWidget {
   /// Creates an FxDesktop text field.
   const FxTextField({
     super.key,
     required this.label,
     this.hintText,
     this.helpText,
+    this.errorText,
     this.controller,
+    this.value,
     this.onChanged,
+    this.onCommit,
     this.enabled = true,
+    this.readOnly = false,
+    this.obscureText = false,
+    this.prefixIcon,
+    this.suffixIcon,
+    this.focusNode,
   });
 
   /// Visible label.
@@ -372,45 +385,166 @@ class FxTextField extends StatelessWidget {
   /// Helper/balloon-help style text.
   final String? helpText;
 
+  /// Validation error text shown below the field.
+  final String? errorText;
+
   /// Optional text controller.
   final TextEditingController? controller;
+
+  /// Current text value when [controller] is not supplied.
+  final String? value;
 
   /// Change callback.
   final ValueChanged<String>? onChanged;
 
+  /// Called when editing is committed by submit or focus loss.
+  final ValueChanged<String>? onCommit;
+
   /// Whether the text field is enabled.
   final bool enabled;
+
+  /// Whether the text can be selected but not edited.
+  final bool readOnly;
+
+  /// Whether text entry is obscured for password-like input.
+  final bool obscureText;
+
+  /// Optional leading icon.
+  final IconData? prefixIcon;
+
+  /// Optional trailing icon.
+  final IconData? suffixIcon;
+
+  /// Optional focus node for host-managed focus.
+  final FocusNode? focusNode;
+
+  /// Stable map for AI/generator use.
+  Map<String, Object?> toTemplateMap() {
+    return {
+      'component': 'FxTextField',
+      'xojo_desktop_class': 'DesktopTextField',
+      'label': label,
+      'hintText': hintText,
+      'helpText': helpText,
+      'errorText': errorText,
+      'enabled': enabled,
+      'readOnly': readOnly,
+      'obscureText': obscureText,
+      'hasPrefixIcon': prefixIcon != null,
+      'hasSuffixIcon': suffixIcon != null,
+    };
+  }
+
+  @override
+  State<FxTextField> createState() => _FxTextFieldState();
+}
+
+class _FxTextFieldState extends State<FxTextField> {
+  late final TextEditingController _ownedController;
+  late final FocusNode _ownedFocusNode;
+  late String _lastCommittedText;
+
+  TextEditingController get _controller =>
+      widget.controller ?? _ownedController;
+
+  FocusNode get _focusNode => widget.focusNode ?? _ownedFocusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _ownedController = TextEditingController(text: widget.value ?? '');
+    _ownedFocusNode = FocusNode();
+    _lastCommittedText = _controller.text;
+    _focusNode.addListener(_handleFocusChanged);
+  }
+
+  @override
+  void didUpdateWidget(FxTextField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.focusNode != widget.focusNode) {
+      (oldWidget.focusNode ?? _ownedFocusNode).removeListener(
+        _handleFocusChanged,
+      );
+      _focusNode.addListener(_handleFocusChanged);
+    }
+    if (widget.controller == null &&
+        widget.value != oldWidget.value &&
+        widget.value != _ownedController.text) {
+      _ownedController.text = widget.value ?? '';
+      _lastCommittedText = _ownedController.text;
+    }
+  }
+
+  @override
+  void dispose() {
+    _focusNode.removeListener(_handleFocusChanged);
+    _ownedFocusNode.dispose();
+    _ownedController.dispose();
+    super.dispose();
+  }
+
+  void _handleFocusChanged() {
+    if (!_focusNode.hasFocus) {
+      _commitIfChanged();
+    }
+  }
+
+  void _commitIfChanged() {
+    final currentText = _controller.text;
+    if (currentText == _lastCommittedText) {
+      return;
+    }
+    _lastCommittedText = currentText;
+    widget.onCommit?.call(currentText);
+  }
 
   @override
   Widget build(BuildContext context) {
     return TextField(
-      controller: controller,
-      enabled: enabled,
-      onChanged: onChanged,
+      controller: _controller,
+      enabled: widget.enabled,
+      focusNode: _focusNode,
+      obscureText: widget.obscureText,
+      onChanged: widget.onChanged,
+      onSubmitted: (_) => _commitIfChanged(),
+      readOnly: widget.readOnly,
       decoration: InputDecoration(
         border: const OutlineInputBorder(),
-        helperText: helpText,
-        hintText: hintText,
+        errorText: widget.errorText,
+        helperText: widget.helpText,
+        hintText: widget.hintText,
         isDense: true,
-        labelText: label,
+        labelText: widget.label,
+        prefixIcon: widget.prefixIcon == null
+            ? null
+            : Icon(widget.prefixIcon, size: 18),
+        suffixIcon: widget.suffixIcon == null
+            ? null
+            : Icon(widget.suffixIcon, size: 18),
       ),
     );
   }
 }
 
 /// A labeled multiline input comparable to DesktopTextArea.
-class FxTextArea extends StatelessWidget {
+class FxTextArea extends StatefulWidget {
   /// Creates an FxDesktop text area.
   const FxTextArea({
     super.key,
     required this.label,
     this.hintText,
     this.helpText,
+    this.errorText,
     this.controller,
+    this.scrollController,
+    this.value,
     this.onChanged,
+    this.onCommit,
     this.minLines = 3,
     this.maxLines = 6,
     this.enabled = true,
+    this.readOnly = false,
+    this.focusNode,
   });
 
   /// Visible label.
@@ -422,11 +556,23 @@ class FxTextArea extends StatelessWidget {
   /// Helper/balloon-help style text.
   final String? helpText;
 
+  /// Validation error text shown below the text area.
+  final String? errorText;
+
   /// Optional text controller.
   final TextEditingController? controller;
 
+  /// Optional scroll controller for deterministic multiline scrolling.
+  final ScrollController? scrollController;
+
+  /// Current text value when [controller] is not supplied.
+  final String? value;
+
   /// Change callback.
   final ValueChanged<String>? onChanged;
+
+  /// Called when editing is committed by focus loss or editing completion.
+  final ValueChanged<String>? onCommit;
 
   /// Minimum visible lines.
   final int minLines;
@@ -437,20 +583,117 @@ class FxTextArea extends StatelessWidget {
   /// Whether the text area is enabled.
   final bool enabled;
 
+  /// Whether the text can be selected but not edited.
+  final bool readOnly;
+
+  /// Optional focus node for host-managed focus.
+  final FocusNode? focusNode;
+
+  /// Stable map for AI/generator use.
+  Map<String, Object?> toTemplateMap() {
+    return {
+      'component': 'FxTextArea',
+      'xojo_desktop_class': 'DesktopTextArea',
+      'label': label,
+      'hintText': hintText,
+      'helpText': helpText,
+      'errorText': errorText,
+      'enabled': enabled,
+      'readOnly': readOnly,
+      'minLines': minLines,
+      'maxLines': maxLines,
+      'hasScrollController': scrollController != null,
+    };
+  }
+
+  @override
+  State<FxTextArea> createState() => _FxTextAreaState();
+}
+
+class _FxTextAreaState extends State<FxTextArea> {
+  late final TextEditingController _ownedController;
+  late final ScrollController _ownedScrollController;
+  late final FocusNode _ownedFocusNode;
+  late String _lastCommittedText;
+
+  TextEditingController get _controller =>
+      widget.controller ?? _ownedController;
+
+  ScrollController get _scrollController =>
+      widget.scrollController ?? _ownedScrollController;
+
+  FocusNode get _focusNode => widget.focusNode ?? _ownedFocusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _ownedController = TextEditingController(text: widget.value ?? '');
+    _ownedScrollController = ScrollController();
+    _ownedFocusNode = FocusNode();
+    _lastCommittedText = _controller.text;
+    _focusNode.addListener(_handleFocusChanged);
+  }
+
+  @override
+  void didUpdateWidget(FxTextArea oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.focusNode != widget.focusNode) {
+      (oldWidget.focusNode ?? _ownedFocusNode).removeListener(
+        _handleFocusChanged,
+      );
+      _focusNode.addListener(_handleFocusChanged);
+    }
+    if (widget.controller == null &&
+        widget.value != oldWidget.value &&
+        widget.value != _ownedController.text) {
+      _ownedController.text = widget.value ?? '';
+      _lastCommittedText = _ownedController.text;
+    }
+  }
+
+  @override
+  void dispose() {
+    _focusNode.removeListener(_handleFocusChanged);
+    _ownedFocusNode.dispose();
+    _ownedController.dispose();
+    _ownedScrollController.dispose();
+    super.dispose();
+  }
+
+  void _handleFocusChanged() {
+    if (!_focusNode.hasFocus) {
+      _commitIfChanged();
+    }
+  }
+
+  void _commitIfChanged() {
+    final currentText = _controller.text;
+    if (currentText == _lastCommittedText) {
+      return;
+    }
+    _lastCommittedText = currentText;
+    widget.onCommit?.call(currentText);
+  }
+
   @override
   Widget build(BuildContext context) {
     return TextField(
-      controller: controller,
-      enabled: enabled,
-      maxLines: maxLines,
-      minLines: minLines,
-      onChanged: onChanged,
+      controller: _controller,
+      enabled: widget.enabled,
+      focusNode: _focusNode,
+      maxLines: widget.maxLines,
+      minLines: widget.minLines,
+      onChanged: widget.onChanged,
+      onEditingComplete: _commitIfChanged,
+      readOnly: widget.readOnly,
+      scrollController: _scrollController,
       decoration: InputDecoration(
         border: const OutlineInputBorder(),
-        helperText: helpText,
-        hintText: hintText,
+        errorText: widget.errorText,
+        helperText: widget.helpText,
+        hintText: widget.hintText,
         isDense: true,
-        labelText: label,
+        labelText: widget.label,
       ),
     );
   }
