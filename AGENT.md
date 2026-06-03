@@ -84,6 +84,28 @@ indexed containers without visible tab headers.
   screenshots, demo app changes, or a pub.dev publish candidate.
 - Follow `doc/release-versioning.md` for the full checklist.
 
+## Phase Execution Checkpoints
+
+For Phase 2.2 and later, every implementation phase must start with these
+checks:
+
+- Consider whether sub-agents should be used. If the phase has independent
+  component groups, split them into focused component agents and keep one
+  coordinator/integrator agent for shared files, screenshots, versioning, and
+  release work.
+- Before capturing screenshots, inspect the example harness for nested
+  scrollbars. The outer window viewport should be the primary screenshot
+  scroll target. Inner scrollbars are allowed only inside components that need
+  them, such as multiline text areas or grids.
+- Verify the actual scroll direction before relying on screenshot automation.
+  macOS natural scrolling, synthetic wheel events, and scrollbar thumb dragging
+  can move in opposite directions depending on the input method. If automation
+  cannot reliably reach the target component, use a deterministic Flutter
+  screenshot/golden harness with explicit scroll offsets.
+- Capture evidence for every newly created component. A release screenshot set
+  must show the new components themselves, not only older controls that happen
+  to appear near the top of the harness.
+
 ## Example Harness Rules
 
 - Keep the visual test app as a vertical component harness.
@@ -93,6 +115,9 @@ indexed containers without visible tab headers.
   checked, unchecked, selected, and indeterminate.
 - Put the scrollbar on the outer window viewport, not next to a constrained
   inner content column.
+- For screenshot work, verify that each new component row can be reached and
+  captured directly. Prefer filenames that identify the component group shown,
+  such as `phase-2-2-tab-panel.png` or `phase-2-3-progress-controls.png`.
 - Avoid complex navigation or dashboards in the basic harness. Add a sidebar
   component browser only after the component count makes a single vertical list
   hard to scan.
