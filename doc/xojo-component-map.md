@@ -45,7 +45,9 @@ is semantic and generation-oriented, not a native-control equivalence.
 Phase 2.1 delivered the first set of core form controls in `v0.2.1`. Phase 2.2
 delivered navigation and indexed container controls in `v0.2.2`. Phase 2.3
 delivered compact utility and display controls in `v0.2.3`. Phase 2.4 deepened
-text inputs and polished nullable color selection in `v0.2.4`.
+text inputs and polished nullable color selection in `v0.2.4`. Phase 2.5 added
+text input constraints, required indicators, character counters, and
+single-line display formats in `v0.2.5`.
 
 | FxDesktop | Xojo Desktop | Notes |
 |---|---|---|
@@ -66,13 +68,8 @@ text inputs and polished nullable color selection in `v0.2.4`.
 | `FxProgressWheel` | `DesktopProgressWheel` | Indeterminate loading indicator. |
 | `FxSeparator` | `DesktopSeparator` | Horizontal or vertical visual separator. |
 | `FxStyledLabel` | styled label pattern | Rich label/help text with mixed text spans. |
-
-## Milestone 2 Planned Mappings
-
-| FxDesktop | Xojo Desktop | Notes |
-|---|---|---|
-| `FxTextField` depth | `DesktopTextField` | Phase 2.4 validation state, prefix/suffix icons, password mode. |
-| `FxTextArea` depth | `DesktopTextArea` | Phase 2.4 validation state and predictable multiline scrolling. |
+| `FxTextField` depth | `DesktopTextField` | Validation state, prefix/suffix icons, password mode, constraints, required state, character count, pattern masks, and commit-time number formatting. |
+| `FxTextArea` depth | `DesktopTextArea` | Validation state, predictable multiline scrolling, constraints, required state, character count, and forbidden input metadata. |
 
 ## Milestone 2 Documented Non-Duplication Candidates
 

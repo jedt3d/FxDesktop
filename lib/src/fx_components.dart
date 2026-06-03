@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 /// How directly an FxDesktop component maps to a Xojo component.
 enum FxComponentSupportLevel {
@@ -86,7 +87,7 @@ const fxComponentRegistry = <FxComponentDescriptor>[
     xojoWebClass: 'WebTextField',
     supportLevel: FxComponentSupportLevel.comparable,
     notes:
-        'Single-line text input with validation, helper text, read-only, password, and icon states.',
+        'Single-line text input with validation, helper text, read-only, password, constraints, character count, and commit-time masks.',
   ),
   FxComponentDescriptor(
     id: 'fx.text_area',
@@ -95,7 +96,7 @@ const fxComponentRegistry = <FxComponentDescriptor>[
     xojoWebClass: 'WebTextArea',
     supportLevel: FxComponentSupportLevel.comparable,
     notes:
-        'Multiline text input with validation, helper text, read-only, and predictable scrolling.',
+        'Multiline text input with validation, helper text, read-only, constraints, character count, and predictable scrolling.',
   ),
   FxComponentDescriptor(
     id: 'fx.combo_box',
@@ -315,6 +316,145 @@ enum FxButtonProminence {
   quiet,
 }
 
+/// Built-in text constraint categories for [FxTextField] and [FxTextArea].
+enum FxTextInputConstraintKind {
+  /// Allows any character except explicitly forbidden characters or patterns.
+  any,
+
+  /// Allows ASCII digits only.
+  numeric,
+
+  /// Allows ASCII alphabetic letters only.
+  alpha,
+
+  /// Allows ASCII letters and digits only.
+  alphanumeric,
+
+  /// Allows a practical email-like character subset.
+  emailLike,
+}
+
+/// Serializable input constraints for desktop text controls.
+class FxTextInputConstraints {
+  /// Creates text input constraints.
+  const FxTextInputConstraints({
+    this.kind = FxTextInputConstraintKind.any,
+    this.minLength,
+    this.maxLength,
+    this.forbiddenCharacters = const <String>[],
+    this.forbiddenPattern,
+    this.showCharacterCount = false,
+    this.allowTab = false,
+  });
+
+  /// General character category to allow.
+  final FxTextInputConstraintKind kind;
+
+  /// Minimum valid length for generator metadata and host validation.
+  final int? minLength;
+
+  /// Maximum accepted length. This is enforced while editing.
+  final int? maxLength;
+
+  /// Exact characters to reject from typed or pasted text.
+  final List<String> forbiddenCharacters;
+
+  /// Regular expression pattern that rejects the whole proposed edit when
+  /// matched.
+  final String? forbiddenPattern;
+
+  /// Whether the control should show Flutter's built-in character counter.
+  final bool showCharacterCount;
+
+  /// Whether pasted tab characters are preserved. Keyboard Tab still follows
+  /// normal desktop focus traversal.
+  final bool allowTab;
+
+  /// Stable map for AI/generator use.
+  Map<String, Object?> toTemplateMap() {
+    return {
+      'kind': kind.name,
+      'minLength': minLength,
+      'maxLength': maxLength,
+      'forbiddenCharacters': forbiddenCharacters,
+      'forbiddenPattern': forbiddenPattern,
+      'showCharacterCount': showCharacterCount,
+      'allowTab': allowTab,
+    };
+  }
+}
+
+/// Supported single-line display formats for [FxTextField].
+enum FxTextInputFormatType {
+  /// No display formatting.
+  none,
+
+  /// Pattern format where `#` consumes one digit, for example `#-####-####`.
+  pattern,
+
+  /// Commit-time fixed decimal number formatting.
+  number,
+}
+
+/// Serializable single-line text display format.
+class FxTextInputFormat {
+  /// Creates a no-op format.
+  const FxTextInputFormat.none()
+    : type = FxTextInputFormatType.none,
+      pattern = null,
+      decimalDigits = null,
+      groupingSeparator = ',',
+      decimalSeparator = '.',
+      allowNegative = false;
+
+  /// Creates a digit pattern format. `#` placeholders consume digits.
+  const FxTextInputFormat.pattern(this.pattern)
+    : type = FxTextInputFormatType.pattern,
+      decimalDigits = null,
+      groupingSeparator = ',',
+      decimalSeparator = '.',
+      allowNegative = false;
+
+  /// Creates a commit-time fixed decimal number format.
+  const FxTextInputFormat.number({
+    this.decimalDigits = 2,
+    this.groupingSeparator = ',',
+    this.decimalSeparator = '.',
+    this.allowNegative = false,
+  }) : type = FxTextInputFormatType.number,
+       pattern = null;
+
+  /// Format kind.
+  final FxTextInputFormatType type;
+
+  /// Pattern string for [FxTextInputFormatType.pattern].
+  final String? pattern;
+
+  /// Fixed decimal digits for [FxTextInputFormatType.number].
+  final int? decimalDigits;
+
+  /// Group separator for [FxTextInputFormatType.number].
+  final String groupingSeparator;
+
+  /// Decimal separator for [FxTextInputFormatType.number].
+  final String decimalSeparator;
+
+  /// Whether a leading minus sign is accepted for number formatting.
+  final bool allowNegative;
+
+  /// Stable map for AI/generator use.
+  Map<String, Object?> toTemplateMap() {
+    return {
+      'type': type.name,
+      'pattern': pattern,
+      'decimalDigits': decimalDigits,
+      'groupingSeparator': groupingSeparator,
+      'decimalSeparator': decimalSeparator,
+      'allowNegative': allowNegative,
+    };
+  }
+}
+
 /// A checkbox comparable to Xojo's DesktopCheckBox.
 class FxCheckBox extends StatelessWidget {
   /// Creates an FxDesktop checkbox.
@@ -374,6 +514,10 @@ class FxTextField extends StatefulWidget {
     this.prefixIcon,
     this.suffixIcon,
     this.focusNode,
+    this.constraints,
+    this.format = const FxTextInputFormat.none(),
+    this.requiredInput = false,
+    this.showRequiredIndicator = true,
   });
 
   /// Visible label.
@@ -418,6 +562,18 @@ class FxTextField extends StatefulWidget {
   /// Optional focus node for host-managed focus.
   final FocusNode? focusNode;
 
+  /// Optional input constraints.
+  final FxTextInputConstraints? constraints;
+
+  /// Optional display format for single-line input.
+  final FxTextInputFormat format;
+
+  /// Whether this input is required by the host form.
+  final bool requiredInput;
+
+  /// Whether required inputs append an asterisk to their floating label.
+  final bool showRequiredIndicator;
+
   /// Stable map for AI/generator use.
   Map<String, Object?> toTemplateMap() {
     return {
@@ -430,8 +586,12 @@ class FxTextField extends StatefulWidget {
       'enabled': enabled,
       'readOnly': readOnly,
       'obscureText': obscureText,
+      'required': requiredInput,
+      'showRequiredIndicator': showRequiredIndicator,
       'hasPrefixIcon': prefixIcon != null,
       'hasSuffixIcon': suffixIcon != null,
+      'constraints': constraints?.toTemplateMap(),
+      'format': format.toTemplateMap(),
     };
   }
 
@@ -490,12 +650,26 @@ class _FxTextFieldState extends State<FxTextField> {
   }
 
   void _commitIfChanged() {
-    final currentText = _controller.text;
+    final currentText = _applyCommitFormat(_controller.text);
     if (currentText == _lastCommittedText) {
       return;
     }
     _lastCommittedText = currentText;
     widget.onCommit?.call(currentText);
+  }
+
+  String _applyCommitFormat(String text) {
+    if (widget.format.type != FxTextInputFormatType.number) {
+      return text;
+    }
+    final formatted = _formatNumberText(text, widget.format);
+    if (formatted != text) {
+      _controller.value = TextEditingValue(
+        text: formatted,
+        selection: TextSelection.collapsed(offset: formatted.length),
+      );
+    }
+    return formatted;
   }
 
   @override
@@ -504,17 +678,28 @@ class _FxTextFieldState extends State<FxTextField> {
       controller: _controller,
       enabled: widget.enabled,
       focusNode: _focusNode,
+      inputFormatters: _buildTextInputFormatters(
+        constraints: widget.constraints,
+        format: widget.format,
+        multiline: false,
+      ),
+      maxLength: widget.constraints?.maxLength,
       obscureText: widget.obscureText,
       onChanged: widget.onChanged,
       onSubmitted: (_) => _commitIfChanged(),
       readOnly: widget.readOnly,
       decoration: InputDecoration(
+        counterText: widget.constraints?.showCharacterCount == true ? null : '',
         border: const OutlineInputBorder(),
         errorText: widget.errorText,
         helperText: widget.helpText,
         hintText: widget.hintText,
         isDense: true,
-        labelText: widget.label,
+        labelText: _labelWithRequiredIndicator(
+          widget.label,
+          widget.requiredInput,
+          widget.showRequiredIndicator,
+        ),
         prefixIcon: widget.prefixIcon == null
             ? null
             : Icon(widget.prefixIcon, size: 18),
@@ -545,6 +730,9 @@ class FxTextArea extends StatefulWidget {
     this.enabled = true,
     this.readOnly = false,
     this.focusNode,
+    this.constraints,
+    this.requiredInput = false,
+    this.showRequiredIndicator = true,
   });
 
   /// Visible label.
@@ -589,6 +777,15 @@ class FxTextArea extends StatefulWidget {
   /// Optional focus node for host-managed focus.
   final FocusNode? focusNode;
 
+  /// Optional input constraints.
+  final FxTextInputConstraints? constraints;
+
+  /// Whether this input is required by the host form.
+  final bool requiredInput;
+
+  /// Whether required inputs append an asterisk to their floating label.
+  final bool showRequiredIndicator;
+
   /// Stable map for AI/generator use.
   Map<String, Object?> toTemplateMap() {
     return {
@@ -600,9 +797,12 @@ class FxTextArea extends StatefulWidget {
       'errorText': errorText,
       'enabled': enabled,
       'readOnly': readOnly,
+      'required': requiredInput,
+      'showRequiredIndicator': showRequiredIndicator,
       'minLines': minLines,
       'maxLines': maxLines,
       'hasScrollController': scrollController != null,
+      'constraints': constraints?.toTemplateMap(),
     };
   }
 
@@ -681,6 +881,11 @@ class _FxTextAreaState extends State<FxTextArea> {
       controller: _controller,
       enabled: widget.enabled,
       focusNode: _focusNode,
+      inputFormatters: _buildTextInputFormatters(
+        constraints: widget.constraints,
+        multiline: true,
+      ),
+      maxLength: widget.constraints?.maxLength,
       maxLines: widget.maxLines,
       minLines: widget.minLines,
       onChanged: widget.onChanged,
@@ -688,15 +893,231 @@ class _FxTextAreaState extends State<FxTextArea> {
       readOnly: widget.readOnly,
       scrollController: _scrollController,
       decoration: InputDecoration(
+        counterText: widget.constraints?.showCharacterCount == true ? null : '',
         border: const OutlineInputBorder(),
         errorText: widget.errorText,
         helperText: widget.helpText,
         hintText: widget.hintText,
         isDense: true,
-        labelText: widget.label,
+        labelText: _labelWithRequiredIndicator(
+          widget.label,
+          widget.requiredInput,
+          widget.showRequiredIndicator,
+        ),
       ),
     );
   }
+}
+
+String _labelWithRequiredIndicator(
+  String label,
+  bool requiredInput,
+  bool showRequiredIndicator,
+) {
+  if (!requiredInput || !showRequiredIndicator) {
+    return label;
+  }
+  return '$label *';
+}
+
+List<TextInputFormatter> _buildTextInputFormatters({
+  FxTextInputConstraints? constraints,
+  FxTextInputFormat format = const FxTextInputFormat.none(),
+  required bool multiline,
+}) {
+  return <TextInputFormatter>[
+    if (constraints != null) _FxConstraintTextInputFormatter(constraints),
+    if (!multiline && format.type == FxTextInputFormatType.pattern)
+      _FxPatternTextInputFormatter(format.pattern ?? ''),
+    if (!multiline && format.type == FxTextInputFormatType.number)
+      _FxNumberTextInputFormatter(format),
+  ];
+}
+
+class _FxConstraintTextInputFormatter extends TextInputFormatter {
+  _FxConstraintTextInputFormatter(this.constraints)
+    : _forbiddenPattern = constraints.forbiddenPattern == null
+          ? null
+          : RegExp(constraints.forbiddenPattern!);
+
+  final FxTextInputConstraints constraints;
+  final RegExp? _forbiddenPattern;
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    var text = _filterByKind(newValue.text);
+
+    if (constraints.forbiddenCharacters.isNotEmpty) {
+      for (final character in constraints.forbiddenCharacters) {
+        text = text.replaceAll(character, '');
+      }
+    }
+
+    if (!constraints.allowTab) {
+      text = text.replaceAll('\t', '');
+    }
+
+    if (_forbiddenPattern != null && _forbiddenPattern.hasMatch(text)) {
+      return oldValue;
+    }
+
+    if (constraints.maxLength != null && text.length > constraints.maxLength!) {
+      text = text.substring(0, constraints.maxLength);
+    }
+
+    return TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
+      composing: TextRange.empty,
+    );
+  }
+
+  String _filterByKind(String text) {
+    final pattern = switch (constraints.kind) {
+      FxTextInputConstraintKind.any => null,
+      FxTextInputConstraintKind.numeric => RegExp(r'[0-9]'),
+      FxTextInputConstraintKind.alpha => RegExp(r'[A-Za-z]'),
+      FxTextInputConstraintKind.alphanumeric => RegExp(r'[A-Za-z0-9]'),
+      FxTextInputConstraintKind.emailLike => RegExp(r'[A-Za-z0-9@._+\-]'),
+    };
+
+    if (pattern == null) {
+      return text;
+    }
+
+    return text.runes
+        .map(String.fromCharCode)
+        .where((character) => pattern.hasMatch(character))
+        .join();
+  }
+}
+
+class _FxPatternTextInputFormatter extends TextInputFormatter {
+  const _FxPatternTextInputFormatter(this.pattern);
+
+  final String pattern;
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final digitLimit = '#'.allMatches(pattern).length;
+    final digits = newValue.text.replaceAll(RegExp(r'\D'), '');
+    final formatted = _formatPattern(
+      pattern,
+      digits.length > digitLimit ? digits.substring(0, digitLimit) : digits,
+    );
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+      composing: TextRange.empty,
+    );
+  }
+}
+
+class _FxNumberTextInputFormatter extends TextInputFormatter {
+  const _FxNumberTextInputFormatter(this.format);
+
+  final FxTextInputFormat format;
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final buffer = StringBuffer();
+    var hasDecimal = false;
+    var hasMinus = false;
+
+    for (var i = 0; i < newValue.text.length; i += 1) {
+      final character = newValue.text[i];
+      if (RegExp(r'[0-9]').hasMatch(character)) {
+        buffer.write(character);
+      } else if (character == format.decimalSeparator && !hasDecimal) {
+        buffer.write('.');
+        hasDecimal = true;
+      } else if (character == '.' && !hasDecimal) {
+        buffer.write('.');
+        hasDecimal = true;
+      } else if (character == '-' &&
+          format.allowNegative &&
+          i == 0 &&
+          !hasMinus) {
+        buffer.write(character);
+        hasMinus = true;
+      }
+    }
+
+    final text = buffer.toString();
+    return TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
+      composing: TextRange.empty,
+    );
+  }
+}
+
+String _formatPattern(String pattern, String digits) {
+  final buffer = StringBuffer();
+  var digitIndex = 0;
+
+  for (var i = 0; i < pattern.length; i += 1) {
+    final character = pattern[i];
+    if (character == '#') {
+      if (digitIndex >= digits.length) {
+        break;
+      }
+      buffer.write(digits[digitIndex]);
+      digitIndex += 1;
+    } else if (digitIndex > 0 && digitIndex < digits.length) {
+      buffer.write(character);
+    }
+  }
+
+  return buffer.toString();
+}
+
+String _formatNumberText(String text, FxTextInputFormat format) {
+  final sanitized = text.replaceAll(format.groupingSeparator, '').trim();
+  if (sanitized.isEmpty || sanitized == '-' || sanitized == '.') {
+    return text;
+  }
+
+  final value = double.tryParse(sanitized);
+  if (value == null) {
+    return text;
+  }
+
+  final decimalDigits = format.decimalDigits ?? 0;
+  final fixed = value.toStringAsFixed(decimalDigits);
+  final parts = fixed.split('.');
+  final integerPart = parts.first.startsWith('-')
+      ? parts.first.substring(1)
+      : parts.first;
+  final sign = parts.first.startsWith('-') ? '-' : '';
+  final groupedInteger = _groupInteger(integerPart, format.groupingSeparator);
+  final decimalPart = parts.length > 1 ? parts[1] : '';
+
+  if (decimalDigits == 0) {
+    return '$sign$groupedInteger';
+  }
+  return '$sign$groupedInteger${format.decimalSeparator}$decimalPart';
+}
+
+String _groupInteger(String text, String separator) {
+  final reversed = text.split('').reversed.toList();
+  final buffer = StringBuffer();
+  for (var i = 0; i < reversed.length; i += 1) {
+    if (i > 0 && i % 3 == 0) {
+      buffer.write(separator);
+    }
+    buffer.write(reversed[i]);
+  }
+  return buffer.toString().split('').reversed.join();
 }
 
 /// A framed desktop group comparable to Xojo's DesktopGroupBox.

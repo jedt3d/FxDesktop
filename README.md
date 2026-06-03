@@ -21,7 +21,7 @@ multi-size desktop workflows.
 
 ```yaml
 dependencies:
-  fx_desktop: ^0.2.4
+  fx_desktop: ^0.2.5
 ```
 
 ## Quick Start
@@ -44,6 +44,11 @@ class OrderPanel extends StatelessWidget {
           child: FxTextField(
             label: 'Customer',
             hintText: 'Company or person name',
+            requiredInput: true,
+            constraints: FxTextInputConstraints(
+              maxLength: 80,
+              showCharacterCount: true,
+            ),
           ),
         ),
         FxFlexItem(
@@ -98,12 +103,41 @@ class OrderPanel extends StatelessWidget {
 `FxGridLayout` is a CSS Grid-like layout manager. `FxGrid` is a data/cell grid
 control comparable to Xojo `DesktopGrid`.
 
-Milestone 2 extends Xojo Desktop control parity in phase releases. `v0.2.4`
-completes the Milestone 2 form-control surface with deeper text input behavior:
-validation state, helper text, read-only state, password fields, icons, and
-predictable multiline text areas. `FxColorPicker` also supports optional
-no-color values, HSV slider selection, and RGB `#RRGGBB` entry.
+Milestone 2 extends Xojo Desktop control parity in phase releases. `v0.2.5`
+deepens text input behavior with constraints, required indicators, character
+counts, forbidden input, phone-style pattern masks, and commit-time fixed
+decimal display formatting. `FxColorPicker` also supports optional no-color
+values, HSV slider selection, and RGB `#RRGGBB` entry.
 See [Milestone 2: Xojo Desktop Control Parity](https://github.com/jedt3d/FxDesktop/blob/main/doc/milestone-2-control-parity.md).
+
+## Text Input Constraints
+
+`FxTextField` and `FxTextArea` include caption-style labels, helper text, error
+text, required indicators, and serializable constraint metadata. Desktop apps
+can use these APIs directly while AI/Xojo generators can export the same
+metadata into templates.
+
+```dart
+const FxTextField(
+  label: 'Phone',
+  hintText: '#-####-####',
+  requiredInput: true,
+  constraints: FxTextInputConstraints(
+    kind: FxTextInputConstraintKind.numeric,
+    maxLength: 11,
+  ),
+  format: FxTextInputFormat.pattern('#-####-####'),
+);
+
+const FxTextField(
+  label: 'Budget',
+  format: FxTextInputFormat.number(decimalDigits: 2),
+);
+```
+
+Pattern masks clean visible single-line input as the user types. Number formats
+are applied on submit or focus loss so app-level undo records one committed
+value change.
 
 ## Agent And Generator Use
 

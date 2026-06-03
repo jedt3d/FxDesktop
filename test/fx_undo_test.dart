@@ -172,6 +172,31 @@ void main() {
       expect(find.text('Customer: Cindy Crawford'), findsOneWidget);
     });
 
+    testWidgets('masked text field undo commits once after submit', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: _UndoTextFieldHarness(
+            format: FxTextInputFormat.pattern('#-####-####'),
+          ),
+        ),
+      );
+
+      await tester.enterText(find.byType(TextField), '912345678');
+      await tester.pump();
+      expect(find.text('Commits: 0'), findsOneWidget);
+
+      tester.widget<TextField>(find.byType(TextField)).onSubmitted?.call('');
+      await tester.pump();
+      expect(find.text('Commits: 1'), findsOneWidget);
+      expect(find.text('Customer: 9-1234-5678'), findsOneWidget);
+
+      await _tapUndo(tester);
+      await tester.pump();
+      expect(find.text('Customer: Cindy Crawford'), findsOneWidget);
+    });
+
     testWidgets('slider undo records drag end as one committed change', (
       tester,
     ) async {
@@ -388,7 +413,9 @@ class _UndoRadioHarnessState extends State<_UndoRadioHarness> {
 }
 
 class _UndoTextFieldHarness extends StatefulWidget {
-  const _UndoTextFieldHarness();
+  const _UndoTextFieldHarness({this.format = const FxTextInputFormat.none()});
+
+  final FxTextInputFormat format;
 
   @override
   State<_UndoTextFieldHarness> createState() => _UndoTextFieldHarnessState();
@@ -407,6 +434,7 @@ class _UndoTextFieldHarnessState extends State<_UndoTextFieldHarness> {
           FxTextField(
             label: 'Customer',
             value: _customer,
+            format: widget.format,
             onChanged: (_) {},
             onCommit: (value) {
               _undo.commitValue<String>(

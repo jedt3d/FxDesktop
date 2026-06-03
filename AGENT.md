@@ -24,6 +24,12 @@ tablet layouts should normally use standard Flutter and adaptive patterns.
   callbacks, but they must not own independent undo stacks.
 - For nullable controls, provide an explicit UI action for the null state. Do
   not rely on display text alone to represent values such as no color.
+- For text inputs, keep constraints, required state, help text, and captions on
+  the input component metadata. Do not require generators to create a separate
+  label and validation model for every ordinary field.
+- Live input formatters may filter characters or apply lightweight pattern
+  masks, but business-value display formatting should happen on commit/blur
+  when it affects app state or undo history.
 - Use relative paths in source, docs, scripts, and CI.
 - Do not commit generated build outputs, platform caches, or machine-local paths.
 
@@ -81,7 +87,7 @@ indexed containers without visible tab headers.
   one change: `pubspec.yaml`, README install snippet, CHANGELOG, release notes,
   and any docs that mention the current version.
 - For Milestone 2, release each implementation phase separately:
-  `v0.2.1`, `v0.2.2`, `v0.2.3`, and `v0.2.4`.
+  `v0.2.1`, `v0.2.2`, `v0.2.3`, `v0.2.4`, and `v0.2.5`.
 - For every Milestone 2 phase, update the example harness, capture screenshots,
   run the full quality harness, tag the version, and create a GitHub Release
   with screenshots attached.

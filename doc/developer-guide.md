@@ -22,6 +22,17 @@ provides native undo behavior for keystrokes. FxDesktop records only committed
 text values through callbacks such as `FxTextField.onCommit` and
 `FxTextArea.onCommit`.
 
+Input constraints and display formats must preserve that boundary. Character
+filters and lightweight masks can run while the user types, but number
+formatting or other business-value normalization should run on submit, focus
+loss, or an explicit apply action so undo history receives one meaningful
+change.
+
+Required state, caption/label text, helper text, and constraint metadata belong
+on the text control itself. That mirrors Xojo Web's caption-capable inputs and
+keeps AI/Xojo generators from manually pairing a separate label with every
+ordinary field.
+
 For complex components, group related changes as one action. Grid row edits,
 layout property changes, or multi-field form updates should be committed as
 one user-visible operation with a clear label.

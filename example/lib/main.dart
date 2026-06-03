@@ -114,6 +114,144 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                           ),
                           const SizedBox(height: 18),
                           _ComponentRow(
+                            name: 'FxTextField Phase 2.5 Constraints & Masks',
+                            child: _StateSamples(
+                              sampleWidth: 320,
+                              children: const [
+                                _StateSample(
+                                  label: 'Required + count',
+                                  child: FxTextField(
+                                    label: 'Customer',
+                                    value: 'Omega SA',
+                                    requiredInput: true,
+                                    helpText: 'Required single-line input.',
+                                    constraints: FxTextInputConstraints(
+                                      minLength: 3,
+                                      maxLength: 24,
+                                      showCharacterCount: true,
+                                    ),
+                                  ),
+                                ),
+                                _StateSample(
+                                  label: 'Numeric',
+                                  child: FxTextField(
+                                    label: 'Order No',
+                                    value: '589434',
+                                    hintText: 'Digits only',
+                                    constraints: FxTextInputConstraints(
+                                      kind: FxTextInputConstraintKind.numeric,
+                                      maxLength: 8,
+                                      showCharacterCount: true,
+                                    ),
+                                  ),
+                                ),
+                                _StateSample(
+                                  label: 'Alphanumeric',
+                                  child: FxTextField(
+                                    label: 'Campaign Code',
+                                    value: 'KW2507',
+                                    hintText: 'Letters and digits only',
+                                    constraints: FxTextInputConstraints(
+                                      kind: FxTextInputConstraintKind
+                                          .alphanumeric,
+                                      maxLength: 12,
+                                    ),
+                                  ),
+                                ),
+                                _StateSample(
+                                  label: 'Forbidden chars',
+                                  child: FxTextField(
+                                    label: 'Slug',
+                                    value: 'omega-sa',
+                                    helpText: 'Spaces and slashes are removed.',
+                                    constraints: FxTextInputConstraints(
+                                      forbiddenCharacters: [' ', '/'],
+                                    ),
+                                  ),
+                                ),
+                                _StateSample(
+                                  label: 'Phone mask',
+                                  child: FxTextField(
+                                    label: 'Phone',
+                                    value: '9-1234-5678',
+                                    hintText: '#-####-####',
+                                    format: FxTextInputFormat.pattern(
+                                      '#-####-####',
+                                    ),
+                                  ),
+                                ),
+                                _StateSample(
+                                  label: 'Fixed decimal',
+                                  child: FxTextField(
+                                    label: 'Budget',
+                                    value: '1,234.50',
+                                    helpText: 'Groups on commit/blur.',
+                                    format: FxTextInputFormat.number(
+                                      decimalDigits: 2,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          _ComponentRow(
+                            name: 'FxTextArea Phase 2.5 Constraints',
+                            child: _StateSamples(
+                              sampleWidth: 420,
+                              children: const [
+                                _StateSample(
+                                  label: 'Required + count',
+                                  child: FxTextArea(
+                                    label: 'Notes',
+                                    value:
+                                        'Confirm campaign, venue, and delivery window.',
+                                    requiredInput: true,
+                                    helpText:
+                                        'Character counter can be visible.',
+                                    constraints: FxTextInputConstraints(
+                                      minLength: 10,
+                                      maxLength: 120,
+                                      showCharacterCount: true,
+                                    ),
+                                    minLines: 3,
+                                    maxLines: 4,
+                                  ),
+                                ),
+                                _StateSample(
+                                  label: 'Forbidden pattern',
+                                  child: FxTextArea(
+                                    label: 'Internal Comment',
+                                    value:
+                                        'Visible notes stay concise and reviewable.',
+                                    helpText:
+                                        'Rejects configured forbidden patterns.',
+                                    constraints: FxTextInputConstraints(
+                                      forbiddenPattern: r'password|secret',
+                                    ),
+                                    minLines: 3,
+                                    maxLines: 4,
+                                  ),
+                                ),
+                                _StateSample(
+                                  label: 'Tab metadata',
+                                  child: FxTextArea(
+                                    label: 'Plain Text',
+                                    value:
+                                        'Pasted tab characters can be preserved when needed.',
+                                    helpText:
+                                        'Keyboard Tab still follows focus traversal.',
+                                    constraints: FxTextInputConstraints(
+                                      allowTab: true,
+                                      maxLength: 160,
+                                    ),
+                                    minLines: 3,
+                                    maxLines: 4,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          _ComponentRow(
                             name: 'FxTextField Phase 2.4 Depth',
                             child: _StateSamples(
                               sampleWidth: 420,

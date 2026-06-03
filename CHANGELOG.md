@@ -4,6 +4,65 @@
 
 No unreleased changes.
 
+## 0.2.5
+
+Phase 2.5 makes `FxTextField` and `FxTextArea` more useful for real desktop
+data-entry forms. It adds a typed, generator-friendly way to describe input
+constraints, required fields, character counters, and single-line display
+formats without moving form validation into a separate framework.
+
+This release keeps a clear boundary between live editing and committed app
+history. Character filtering and pattern masks can clean what the user sees
+while typing, but number display formatting happens only on submit or focus
+loss. That keeps `FxUndoController` focused on one semantic form edit rather
+than every keystroke or transient formatter frame.
+
+### Added
+
+- Added `FxTextInputConstraints` for serializable text input rules.
+- Added `FxTextInputConstraintKind` with `any`, `numeric`, `alpha`,
+  `alphanumeric`, and `emailLike` character classes.
+- Added maximum-length enforcement and optional character counters for
+  `FxTextField` and `FxTextArea`.
+- Added forbidden-character filtering and forbidden-pattern rejection for both
+  text controls.
+- Added `allowTab` metadata for text areas. Pasted tab characters can be
+  preserved when requested, while keyboard Tab continues to follow normal
+  desktop focus traversal.
+- Added `requiredInput` and `showRequiredIndicator` to both text controls so
+  required form fields can be represented directly in the component metadata
+  and label display.
+- Added `FxTextInputFormat` and `FxTextInputFormatType` for single-line display
+  formatting.
+- Added digit pattern masks such as `#-####-####` for phone-like values.
+- Added commit-time fixed decimal number formatting such as `#,###.00`.
+- Added Phase 2.5 demo rows for text-field constraints, required fields,
+  character counts, forbidden input, phone masks, fixed decimals, and text-area
+  constraint states.
+
+### Clarified
+
+- Clarified that text input captions/labels belong on the FxDesktop input
+  controls so generators do not need to manually pair a separate label with
+  every input.
+- Clarified that multiline text areas do not support format masks in Phase 2.5;
+  they support constraints, counters, required state, and forbidden input.
+- Clarified that display formatting for business values should happen on
+  commit/blur when it may affect undo history.
+- Clarified that constraints are useful metadata for AI and Xojo generation,
+  but host applications still own full validation rules and persistence.
+
+### Validated
+
+- Added widget tests for numeric, alpha, and alphanumeric filtering.
+- Added widget tests for max length and visible character counters.
+- Added widget tests for forbidden characters and forbidden patterns.
+- Added widget tests for phone pattern formatting and commit-only fixed decimal
+  formatting.
+- Added widget tests for required indicators and text-area constraint metadata.
+- Added undo regression coverage proving masked text commits one undo action
+  only after submit.
+
 ## 0.2.4
 
 Phase 2.4 completes the Milestone 2 form-control surface by deepening the
