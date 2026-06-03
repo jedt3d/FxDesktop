@@ -69,7 +69,7 @@ GitHub Release before the next phase starts.
 | 2.1 | `v0.2.1` | Core form inputs, delivered |
 | 2.2 | `v0.2.2` | Navigation and indexed containers |
 | 2.3 | `v0.2.3` | Desktop utility controls |
-| 2.4 | `v0.2.4` | Existing control depth |
+| 2.4 | `v0.2.4` | Text input depth |
 
 Because FxDesktop is still pre-1.0, the `0.2.x` release line represents
 Milestone 2, and the patch number maps to each phase.
@@ -251,34 +251,46 @@ Validation:
 - The macOS example app must build and open successfully when UI changes are
   included.
 
-### Phase 2.4: Existing Control Depth
+### Phase 2.4: Text Input Depth
 
-Improve existing high-value controls:
+Improve existing text-entry controls only:
 
-- `FxListBox`: sorting, multi-select, column resize, keyboard navigation,
-  editable cells, checkbox cells.
-- `FxGrid`: cell editing, selection modes, keyboard navigation, column resize,
-  datasource-ready model.
 - `FxTextField`: validation state, prefix/suffix icons, password mode.
 - `FxTextArea`: validation state and predictable scroll behavior.
 
 Demo presentation:
 
-- Keep ListBox and Grid as separate rows.
-- Add compact examples for single select, multi-select, sorting, and editable
-  cells instead of building a dashboard-style demo.
-- Capture before/after-style screenshots that show the improved ListBox/Grid
-  behavior and validation improvements for text inputs.
+- Keep `FxTextField` and `FxTextArea` as separate rows.
+- Show normal, disabled, read-only when supported, validation error, helper
+  text, prefix/suffix icon, password, and multiline scroll states where
+  practical.
+- Capture before/after-style screenshots that show validation and text-entry
+  behavior improvements.
 - Save screenshots under `doc/screenshots/v0.2.4/` and attach them to the
   GitHub Release.
 
 Validation:
 
-- Interaction tests for sorting, selection, editing, keyboard navigation, and
-  validation state where practical.
+- Interaction tests for validation, text entry, disabled/read-only behavior,
+  password visibility, helper text, prefix/suffix icons, and multiline scrolling
+  where practical.
 - `dart run tool/agent_harness.dart` must pass.
 - The macOS example app must build and open successfully when UI changes are
   included.
+
+## Phase 3: Table And Grid Depth
+
+Move deeper table/grid work out of Milestone 2 so Phase 2 can finish the common
+form-control surface first. Phase 3 focuses on data-heavy desktop controls:
+
+- `FxListBox`: sorting, multi-select, column resize, keyboard navigation,
+  editable cells, checkbox cells, and datasource-ready models.
+- `FxGrid`: cell editing, selection modes, keyboard navigation, column resize,
+  datasource-ready models, and richer cell renderers.
+
+Phase 3 screenshots should keep `FxListBox` and `FxGrid` as separate rows and
+show compact examples for single select, multi-select, sorting, and editable
+cells instead of building a dashboard-style demo.
 
 ## Per-Phase Release Workflow
 
