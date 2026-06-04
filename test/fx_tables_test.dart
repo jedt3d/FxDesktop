@@ -459,6 +459,7 @@ void main() {
         'editable': true,
         'visible': true,
         'sortable': false,
+        'type': {'type': 'text'},
       });
 
       expect(row.toJson(), {
@@ -503,8 +504,10 @@ void main() {
         'width': {'type': 'fixed', 'value': 120.0},
         'minWidth': 48.0,
         'alignment': 'trailing',
+        'editable': false,
         'visible': true,
         'sortable': false,
+        'type': {'type': 'text'},
       });
 
       expect(row.toJson(), {
@@ -748,6 +751,599 @@ void main() {
         ),
       );
       expect(tester.takeException(), isArgumentError);
+    });
+  });
+
+  group('Milestone 3, Phase 3.3: Inline Cell Editing & Validation', () {
+    testWidgets('FxListBox text editor activation, commit, and cancel', (
+      tester,
+    ) async {
+      String? editedRowId;
+      String? editedColumnId;
+      Object? editedValue;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: FxListBox(
+              columns: const [
+                FxListBoxColumn(id: 'name', caption: 'Name', editable: true),
+              ],
+              rows: const [
+                FxListBoxRow(id: 'r1', cells: {'name': 'Alice'}),
+              ],
+              onCellEdited: (rowId, colId, newValue) {
+                editedRowId = rowId;
+                editedColumnId = colId;
+                editedValue = newValue;
+              },
+            ),
+          ),
+        ),
+      );
+
+      // Verify initial cell text
+      expect(find.text('Alice'), findsOneWidget);
+
+      // Double tap cell to start editing
+      await tester.tap(find.text('Alice'));
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.tap(find.text('Alice'));
+      await tester.pumpAndSettle();
+
+      // Find the TextField in editor mode
+      final textFieldFinder = find.byType(TextField);
+      expect(textFieldFinder, findsOneWidget);
+
+      // Enter new text and submit
+      await tester.enterText(textFieldFinder, 'Bob');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+
+      // Check callback
+      expect(editedRowId, 'r1');
+      expect(editedColumnId, 'name');
+      expect(editedValue, 'Bob');
+
+      // Verify TextField is gone
+      expect(find.byType(TextField), findsNothing);
+    });
+
+    testWidgets('FxListBox boolean column toggling', (tester) async {
+      String? editedRowId;
+      String? editedColumnId;
+      Object? editedValue;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: FxListBox(
+              columns: const [
+                FxListBoxColumn(
+                  id: 'approved',
+                  caption: 'Approved',
+                  editable: true,
+                  type: FxCellType.boolean(),
+                ),
+              ],
+              rows: const [
+                FxListBoxRow(id: 'r1', cells: {'approved': false}),
+              ],
+              onCellEdited: (rowId, colId, newValue) {
+                editedRowId = rowId;
+                editedColumnId = colId;
+                editedValue = newValue;
+              },
+            ),
+          ),
+        ),
+      );
+
+      // Verify checkbox is rendered
+      final checkboxFinder = find.byType(Checkbox);
+      expect(checkboxFinder, findsOneWidget);
+
+      // Tap checkbox to toggle
+      await tester.tap(checkboxFinder);
+      await tester.pumpAndSettle();
+
+      // Check callback
+      expect(editedRowId, 'r1');
+      expect(editedColumnId, 'approved');
+      expect(editedValue, true);
+    });
+
+    testWidgets('FxListBox choice column dropdown editing', (tester) async {
+      String? editedRowId;
+      String? editedColumnId;
+      Object? editedValue;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: FxListBox(
+              columns: const [
+                FxListBoxColumn(
+                  id: 'role',
+                  caption: 'Role',
+                  editable: true,
+                  type: FxCellType.choice(['Admin', 'User']),
+                ),
+              ],
+              rows: const [
+                FxListBoxRow(id: 'r1', cells: {'role': 'User'}),
+              ],
+              onCellEdited: (rowId, colId, newValue) {
+                editedRowId = rowId;
+                editedColumnId = colId;
+                editedValue = newValue;
+              },
+            ),
+          ),
+        ),
+      );
+
+      // Verify choice cell is rendered as User
+      expect(find.text('User'), findsOneWidget);
+
+      // Double tap to edit choice
+      await tester.tap(find.text('User'));
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.tap(find.text('User'));
+      await tester.pumpAndSettle();
+
+      // Verify DropdownButton is visible
+      final dropdownFinder = find.byType(DropdownButton<String>);
+      expect(dropdownFinder, findsOneWidget);
+
+      // Tap dropdown to open options
+      await tester.tap(dropdownFinder);
+      await tester.pumpAndSettle();
+
+      // Tap the 'Admin' option
+      final adminOptionFinder = find.text('Admin').last;
+      await tester.tap(adminOptionFinder);
+      await tester.pumpAndSettle();
+
+      // Check callback
+      expect(editedRowId, 'r1');
+      expect(editedColumnId, 'role');
+      expect(editedValue, 'Admin');
+    });
+
+    testWidgets('FxListBox validation error styling', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: FxListBox(
+              columns: [FxListBoxColumn(id: 'name', caption: 'Name')],
+              rows: [
+                FxListBoxRow(id: 'r1', cells: {'name': 'Alice'}),
+              ],
+              validationErrors: {
+                'r1': {'name': 'Name is invalid'},
+              },
+            ),
+          ),
+        ),
+      );
+
+      // Verify error icon and tooltip wrapper
+      expect(find.byIcon(Icons.error_outline), findsOneWidget);
+      expect(find.byType(Tooltip), findsOneWidget);
+    });
+
+    testWidgets('FxGrid text editor activation, commit, and cancel', (
+      tester,
+    ) async {
+      String? editedRowId;
+      String? editedColumnId;
+      Object? editedValue;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: FxGrid(
+              columns: const [
+                FxGridColumn(id: 'name', caption: 'Name', editable: true),
+              ],
+              rows: const [
+                FxGridRow(id: 'r1', cells: {'name': 'Alice'}),
+              ],
+              onCellEdited: (rowId, colId, newValue) {
+                editedRowId = rowId;
+                editedColumnId = colId;
+                editedValue = newValue;
+              },
+            ),
+          ),
+        ),
+      );
+
+      // Verify initial cell text
+      expect(find.text('Alice'), findsOneWidget);
+
+      // Double tap cell to start editing
+      await tester.tap(find.text('Alice'));
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.tap(find.text('Alice'));
+      await tester.pumpAndSettle();
+
+      // Find the TextField in editor mode
+      final textFieldFinder = find.byType(TextField);
+      expect(textFieldFinder, findsOneWidget);
+
+      // Enter new text and submit
+      await tester.enterText(textFieldFinder, 'Bob');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+
+      // Check callback
+      expect(editedRowId, 'r1');
+      expect(editedColumnId, 'name');
+      expect(editedValue, 'Bob');
+
+      // Verify TextField is gone
+      expect(find.byType(TextField), findsNothing);
+    });
+
+    testWidgets('FxGrid boolean column toggling', (tester) async {
+      String? editedRowId;
+      String? editedColumnId;
+      Object? editedValue;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: FxGrid(
+              columns: const [
+                FxGridColumn(
+                  id: 'approved',
+                  caption: 'Approved',
+                  editable: true,
+                  type: FxCellType.boolean(),
+                ),
+              ],
+              rows: const [
+                FxGridRow(id: 'r1', cells: {'approved': false}),
+              ],
+              onCellEdited: (rowId, colId, newValue) {
+                editedRowId = rowId;
+                editedColumnId = colId;
+                editedValue = newValue;
+              },
+            ),
+          ),
+        ),
+      );
+
+      // Verify checkbox is rendered
+      final checkboxFinder = find.byType(Checkbox);
+      expect(checkboxFinder, findsOneWidget);
+
+      // Tap checkbox to toggle
+      await tester.tap(checkboxFinder);
+      await tester.pumpAndSettle();
+
+      // Check callback
+      expect(editedRowId, 'r1');
+      expect(editedColumnId, 'approved');
+      expect(editedValue, true);
+    });
+
+    testWidgets('FxGrid validation error styling', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: FxGrid(
+              columns: [FxGridColumn(id: 'name', caption: 'Name')],
+              rows: [
+                FxGridRow(id: 'r1', cells: {'name': 'Alice'}),
+              ],
+              validationErrors: {
+                'r1': {'name': 'Name is invalid'},
+              },
+            ),
+          ),
+        ),
+      );
+
+      // Verify error icon and tooltip wrapper
+      expect(find.byIcon(Icons.error_outline), findsOneWidget);
+      expect(find.byType(Tooltip), findsOneWidget);
+    });
+
+    testWidgets('FxListBox keyboard navigation tab traversal during edit', (
+      tester,
+    ) async {
+      String? editedRowId;
+      String? editedColumnId;
+      Object? editedValue;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: FxListBox(
+              columns: const [
+                FxListBoxColumn(id: 'col1', caption: 'Col 1', editable: true),
+                FxListBoxColumn(id: 'col2', caption: 'Col 2', editable: true),
+              ],
+              rows: const [
+                FxListBoxRow(id: 'r1', cells: {'col1': 'A', 'col2': 'B'}),
+                FxListBoxRow(id: 'r2', cells: {'col1': 'C', 'col2': 'D'}),
+              ],
+              onCellEdited: (rowId, colId, newValue) {
+                editedRowId = rowId;
+                editedColumnId = colId;
+                editedValue = newValue;
+              },
+            ),
+          ),
+        ),
+      );
+
+      // Start editing 'A'
+      await tester.tap(find.text('A'));
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.tap(find.text('A'));
+      await tester.pumpAndSettle();
+
+      final textFieldFinder = find.byType(TextField);
+      expect(textFieldFinder, findsOneWidget);
+
+      // Enter text
+      await tester.enterText(textFieldFinder, 'A_new');
+      await tester.pumpAndSettle();
+
+      // Press Tab key
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.pumpAndSettle();
+
+      // Verify callback called for col1
+      expect(editedRowId, 'r1');
+      expect(editedColumnId, 'col1');
+      expect(editedValue, 'A_new');
+
+      // Verify focus moved to col2 (TextField should still be visible because we are editing next cell)
+      expect(find.byType(TextField), findsOneWidget);
+
+      // Press Tab key again, which will traverse to next row's first col
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.pumpAndSettle();
+
+      // Verify focus moved to next row (r2, col1)
+      expect(find.byType(TextField), findsOneWidget);
+    });
+
+    testWidgets('FxListBox edit cancellation on escape key', (tester) async {
+      bool cellEdited = false;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: FxListBox(
+              columns: const [
+                FxListBoxColumn(id: 'name', caption: 'Name', editable: true),
+              ],
+              rows: const [
+                FxListBoxRow(id: 'r1', cells: {'name': 'Alice'}),
+              ],
+              onCellEdited: (rowId, colId, newValue) {
+                cellEdited = true;
+              },
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Alice'));
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.tap(find.text('Alice'));
+      await tester.pumpAndSettle();
+
+      final textFieldFinder = find.byType(TextField);
+      await tester.enterText(textFieldFinder, 'Bob');
+      await tester.pumpAndSettle();
+
+      // Cancel edit via Escape key
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pumpAndSettle();
+
+      expect(cellEdited, isFalse);
+      expect(find.byType(TextField), findsNothing);
+      expect(find.text('Alice'), findsOneWidget);
+    });
+
+    testWidgets('FxListBox focus loss commits the edit', (tester) async {
+      String? editedValue;
+      final otherFocusNode = FocusNode();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Column(
+              children: [
+                Expanded(
+                  child: FxListBox(
+                    columns: const [
+                      FxListBoxColumn(
+                        id: 'name',
+                        caption: 'Name',
+                        editable: true,
+                      ),
+                    ],
+                    rows: const [
+                      FxListBoxRow(id: 'r1', cells: {'name': 'Alice'}),
+                    ],
+                    onCellEdited: (rowId, colId, newValue) {
+                      editedValue = newValue?.toString();
+                    },
+                  ),
+                ),
+                Focus(
+                  focusNode: otherFocusNode,
+                  child: const SizedBox(height: 10),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Alice'));
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.tap(find.text('Alice'));
+      await tester.pumpAndSettle();
+
+      final textFieldFinder = find.byType(TextField);
+      await tester.enterText(textFieldFinder, 'Bob');
+      await tester.pumpAndSettle();
+
+      // Shift focus away to trigger commit
+      otherFocusNode.requestFocus();
+      await tester.pumpAndSettle();
+
+      expect(editedValue, 'Bob');
+      expect(find.byType(TextField), findsNothing);
+    });
+
+    testWidgets(
+      'FxGrid keyboard navigation tab traversal and enter key activation',
+      (tester) async {
+        String? editedRowId;
+        String? editedColumnId;
+        Object? editedValue;
+        final gridFocusNode = FocusNode();
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: FxGrid(
+                focusNode: gridFocusNode,
+                columns: const [
+                  FxGridColumn(id: 'col1', caption: 'Col 1', editable: true),
+                  FxGridColumn(id: 'col2', caption: 'Col 2', editable: true),
+                ],
+                rows: const [
+                  FxGridRow(id: 'r1', cells: {'col1': 'A', 'col2': 'B'}),
+                  FxGridRow(id: 'r2', cells: {'col1': 'C', 'col2': 'D'}),
+                ],
+                selectedCells: const {(rowId: 'r1', columnId: 'col1')},
+                onCellsSelected: (_) {},
+                onCellEdited: (rowId, colId, newValue) {
+                  editedRowId = rowId;
+                  editedColumnId = colId;
+                  editedValue = newValue;
+                },
+              ),
+            ),
+          ),
+        );
+
+        // Focus the grid
+        gridFocusNode.requestFocus();
+        await tester.pumpAndSettle();
+
+        // Press Enter to start editing
+        await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+        await tester.pumpAndSettle();
+
+        final textFieldFinder = find.byType(TextField);
+        expect(textFieldFinder, findsOneWidget);
+
+        // Enter new text and press Tab
+        await tester.enterText(textFieldFinder, 'A_new');
+        await tester.pumpAndSettle();
+
+        await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+        await tester.pumpAndSettle();
+
+        expect(editedRowId, 'r1');
+        expect(editedColumnId, 'col1');
+        expect(editedValue, 'A_new');
+
+        // Verify editing moved to next cell (col2)
+        expect(find.byType(TextField), findsOneWidget);
+      },
+    );
+
+    testWidgets('FxGrid metadata tags support', (tester) async {
+      const rowTag = 'custom-row-tag';
+      const cellTags = {'col1': 'cell-tag-1', 'col2': 'cell-tag-2'};
+
+      const gridRow = FxGridRow(
+        id: 'r1',
+        cells: {'col1': 'A', 'col2': 'B'},
+        rowTag: rowTag,
+        cellTags: cellTags,
+      );
+
+      expect(gridRow.rowTag, rowTag);
+      expect(gridRow.cellTags, cellTags);
+
+      const listRow = FxListBoxRow(
+        id: 'r1',
+        cells: {'col1': 'A'},
+        rowTag: rowTag,
+      );
+      expect(listRow.rowTag, rowTag);
+    });
+
+    testWidgets('FxGrid choice cell dropdown editing', (tester) async {
+      String? editedRowId;
+      String? editedColumnId;
+      Object? editedValue;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: FxGrid(
+              columns: const [
+                FxGridColumn(
+                  id: 'role',
+                  caption: 'Role',
+                  editable: true,
+                  type: FxCellType.choice(['Admin', 'User']),
+                ),
+              ],
+              rows: const [
+                FxGridRow(id: 'r1', cells: {'role': 'User'}),
+              ],
+              onCellEdited: (rowId, colId, newValue) {
+                editedRowId = rowId;
+                editedColumnId = colId;
+                editedValue = newValue;
+              },
+            ),
+          ),
+        ),
+      );
+
+      // Verify choice cell is rendered as User
+      expect(find.text('User'), findsOneWidget);
+
+      // Double tap to edit choice
+      await tester.tap(find.text('User'));
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.tap(find.text('User'));
+      await tester.pumpAndSettle();
+
+      // Verify DropdownButton is visible
+      final dropdownFinder = find.byType(DropdownButton<String>);
+      expect(dropdownFinder, findsOneWidget);
+
+      // Tap dropdown to open options
+      await tester.tap(dropdownFinder);
+      await tester.pumpAndSettle();
+
+      // Tap the 'Admin' option
+      final adminOptionFinder = find.text('Admin').last;
+      await tester.tap(adminOptionFinder);
+      await tester.pumpAndSettle();
+
+      // Check callback
+      expect(editedRowId, 'r1');
+      expect(editedColumnId, 'role');
+      expect(editedValue, 'Admin');
     });
   });
 }

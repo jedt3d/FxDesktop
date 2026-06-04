@@ -39,11 +39,21 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
   List<FxListBoxRow> listBoxRows = [
     const FxListBoxRow(
       id: 'order-1',
-      cells: {'number': '1001', 'customer': 'Omega SA', 'status': 'Open'},
+      cells: {
+        'number': '1001',
+        'customer': 'Omega SA',
+        'status': 'Open',
+        'approved': true,
+      },
     ),
     const FxListBoxRow(
       id: 'order-2',
-      cells: {'number': '1002', 'customer': 'Gepard', 'status': 'Confirmed'},
+      cells: {
+        'number': '1002',
+        'customer': 'Gepard',
+        'status': 'Confirmed',
+        'approved': false,
+      },
     ),
     const FxListBoxRow(
       id: 'order-3',
@@ -51,6 +61,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
         'number': '1003',
         'customer': 'Cindy Crawford',
         'status': 'Draft',
+        'approved': false,
       },
       enabled: false,
     ),
@@ -62,6 +73,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
         'field': 'Layout',
         'desktop': 'DesktopFlexLayoutManager',
         'web': 'WebFlexLayoutManager',
+        'enabled': true,
       },
     ),
     const FxGridRow(
@@ -70,6 +82,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
         'field': 'Table',
         'desktop': 'DesktopListBox',
         'web': 'WebListBox',
+        'enabled': false,
       },
     ),
   ];
@@ -77,6 +90,10 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
   bool sortedListBoxAscending = true;
   String? sortedGridColumnId;
   bool sortedGridAscending = true;
+  Map<String, Map<String, String>> listBoxValidationErrors = {
+    'order-2': {'customer': 'Must be at least 3 characters'},
+  };
+  Map<String, Map<String, String>> gridValidationErrors = {};
 
   bool active = true;
   bool inactive = false;
@@ -1654,24 +1671,88 @@ label action
                                   });
                                 });
                               },
+                              validationErrors: listBoxValidationErrors,
+                              onCellEdited: (rowId, columnId, newValue) {
+                                setState(() {
+                                  final rowIndex = listBoxRows.indexWhere(
+                                    (r) => r.id == rowId,
+                                  );
+                                  if (rowIndex != -1) {
+                                    final oldRow = listBoxRows[rowIndex];
+                                    final nextCells = Map<String, Object?>.from(
+                                      oldRow.cells,
+                                    );
+                                    nextCells[columnId] = newValue;
+                                    listBoxRows[rowIndex] = FxListBoxRow(
+                                      id: oldRow.id,
+                                      cells: nextCells,
+                                      enabled: oldRow.enabled,
+                                      height: oldRow.height,
+                                      rowTag: oldRow.rowTag,
+                                    );
+
+                                    // Dynamic validation
+                                    final errors =
+                                        Map<String, Map<String, String>>.from(
+                                          listBoxValidationErrors,
+                                        );
+                                    if (columnId == 'customer') {
+                                      final strVal = newValue?.toString() ?? '';
+                                      if (strVal.isEmpty) {
+                                        errors.putIfAbsent(
+                                              rowId,
+                                              () => {},
+                                            )[columnId] =
+                                            'Customer name cannot be empty';
+                                      } else if (strVal.length < 3) {
+                                        errors.putIfAbsent(
+                                              rowId,
+                                              () => {},
+                                            )[columnId] =
+                                            'Must be at least 3 characters';
+                                      } else {
+                                        errors[rowId]?.remove(columnId);
+                                      }
+                                    }
+                                    listBoxValidationErrors = errors;
+                                  }
+                                });
+                              },
                               columns: const [
                                 FxListBoxColumn(
                                   id: 'number',
                                   caption: 'Order',
                                   width: FxColumnWidth.fixed(110),
                                   sortable: true,
+                                  editable: true,
                                 ),
                                 FxListBoxColumn(
                                   id: 'customer',
                                   caption: 'Customer',
                                   width: FxColumnWidth.fixed(180),
                                   sortable: true,
+                                  editable: true,
                                 ),
                                 FxListBoxColumn(
                                   id: 'status',
                                   caption: 'Status',
                                   width: FxColumnWidth.fixed(130),
                                   sortable: true,
+                                  editable: true,
+                                  type: FxCellType.choice([
+                                    'Draft',
+                                    'Open',
+                                    'Confirmed',
+                                    'Closed',
+                                  ]),
+                                ),
+                                FxListBoxColumn(
+                                  id: 'approved',
+                                  caption: 'Approved',
+                                  width: FxColumnWidth.fixed(100),
+                                  sortable: true,
+                                  editable: true,
+                                  type: FxCellType.boolean(),
                                 ),
                               ],
                               rows: listBoxRows,
@@ -1703,6 +1784,48 @@ label action
                                   });
                                 });
                               },
+                              validationErrors: gridValidationErrors,
+                              onCellEdited: (rowId, columnId, newValue) {
+                                setState(() {
+                                  final rowIndex = gridRows.indexWhere(
+                                    (r) => r.id == rowId,
+                                  );
+                                  if (rowIndex != -1) {
+                                    final oldRow = gridRows[rowIndex];
+                                    final nextCells = Map<String, Object?>.from(
+                                      oldRow.cells,
+                                    );
+                                    nextCells[columnId] = newValue;
+                                    gridRows[rowIndex] = FxGridRow(
+                                      id: oldRow.id,
+                                      cells: nextCells,
+                                      enabled: oldRow.enabled,
+                                      height: oldRow.height,
+                                      rowTag: oldRow.rowTag,
+                                      cellTags: oldRow.cellTags,
+                                    );
+
+                                    // Dynamic validation
+                                    final errors =
+                                        Map<String, Map<String, String>>.from(
+                                          gridValidationErrors,
+                                        );
+                                    if (columnId == 'desktop' ||
+                                        columnId == 'web') {
+                                      final strVal = newValue?.toString() ?? '';
+                                      if (strVal.isEmpty) {
+                                        errors.putIfAbsent(
+                                          rowId,
+                                          () => {},
+                                        )[columnId] = 'Value cannot be empty';
+                                      } else {
+                                        errors[rowId]?.remove(columnId);
+                                      }
+                                    }
+                                    gridValidationErrors = errors;
+                                  }
+                                });
+                              },
                               columns: const [
                                 FxGridColumn(
                                   id: 'field',
@@ -1715,12 +1838,22 @@ label action
                                   caption: 'Xojo Desktop',
                                   width: FxColumnWidth.fixed(230),
                                   sortable: true,
+                                  editable: true,
                                 ),
                                 FxGridColumn(
                                   id: 'web',
                                   caption: 'Xojo Web',
                                   width: FxColumnWidth.fixed(190),
                                   sortable: true,
+                                  editable: true,
+                                ),
+                                FxGridColumn(
+                                  id: 'enabled',
+                                  caption: 'Enabled',
+                                  width: FxColumnWidth.fixed(100),
+                                  sortable: true,
+                                  editable: true,
+                                  type: FxCellType.boolean(),
                                 ),
                               ],
                               rows: gridRows,

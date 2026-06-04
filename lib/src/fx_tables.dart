@@ -142,6 +142,71 @@ class FxRemainingColumnWidth extends FxColumnWidth {
       const table.RemainingTableSpanExtent();
 }
 
+/// Defines rendering and interaction strategies for list/grid cells.
+sealed class FxCellType {
+  /// Base constant constructor.
+  const FxCellType();
+
+  /// Creates a text cell type (renders a standard text widget).
+  const factory FxCellType.text() = FxTextCellType;
+
+  /// Creates a boolean cell type (renders a checkbox directly in the cell).
+  const factory FxCellType.boolean() = FxBooleanCellType;
+
+  /// Creates a choice cell type (renders a dropdown menu when editing).
+  const factory FxCellType.choice(List<String> options) = FxChoiceCellType;
+
+  /// Parses an [FxCellType] from a JSON map.
+  factory FxCellType.fromJson(Map<String, Object?> json) {
+    final type = json['type'] as String?;
+    switch (type) {
+      case 'text':
+        return const FxCellType.text();
+      case 'boolean':
+        return const FxCellType.boolean();
+      case 'choice':
+        final options =
+            (json['options'] as List?)?.cast<String>() ?? const <String>[];
+        return FxCellType.choice(options);
+      default:
+        return const FxCellType.text();
+    }
+  }
+
+  /// Converts this cell type to JSON.
+  Map<String, Object?> toJson();
+}
+
+/// A text cell type.
+class FxTextCellType extends FxCellType {
+  /// Creates a text cell type.
+  const FxTextCellType();
+
+  @override
+  Map<String, Object?> toJson() => {'type': 'text'};
+}
+
+/// A boolean cell type.
+class FxBooleanCellType extends FxCellType {
+  /// Creates a boolean cell type.
+  const FxBooleanCellType();
+
+  @override
+  Map<String, Object?> toJson() => {'type': 'boolean'};
+}
+
+/// A choice/dropdown cell type.
+class FxChoiceCellType extends FxCellType {
+  /// Creates a choice cell type.
+  const FxChoiceCellType(this.options);
+
+  /// Selection options.
+  final List<String> options;
+
+  @override
+  Map<String, Object?> toJson() => {'type': 'choice', 'options': options};
+}
+
 /// A column descriptor for [FxListBox].
 class FxListBoxColumn {
   /// Creates a list box column.
@@ -154,6 +219,7 @@ class FxListBoxColumn {
     this.editable = false,
     this.visible = true,
     this.sortable = false,
+    this.type = const FxCellType.text(),
   });
 
   /// Stable column id.
@@ -180,6 +246,9 @@ class FxListBoxColumn {
   /// Whether the column can be sorted.
   final bool sortable;
 
+  /// Sizing and interaction type of the cells in this column.
+  final FxCellType type;
+
   /// Converts this column to JSON.
   Map<String, Object?> toJson() {
     return {
@@ -191,6 +260,7 @@ class FxListBoxColumn {
       'editable': editable,
       'visible': visible,
       'sortable': sortable,
+      'type': type.toJson(),
     };
   }
 }
@@ -203,6 +273,7 @@ class FxListBoxRow {
     required this.cells,
     this.enabled = true,
     this.height,
+    this.rowTag,
   });
 
   /// Stable row id.
@@ -216,6 +287,9 @@ class FxListBoxRow {
 
   /// Optional row height.
   final double? height;
+
+  /// Optional metadata associated with the row.
+  final Object? rowTag;
 
   /// Converts this row to JSON.
   Map<String, Object?> toJson() {
@@ -248,6 +322,8 @@ class FxListBox extends StatefulWidget {
     this.sortAscending = true,
     this.onSortChanged,
     this.onColumnResized,
+    this.validationErrors,
+    this.onCellEdited,
   });
 
   /// Column descriptors.
@@ -307,6 +383,13 @@ class FxListBox extends StatefulWidget {
   /// Callback when column is resized.
   final void Function(String columnId, double newWidth)? onColumnResized;
 
+  /// Optional validation errors keyed by row ID and column ID.
+  final Map<String, Map<String, String>>? validationErrors;
+
+  /// Callback when a cell is successfully edited/committed.
+  final void Function(String rowId, String columnId, Object? newValue)?
+  onCellEdited;
+
   /// Stable map for AI/generator use.
   Map<String, Object?> toTemplateMap() {
     return {
@@ -330,6 +413,76 @@ class _FxListBoxState extends State<FxListBox> {
   late FocusNode _focusNode;
   int? _hoveredRowIndex;
   final Map<String, double> _columnWidths = {};
+  String? _editingRowId;
+  String? _editingColumnId;
+  TextEditingController? _editingController;
+
+  void _startEditing(String rowId, String columnId, Object? currentValue) {
+    setState(() {
+      _editingRowId = rowId;
+      _editingColumnId = columnId;
+      _editingController = TextEditingController(
+        text: currentValue?.toString() ?? '',
+      );
+    });
+  }
+
+  void _commitEdit(String rowId, String columnId, String newValue) {
+    if (widget.onCellEdited != null) {
+      widget.onCellEdited!(rowId, columnId, newValue);
+    }
+    _cancelEdit();
+  }
+
+  void _cancelEdit() {
+    final controller = _editingController;
+    setState(() {
+      _editingRowId = null;
+      _editingColumnId = null;
+      _editingController = null;
+    });
+    if (controller != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controller.dispose();
+      });
+    }
+  }
+
+  void _commitAndMoveToNext(String rowId, String columnId, String newValue) {
+    if (widget.onCellEdited != null) {
+      widget.onCellEdited!(rowId, columnId, newValue);
+    }
+
+    final visibleColumns = widget.columns.where((c) => c.visible).toList();
+    final colIdx = visibleColumns.indexWhere((c) => c.id == columnId);
+    if (colIdx != -1) {
+      var nextColIdx = colIdx + 1;
+      while (nextColIdx < visibleColumns.length) {
+        final col = visibleColumns[nextColIdx];
+        if (col.editable && col.type is! FxBooleanCellType) {
+          final row = widget.rows.firstWhere((r) => r.id == rowId);
+          _startEditing(rowId, col.id, row.cells[col.id]);
+          return;
+        }
+        nextColIdx++;
+      }
+    }
+
+    final rowIdx = widget.rows.indexWhere((r) => r.id == rowId);
+    if (rowIdx != -1 && rowIdx + 1 < widget.rows.length) {
+      final nextRow = widget.rows[rowIdx + 1];
+      if (nextRow.enabled) {
+        for (final col in visibleColumns) {
+          if (col.editable && col.type is! FxBooleanCellType) {
+            _startEditing(nextRow.id, col.id, nextRow.cells[col.id]);
+            return;
+          }
+        }
+      }
+    }
+
+    _cancelEdit();
+  }
 
   @override
   void initState() {
@@ -354,6 +507,7 @@ class _FxListBoxState extends State<FxListBox> {
     if (widget.focusNode == null) {
       _focusNode.dispose();
     }
+    _editingController?.dispose();
     super.dispose();
   }
 
@@ -412,6 +566,10 @@ class _FxListBoxState extends State<FxListBox> {
       return KeyEventResult.ignored;
     }
 
+    if (_editingRowId != null) {
+      return KeyEventResult.ignored;
+    }
+
     if (widget.rows.isEmpty ||
         widget.onSelectionChanged == null ||
         widget.selectionMode == FxListBoxSelectionMode.none) {
@@ -422,6 +580,24 @@ class _FxListBoxState extends State<FxListBox> {
     if (widget.selectedRowIds.isNotEmpty) {
       final lastSelected = widget.selectedRowIds.last;
       currentIndex = widget.rows.indexWhere((r) => r.id == lastSelected);
+    }
+
+    if (event.logicalKey == LogicalKeyboardKey.enter) {
+      if (currentIndex != -1) {
+        final selectedRow = widget.rows[currentIndex];
+        if (selectedRow.enabled) {
+          final visibleColumns = widget.columns
+              .where((c) => c.visible)
+              .toList();
+          for (final col in visibleColumns) {
+            if (col.editable && col.type is! FxBooleanCellType) {
+              _startEditing(selectedRow.id, col.id, selectedRow.cells[col.id]);
+              return KeyEventResult.handled;
+            }
+          }
+        }
+      }
+      return KeyEventResult.ignored;
     }
 
     int nextIndex;
@@ -661,6 +837,161 @@ class _FxListBoxState extends State<FxListBox> {
                   final row = widget.rows[vicinity.row - 1];
                   final value = row.cells[column.id];
                   final isSelected = widget.selectedRowIds.contains(row.id);
+                  final isEditing =
+                      _editingRowId == row.id && _editingColumnId == column.id;
+
+                  Widget cellChild;
+
+                  if (isEditing) {
+                    if (column.type is FxChoiceCellType) {
+                      final options = (column.type as FxChoiceCellType).options;
+                      cellChild = Container(
+                        color: Theme.of(context).colorScheme.surface,
+                        alignment: Alignment.centerLeft,
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: options.contains(value?.toString())
+                                ? value.toString()
+                                : null,
+                            isDense: true,
+                            autofocus: true,
+                            items: [
+                              for (final opt in options)
+                                DropdownMenuItem(
+                                  value: opt,
+                                  child: Text(
+                                    opt,
+                                    style: const TextStyle(fontSize: 13),
+                                  ),
+                                ),
+                            ],
+                            onChanged: (newValue) {
+                              _commitEdit(row.id, column.id, newValue ?? '');
+                            },
+                          ),
+                        ),
+                      );
+                    } else {
+                      cellChild = Container(
+                        color: Theme.of(context).colorScheme.surface,
+                        alignment: Alignment.centerLeft,
+                        child: Focus(
+                          onFocusChange: (hasFocus) {
+                            if (!hasFocus &&
+                                _editingRowId == row.id &&
+                                _editingColumnId == column.id) {
+                              _commitEdit(
+                                row.id,
+                                column.id,
+                                _editingController!.text,
+                              );
+                            }
+                          },
+                          onKeyEvent: (node, event) {
+                            if (event is KeyDownEvent) {
+                              if (event.logicalKey ==
+                                  LogicalKeyboardKey.escape) {
+                                _cancelEdit();
+                                return KeyEventResult.handled;
+                              }
+                              if (event.logicalKey == LogicalKeyboardKey.tab) {
+                                _commitAndMoveToNext(
+                                  row.id,
+                                  column.id,
+                                  _editingController!.text,
+                                );
+                                return KeyEventResult.handled;
+                              }
+                            }
+                            return KeyEventResult.ignored;
+                          },
+                          child: TextField(
+                            controller: _editingController,
+                            autofocus: true,
+                            style: const TextStyle(fontSize: 13),
+                            decoration: const InputDecoration(
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 6,
+                              ),
+                              border: InputBorder.none,
+                              isDense: true,
+                            ),
+                            onSubmitted: (newValue) {
+                              _commitEdit(row.id, column.id, newValue);
+                            },
+                          ),
+                        ),
+                      );
+                    }
+                  } else {
+                    if (column.type is FxBooleanCellType) {
+                      final bool val = value == true;
+                      cellChild = Center(
+                        child: Checkbox(
+                          value: val,
+                          onChanged: (row.enabled && column.editable)
+                              ? (newValue) {
+                                  if (widget.onCellEdited != null) {
+                                    widget.onCellEdited!(
+                                      row.id,
+                                      column.id,
+                                      newValue,
+                                    );
+                                  }
+                                }
+                              : null,
+                        ),
+                      );
+                    } else {
+                      cellChild = GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: row.enabled ? () => _handleRowTap(row.id) : null,
+                        onDoubleTap: (row.enabled && column.editable)
+                            ? () => _startEditing(row.id, column.id, value)
+                            : null,
+                        child: _CellText(
+                          text: value?.toString() ?? '',
+                          alignment: column.alignment,
+                          enabled: row.enabled,
+                          isSelected: isSelected,
+                        ),
+                      );
+                    }
+                  }
+
+                  final validationError =
+                      widget.validationErrors?[row.id]?[column.id];
+                  if (validationError != null) {
+                    cellChild = Tooltip(
+                      message: validationError,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: Theme.of(context).colorScheme.error,
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            cellChild,
+                            Positioned(
+                              right: 2,
+                              top: 2,
+                              child: Icon(
+                                Icons.error_outline,
+                                color: Theme.of(context).colorScheme.error,
+                                size: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+
                   return table.TableViewCell(
                     child: MouseRegion(
                       onEnter: (_) {
@@ -673,16 +1004,7 @@ class _FxListBoxState extends State<FxListBox> {
                           setState(() => _hoveredRowIndex = null);
                         }
                       },
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: row.enabled ? () => _handleRowTap(row.id) : null,
-                        child: _CellText(
-                          text: value?.toString() ?? '',
-                          alignment: column.alignment,
-                          enabled: row.enabled,
-                          isSelected: isSelected,
-                        ),
-                      ),
+                      child: cellChild,
                     ),
                   );
                 },
@@ -704,8 +1026,10 @@ class FxGridColumn {
     this.width = const FxColumnWidth.fixed(100),
     this.minWidth = 48,
     this.alignment = FxCellAlignment.leading,
+    this.editable = false,
     this.visible = true,
     this.sortable = false,
+    this.type = const FxCellType.text(),
   });
 
   /// Stable column id.
@@ -723,11 +1047,17 @@ class FxGridColumn {
   /// Cell alignment.
   final FxCellAlignment alignment;
 
+  /// Whether the column is editable in generated UI.
+  final bool editable;
+
   /// Whether the column is visible.
   final bool visible;
 
   /// Whether the column can be sorted.
   final bool sortable;
+
+  /// Sizing and interaction type of the cells in this column.
+  final FxCellType type;
 
   /// Converts this column to JSON.
   Map<String, Object?> toJson() {
@@ -737,8 +1067,10 @@ class FxGridColumn {
       'width': width.toJson(),
       'minWidth': minWidth,
       'alignment': alignment.name,
+      'editable': editable,
       'visible': visible,
       'sortable': sortable,
+      'type': type.toJson(),
     };
   }
 }
@@ -751,6 +1083,8 @@ class FxGridRow {
     required this.cells,
     this.enabled = true,
     this.height,
+    this.rowTag,
+    this.cellTags,
   });
 
   /// Stable row id.
@@ -765,13 +1099,18 @@ class FxGridRow {
   /// Optional row height.
   final double? height;
 
+  /// Optional metadata associated with the row.
+  final Object? rowTag;
+
+  /// Optional metadata associated with individual cells.
+  final Map<String, Object?>? cellTags;
+
   /// Converts this row to JSON.
   Map<String, Object?> toJson() {
     return {'id': id, 'cells': cells, 'enabled': enabled, 'height': height};
   }
 }
 
-/// A desktop data/cell grid comparable to Xojo's DesktopGrid.
 /// A desktop data/cell grid comparable to Xojo's DesktopGrid.
 class FxGrid extends StatefulWidget {
   /// Creates an FxDesktop data grid.
@@ -797,6 +1136,8 @@ class FxGrid extends StatefulWidget {
     this.sortAscending = true,
     this.onSortChanged,
     this.onColumnResized,
+    this.validationErrors,
+    this.onCellEdited,
   });
 
   /// Column descriptors.
@@ -859,6 +1200,13 @@ class FxGrid extends StatefulWidget {
   /// Callback when column is resized.
   final void Function(String columnId, double newWidth)? onColumnResized;
 
+  /// Optional validation errors keyed by row ID and column ID.
+  final Map<String, Map<String, String>>? validationErrors;
+
+  /// Callback when a cell is successfully edited/committed.
+  final void Function(String rowId, String columnId, Object? newValue)?
+  onCellEdited;
+
   /// Stable map for AI/generator use.
   Map<String, Object?> toTemplateMap() {
     return {
@@ -881,6 +1229,80 @@ class _FxGridState extends State<FxGrid> {
   late FocusNode _focusNode;
   table.TableVicinity? _hoveredCell;
   final Map<String, double> _columnWidths = {};
+  String? _editingRowId;
+  String? _editingColumnId;
+  TextEditingController? _editingController;
+
+  void _startEditing(String rowId, String columnId, Object? currentValue) {
+    setState(() {
+      _editingRowId = rowId;
+      _editingColumnId = columnId;
+      _editingController = TextEditingController(
+        text: currentValue?.toString() ?? '',
+      );
+    });
+  }
+
+  void _commitEdit(String rowId, String columnId, String newValue) {
+    if (widget.onCellEdited != null) {
+      widget.onCellEdited!(rowId, columnId, newValue);
+    }
+    _cancelEdit();
+  }
+
+  void _cancelEdit() {
+    final controller = _editingController;
+    setState(() {
+      _editingRowId = null;
+      _editingColumnId = null;
+      _editingController = null;
+    });
+    if (controller != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controller.dispose();
+      });
+    }
+  }
+
+  void _commitAndMoveToNext(String rowId, String columnId, String newValue) {
+    if (widget.onCellEdited != null) {
+      widget.onCellEdited!(rowId, columnId, newValue);
+    }
+
+    final visibleColumns = widget.columns.where((c) => c.visible).toList();
+    final colIdx = visibleColumns.indexWhere((c) => c.id == columnId);
+    if (colIdx != -1) {
+      var nextColIdx = colIdx + 1;
+      while (nextColIdx < visibleColumns.length) {
+        final col = visibleColumns[nextColIdx];
+        if (col.editable && col.type is! FxBooleanCellType) {
+          final row = widget.rows.firstWhere((r) => r.id == rowId);
+          _startEditing(rowId, col.id, row.cells[col.id]);
+          widget.onCellsSelected?.call({(rowId: rowId, columnId: col.id)});
+          return;
+        }
+        nextColIdx++;
+      }
+    }
+
+    final rowIdx = widget.rows.indexWhere((r) => r.id == rowId);
+    if (rowIdx != -1 && rowIdx + 1 < widget.rows.length) {
+      final nextRow = widget.rows[rowIdx + 1];
+      if (nextRow.enabled) {
+        for (final col in visibleColumns) {
+          if (col.editable && col.type is! FxBooleanCellType) {
+            _startEditing(nextRow.id, col.id, nextRow.cells[col.id]);
+            widget.onCellsSelected?.call({
+              (rowId: nextRow.id, columnId: col.id),
+            });
+            return;
+          }
+        }
+      }
+    }
+
+    _cancelEdit();
+  }
 
   @override
   void initState() {
@@ -905,6 +1327,7 @@ class _FxGridState extends State<FxGrid> {
     if (widget.focusNode == null) {
       _focusNode.dispose();
     }
+    _editingController?.dispose();
     super.dispose();
   }
 
@@ -935,6 +1358,10 @@ class _FxGridState extends State<FxGrid> {
       return KeyEventResult.ignored;
     }
 
+    if (_editingRowId != null) {
+      return KeyEventResult.ignored;
+    }
+
     final visibleColumns = widget.columns.where((c) => c.visible).toList();
     if (widget.rows.isEmpty ||
         visibleColumns.isEmpty ||
@@ -951,6 +1378,25 @@ class _FxGridState extends State<FxGrid> {
       currentCol = visibleColumns.indexWhere(
         (c) => c.id == lastSelected.columnId,
       );
+    }
+
+    if (event.logicalKey == LogicalKeyboardKey.enter) {
+      if (widget.selectedCells.isNotEmpty) {
+        final lastSelected = widget.selectedCells.last;
+        final selectedRow = widget.rows.firstWhere(
+          (r) => r.id == lastSelected.rowId,
+        );
+        final col = visibleColumns.firstWhere(
+          (c) => c.id == lastSelected.columnId,
+        );
+        if (selectedRow.enabled &&
+            col.editable &&
+            col.type is! FxBooleanCellType) {
+          _startEditing(selectedRow.id, col.id, selectedRow.cells[col.id]);
+          return KeyEventResult.handled;
+        }
+      }
+      return KeyEventResult.ignored;
     }
 
     int nextRow;
@@ -1215,22 +1661,135 @@ class _FxGridState extends State<FxGrid> {
                       _hoveredCell!.row == vicinity.row &&
                       _hoveredCell!.column == vicinity.column;
                   final value = row.cells[column.id];
-                  return table.TableViewCell(
-                    child: MouseRegion(
-                      onEnter: (_) {
-                        if (row.enabled) {
-                          setState(() => _hoveredCell = vicinity);
-                        }
-                      },
-                      onExit: (_) {
-                        if (row.enabled) {
-                          setState(() => _hoveredCell = null);
-                        }
-                      },
-                      child: GestureDetector(
+                  final isEditing =
+                      _editingRowId == row.id && _editingColumnId == column.id;
+
+                  Widget cellChild;
+
+                  if (isEditing) {
+                    if (column.type is FxChoiceCellType) {
+                      final options = (column.type as FxChoiceCellType).options;
+                      cellChild = Container(
+                        color: Theme.of(context).colorScheme.surface,
+                        alignment: Alignment.centerLeft,
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: options.contains(value?.toString())
+                                ? value.toString()
+                                : null,
+                            isDense: true,
+                            autofocus: true,
+                            items: [
+                              for (final opt in options)
+                                DropdownMenuItem(
+                                  value: opt,
+                                  child: Text(
+                                    opt,
+                                    style: const TextStyle(fontSize: 13),
+                                  ),
+                                ),
+                            ],
+                            onChanged: (newValue) {
+                              _commitEdit(row.id, column.id, newValue ?? '');
+                            },
+                          ),
+                        ),
+                      );
+                    } else {
+                      cellChild = Container(
+                        color: Theme.of(context).colorScheme.surface,
+                        alignment: Alignment.centerLeft,
+                        child: Focus(
+                          onFocusChange: (hasFocus) {
+                            if (!hasFocus &&
+                                _editingRowId == row.id &&
+                                _editingColumnId == column.id) {
+                              _commitEdit(
+                                row.id,
+                                column.id,
+                                _editingController!.text,
+                              );
+                            }
+                          },
+                          onKeyEvent: (node, event) {
+                            if (event is KeyDownEvent) {
+                              if (event.logicalKey ==
+                                  LogicalKeyboardKey.escape) {
+                                _cancelEdit();
+                                return KeyEventResult.handled;
+                              }
+                              if (event.logicalKey == LogicalKeyboardKey.tab) {
+                                _commitAndMoveToNext(
+                                  row.id,
+                                  column.id,
+                                  _editingController!.text,
+                                );
+                                return KeyEventResult.handled;
+                              }
+                            }
+                            return KeyEventResult.ignored;
+                          },
+                          child: TextField(
+                            controller: _editingController,
+                            autofocus: true,
+                            style: const TextStyle(fontSize: 13),
+                            decoration: const InputDecoration(
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 6,
+                              ),
+                              border: InputBorder.none,
+                              isDense: true,
+                            ),
+                            onSubmitted: (newValue) {
+                              _commitEdit(row.id, column.id, newValue);
+                            },
+                          ),
+                        ),
+                      );
+                    }
+                  } else {
+                    if (column.type is FxBooleanCellType) {
+                      final bool val = value == true;
+                      cellChild = GestureDetector(
                         behavior: HitTestBehavior.opaque,
                         onTap: row.enabled
                             ? () => _handleCellTap(row.id, column.id)
+                            : null,
+                        child: ColoredBox(
+                          color: selected
+                              ? theme.selectionBackground
+                              : hovered
+                              ? Theme.of(context).hoverColor
+                              : Colors.transparent,
+                          child: Center(
+                            child: Checkbox(
+                              value: val,
+                              onChanged: (row.enabled && column.editable)
+                                  ? (newValue) {
+                                      if (widget.onCellEdited != null) {
+                                        widget.onCellEdited!(
+                                          row.id,
+                                          column.id,
+                                          newValue,
+                                        );
+                                      }
+                                      _handleCellTap(row.id, column.id);
+                                    }
+                                  : null,
+                            ),
+                          ),
+                        ),
+                      );
+                    } else {
+                      cellChild = GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: row.enabled
+                            ? () => _handleCellTap(row.id, column.id)
+                            : null,
+                        onDoubleTap: (row.enabled && column.editable)
+                            ? () => _startEditing(row.id, column.id, value)
                             : null,
                         child: ColoredBox(
                           color: selected
@@ -1245,7 +1804,54 @@ class _FxGridState extends State<FxGrid> {
                             isSelected: selected,
                           ),
                         ),
+                      );
+                    }
+                  }
+
+                  final validationError =
+                      widget.validationErrors?[row.id]?[column.id];
+                  if (validationError != null) {
+                    cellChild = Tooltip(
+                      message: validationError,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: Theme.of(context).colorScheme.error,
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            cellChild,
+                            Positioned(
+                              right: 2,
+                              top: 2,
+                              child: Icon(
+                                Icons.error_outline,
+                                color: Theme.of(context).colorScheme.error,
+                                size: 14,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
+                    );
+                  }
+
+                  return table.TableViewCell(
+                    child: MouseRegion(
+                      onEnter: (_) {
+                        if (row.enabled) {
+                          setState(() => _hoveredCell = vicinity);
+                        }
+                      },
+                      onExit: (_) {
+                        if (row.enabled) {
+                          setState(() => _hoveredCell = null);
+                        }
+                      },
+                      child: cellChild,
                     ),
                   );
                 },
