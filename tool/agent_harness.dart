@@ -1,11 +1,25 @@
 import 'dart:io';
 
-Future<void> main() async {
+Future<void> main(List<String> args) async {
+  final updateApi = args.contains('--update-api');
+
+  if (updateApi) {
+    stdout.writeln('Updating public API signature...');
+    final signatures = _generateApiSignature();
+    final signatureFile = File('doc/api/public_api_signature.txt');
+    signatureFile.parent.createSync(recursive: true);
+    signatureFile.writeAsStringSync('${signatures.join('\n')}\n');
+    stdout.writeln(
+      'Public API signature successfully updated and saved to ${signatureFile.path}',
+    );
+    return;
+  }
+
   final failures = <String>[];
 
   await _run('dart', ['format', '--set-exit-if-changed', '.'], failures);
   await _run('flutter', ['analyze'], failures);
-  await _run('flutter', ['test'], failures);
+  await _run('flutter', ['test', '--coverage'], failures);
   await _run('flutter', ['pub', 'run', 'dartdoc'], failures);
   await _run('flutter', ['pub', 'publish', '--dry-run'], failures);
   await _run('flutter', ['pub', 'get'], failures, workingDirectory: 'example');
@@ -14,6 +28,9 @@ Future<void> main() async {
 
   _checkNoMachineLocalPaths(failures);
   _checkPublicApiDoesNotLeakDependencies(failures);
+  _checkComponentRegistry(failures);
+  _checkPublicApiSignature(failures);
+  _checkTestCoverageThreshold(failures);
 
   if (failures.isNotEmpty) {
     stderr.writeln('\nFxDesktop agent harness failed:');
@@ -61,9 +78,9 @@ void _checkNoMachineLocalPaths(List<String> failures) {
       '/',
     ),
     RegExp(
-      'C:'
+      r'C:'
       r'\\'
-      'Users'
+      r'Users'
       r'\\',
     ),
     RegExp(
@@ -97,6 +114,227 @@ void _checkPublicApiDoesNotLeakDependencies(List<String> failures) {
       failures.add('dependency type/export leak found in ${file.path}');
     }
   }
+}
+
+void _checkComponentRegistry(List<String> failures) {
+  final ignored = {'FxFlexItem', 'FxGridPlacement'};
+
+  final componentsFile = File('lib/src/fx_components.dart');
+  if (!componentsFile.existsSync()) {
+    failures.add('Could not find lib/src/fx_components.dart');
+    return;
+  }
+  final componentsContent = componentsFile.readAsStringSync();
+  final nameRegex = RegExp(r"name:\s*['\x22](Fx\w+)['\x22]");
+  final registeredNames = nameRegex
+      .allMatches(componentsContent)
+      .map((m) => m.group(1)!)
+      .toSet();
+
+  final widgetClassRegex = RegExp(
+    r'class\s+(Fx\w+)(?:<[^>]+>)?\s+extends\s+(?:StatelessWidget|StatefulWidget)',
+  );
+
+  final srcDir = Directory('lib/src');
+  final foundWidgets = <String>{};
+  for (final entity in srcDir.listSync()) {
+    if (entity is File && entity.path.endsWith('.dart')) {
+      final content = entity.readAsStringSync();
+      for (final match in widgetClassRegex.allMatches(content)) {
+        final className = match.group(1)!;
+        if (!ignored.contains(className)) {
+          foundWidgets.add(className);
+        }
+      }
+    }
+  }
+
+  for (final widget in foundWidgets) {
+    if (!registeredNames.contains(widget)) {
+      failures.add(
+        'Public widget $widget is defined but not registered in fxComponentRegistry (in lib/src/fx_components.dart)',
+      );
+    }
+  }
+}
+
+void _checkPublicApiSignature(List<String> failures) {
+  final signatureFile = File('doc/api/public_api_signature.txt');
+  if (!signatureFile.existsSync()) {
+    failures.add(
+      'Public API signature file not found at ${signatureFile.path}. '
+      'Run the harness with the --update-api flag to generate it: '
+      'dart run tool/agent_harness.dart --update-api',
+    );
+    return;
+  }
+
+  final expected = signatureFile.readAsStringSync();
+  final actual = '${_generateApiSignature().join('\n')}\n';
+
+  if (expected != actual) {
+    failures.add(
+      'Public API signature mismatch detected! This means a public class, '
+      'constructor, or member signature has changed. If this change was intentional, '
+      'run the harness with the --update-api flag to regenerate the signature: '
+      'dart run tool/agent_harness.dart --update-api\n\n'
+      'Differences (Expected vs Actual):\n'
+      '${_findDiff(expected, actual)}',
+    );
+  }
+}
+
+void _checkTestCoverageThreshold(List<String> failures) {
+  final lcovFile = File('coverage/lcov.info');
+  if (!lcovFile.existsSync()) {
+    failures.add(
+      'Coverage file coverage/lcov.info not found. Make sure tests run with --coverage.',
+    );
+    return;
+  }
+
+  var totalLF = 0;
+  var totalLH = 0;
+  for (final line in lcovFile.readAsLinesSync()) {
+    if (line.startsWith('LF:')) {
+      totalLF += int.parse(line.substring(3).trim());
+    } else if (line.startsWith('LH:')) {
+      totalLH += int.parse(line.substring(3).trim());
+    }
+  }
+
+  if (totalLF == 0) {
+    failures.add('No coverage lines found in coverage/lcov.info');
+    return;
+  }
+
+  final coverage = (totalLH / totalLF) * 100;
+  stdout.writeln(
+    'Measured test coverage: ${coverage.toStringAsFixed(2)}% ($totalLH/$totalLF lines)',
+  );
+
+  const threshold = 85.0;
+  if (coverage < threshold) {
+    failures.add(
+      'Test coverage is ${coverage.toStringAsFixed(2)}%, which is below the threshold of $threshold%.',
+    );
+  }
+}
+
+List<String> _generateApiSignature() {
+  final signatures = <String>[];
+  final exportRegex = RegExp(r"export\s+'([^']+)';");
+  final entryFile = File('lib/fx_desktop.dart');
+  if (!entryFile.existsSync()) return [];
+
+  final entryContent = entryFile.readAsStringSync();
+  final exportedFiles = exportRegex
+      .allMatches(entryContent)
+      .map((m) => m.group(1)!)
+      .toList();
+
+  for (final relPath in exportedFiles) {
+    final file = File('lib/$relPath');
+    if (!file.existsSync()) continue;
+    final lines = file.readAsLinesSync();
+
+    String? currentClass;
+
+    for (var i = 0; i < lines.length; i++) {
+      final line = lines[i].trim();
+      if (line.isEmpty ||
+          line.startsWith('//') ||
+          line.startsWith('/*') ||
+          line.startsWith('*')) {
+        continue;
+      }
+
+      // Top-level class
+      if (line.startsWith('class ') && !line.startsWith('class _')) {
+        final classNameMatch = RegExp(
+          r'class\s+([A-Za-z0-9_<>]+)',
+        ).firstMatch(line);
+        if (classNameMatch != null) {
+          currentClass = classNameMatch.group(1);
+          var decl = line.replaceAll('{', '').trim();
+          signatures.add('class $decl');
+        }
+      }
+      // Top-level enum
+      else if (line.startsWith('enum ') && !line.startsWith('enum _')) {
+        currentClass = null;
+        var decl = line.replaceAll('{', '').trim();
+        signatures.add('enum $decl');
+      }
+      // Class constructor/members
+      else if (currentClass != null &&
+          lines[i].startsWith('  ') &&
+          !lines[i].startsWith('   ')) {
+        final memberLine = lines[i].trim();
+        if (memberLine.startsWith('const ') ||
+            memberLine.startsWith('factory ') ||
+            memberLine.startsWith(currentClass.split('<')[0])) {
+          var decl = memberLine.replaceAll('{', '').replaceAll(';', '').trim();
+          if (decl.endsWith(')') || decl.contains(':')) {
+            final closeParen = decl.indexOf(')');
+            if (closeParen != -1) {
+              decl = decl.substring(0, closeParen + 1);
+            }
+          }
+          signatures.add('  $currentClass constructor $decl');
+        } else if ((memberLine.startsWith('final ') ||
+                memberLine.startsWith('late ') ||
+                memberLine.startsWith('static ') ||
+                _isMethodOrField(memberLine)) &&
+            !memberLine.contains('_') &&
+            !memberLine.startsWith('@')) {
+          var decl = memberLine.replaceAll('{', '').replaceAll(';', '').trim();
+          if (decl.contains('=>')) {
+            decl = decl.split('=>')[0].trim();
+          }
+          signatures.add('  $currentClass member $decl');
+        }
+      }
+      // Reset class context if top-level brace closed or another class starts
+      if (lines[i].startsWith('}') && currentClass != null) {
+        currentClass = null;
+      }
+    }
+  }
+  signatures.sort();
+  return signatures;
+}
+
+bool _isMethodOrField(String line) {
+  if (line.contains('(') && line.contains(')')) return true;
+  if (line.startsWith('get ') || line.startsWith('set ')) return true;
+  return false;
+}
+
+String _findDiff(String expected, String actual) {
+  final expectedLines = expected.split('\n');
+  final actualLines = actual.split('\n');
+  final diff = <String>[];
+
+  final maxLines = expectedLines.length > actualLines.length
+      ? expectedLines.length
+      : actualLines.length;
+
+  for (var i = 0; i < maxLines; i++) {
+    final exp = i < expectedLines.length ? expectedLines[i] : null;
+    final act = i < actualLines.length ? actualLines[i] : null;
+
+    if (exp != act) {
+      if (exp != null) diff.add('- [Expected] $exp');
+      if (act != null) diff.add('+ [Actual]   $act');
+    }
+  }
+
+  // Limit output to first 10 differences to keep it readable
+  if (diff.length > 20) {
+    return '${diff.take(20).join('\n')}\n... (truncated)';
+  }
+  return diff.join('\n');
 }
 
 Iterable<File> _trackedTextFiles() sync* {

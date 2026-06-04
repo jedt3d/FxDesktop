@@ -110,6 +110,7 @@ nav    content
       expect(byName['FxStyledLabel']?.xojoDesktopClass, 'DesktopLabel');
       expect(byName['FxListBox']?.xojoDesktopClass, 'DesktopListBox');
       expect(byName['FxGrid']?.xojoDesktopClass, 'DesktopGrid');
+      expect(byName['FxGroupBox']?.xojoDesktopClass, 'DesktopGroupBox');
     });
   });
 

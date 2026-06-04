@@ -221,6 +221,14 @@ const fxComponentRegistry = <FxComponentDescriptor>[
     notes: 'Styled label/help text pattern with mixed text spans.',
   ),
   FxComponentDescriptor(
+    id: 'fx.group_box',
+    name: 'FxGroupBox',
+    xojoDesktopClass: 'DesktopGroupBox',
+    supportLevel: FxComponentSupportLevel.comparable,
+    notes: 'A framed desktop group box container.',
+  ),
+
+  FxComponentDescriptor(
     id: 'fx.flex_layout',
     name: 'FxFlexLayout',
     xojoDesktopClass: 'DesktopFlexLayoutManager',

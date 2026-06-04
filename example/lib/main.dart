@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show debugPaintSizeEnabled;
 import 'package:fx_desktop/fx_desktop.dart';
 
 void main() {
@@ -59,6 +60,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
   double undoPriority = 30;
   double undoPriorityDragStart = 30;
   int undoTabIndex = 0;
+  bool _showLayoutBounds = false;
 
   @override
   void dispose() {
@@ -102,16 +104,51 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Text(
-                            'FxDesktop Component Harness',
-                            style: Theme.of(context).textTheme.headlineSmall
-                                ?.copyWith(fontWeight: FontWeight.w700),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      'FxDesktop Component Harness',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .headlineSmall
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'One component per row, optimized for desktop visual checks.',
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.bodyMedium,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Text('Show Layout Bounds'),
+                                  const SizedBox(width: 8),
+                                  Switch(
+                                    value: _showLayoutBounds,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _showLayoutBounds = value;
+                                        debugPaintSizeEnabled = value;
+                                      });
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'One component per row, optimized for desktop visual checks.',
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
+
                           const SizedBox(height: 18),
                           _ComponentRow(
                             name: 'FxTextField Phase 2.5 Constraints & Masks',
