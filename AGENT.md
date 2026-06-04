@@ -82,6 +82,11 @@ For Milestone 2 component work, follow
 `FxTabPanel` has visible tabs, and `FxPagePanel`/`FxCardContainer` are
 indexed containers without visible tab headers.
 
+For Milestone 3 table work, follow `doc/milestone-3-listbox-grid.md`.
+Preserve the semantic split: `FxListBox` is row-oriented record selection and
+`FxGrid` is cell-oriented data inspection/editing. Shared table infrastructure
+is allowed, but public APIs must keep the two controls distinct.
+
 ## Version And Release Rules
 
 - Do not bump versions or create tags for planning-only changes.
@@ -90,6 +95,8 @@ indexed containers without visible tab headers.
   and any docs that mention the current version.
 - For Milestone 2, release each implementation phase separately:
   `v0.2.1`, `v0.2.2`, `v0.2.3`, `v0.2.4`, `v0.2.5`, and `v0.2.6`.
+- For Milestone 3, use the `0.3.x` release line for implementation phases.
+  Planning-only specs do not bump the package version.
 - For every Milestone 2 phase, update the example harness, capture screenshots,
   run the full quality harness, tag the version, and create a GitHub Release
   with screenshots attached.

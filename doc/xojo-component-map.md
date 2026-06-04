@@ -90,6 +90,18 @@ AI agents and generators understand why a component is or is not created.
 See [Milestone 2: Xojo Desktop Control Parity](milestone-2-control-parity.md)
 for priority, phases, demo presentation, and definition of done.
 
+## Milestone 3 Planned Table Depth
+
+Milestone 3 focuses on `FxListBox` and `FxGrid`. Keep the semantic split clear:
+
+| FxDesktop | Xojo Desktop | Milestone 3 direction |
+|---|---|---|
+| `FxListBox` | `DesktopListBox` | Row-oriented record list with selection, sorting, sizing, row state, optional editing, and generator metadata. |
+| `FxGrid` | `DesktopGrid` | Cell-oriented data grid with cell/range selection, editing, validation, clipboard, and generator metadata. |
+
+See [Milestone 3: ListBox And Grid Depth](milestone-3-listbox-grid.md) for the
+phase plan, acceptance criteria, testing strategy, and open design questions.
+
 ## Mobile And Tablet
 
 FxDesktop is not meant to replace normal Flutter responsive design for mobile

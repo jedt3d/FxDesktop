@@ -93,6 +93,24 @@ Milestone 2 implementation phases are not small documentation-only updates, so
 each Phase 2.1 through 2.6 release should create a GitHub Release and attach the
 phase screenshots.
 
+## Milestone 3 Phase Versions
+
+Milestone 3 is expected to use the `0.3.x` release line for implementation
+phases:
+
+- Phase 3.1: `v0.3.1`
+- Phase 3.2: `v0.3.2`
+- Phase 3.3: `v0.3.3`
+- Phase 3.4: `v0.3.4`
+- Phase 3.5: `v0.3.5`
+
+The exact phase count can change after spec review, but implementation releases
+should stay small enough to validate, screenshot, merge, tag, and publish one
+phase at a time.
+
+Planning-only Milestone 3 specs do not change `pubspec.yaml`, README install
+versions, or tags.
+
 ## Pub.dev
 
 Before publishing to pub.dev:

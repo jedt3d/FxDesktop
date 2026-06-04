@@ -2,7 +2,11 @@
 
 ## Unreleased
 
-No unreleased changes.
+### Added
+
+- Added the Milestone 3 planning spec for `FxListBox` and `FxGrid` depth,
+  including phase boundaries, acceptance criteria, screenshot targets, testing
+  strategy, sub-agent roles, and open design questions.
 
 ## 0.2.6
 

@@ -111,6 +111,11 @@ character counts, forbidden input, phone-style pattern masks, and commit-time
 fixed decimal display formatting.
 See [Milestone 2: Xojo Desktop Control Parity](https://github.com/jedt3d/FxDesktop/blob/main/doc/milestone-2-control-parity.md).
 
+Milestone 3 focuses on deeper `FxListBox` and `FxGrid` behavior: selection,
+keyboard navigation, sorting, column sizing, editing, validation, clipboard,
+large-data checks, and generator metadata. See
+[Milestone 3: ListBox And Grid Depth](https://github.com/jedt3d/FxDesktop/blob/main/doc/milestone-3-listbox-grid.md).
+
 ## Text Input Constraints
 
 `FxTextField` and `FxTextArea` include caption-style labels, helper text, error
