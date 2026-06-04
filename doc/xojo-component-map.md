@@ -47,7 +47,8 @@ delivered navigation and indexed container controls in `v0.2.2`. Phase 2.3
 delivered compact utility and display controls in `v0.2.3`. Phase 2.4 deepened
 text inputs and polished nullable color selection in `v0.2.4`. Phase 2.5 added
 text input constraints, required indicators, character counters, and
-single-line display formats in `v0.2.5`.
+single-line display formats in `v0.2.5`. Phase 2.6 polished mixed decorated
+input alignment in `v0.2.6`.
 
 | FxDesktop | Xojo Desktop | Notes |
 |---|---|---|
@@ -57,6 +58,8 @@ single-line display formats in `v0.2.5`.
 | `FxRadioButton` | `DesktopRadioButton` | Single radio option. |
 | `FxRadioGroup` | `DesktopRadioGroup` | Managed exclusive option group. |
 | `FxDateTimePicker` | `DesktopDateTimePicker` | Date, time, and date-time modes. |
+| `FxPopupMenu` input depth | `DesktopPopupMenu` | Helper/error text and reserved supporting space for mixed form rows. |
+| `FxComboBox` input depth | `DesktopComboBox` | Helper/error text and reserved supporting space for mixed form rows. |
 | `FxSlider` | `DesktopSlider` | Numeric range input. |
 | `FxSegmentedButton` | `DesktopSegmentedButton` | Single-selection mode selector, often used to switch pages or cards. |
 | `FxTabPanel` | `DesktopTabPanel` | Visible tab headers choose indexed content pages. |

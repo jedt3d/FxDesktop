@@ -287,6 +287,57 @@ void main() {
       expect(field.decoration?.labelText, 'Customer *');
     });
 
+    testWidgets('can reserve supporting text space without visible text', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: FxTextField(label: 'Code', reserveSupportingTextSpace: true),
+          ),
+        ),
+      );
+
+      final field = tester.widget<TextField>(find.byType(TextField));
+      expect(field.decoration?.helperText, ' ');
+      expect(field.decoration?.errorText, isNull);
+    });
+
+    testWidgets('keeps real helper and error text above reserved space', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: Column(
+              children: [
+                FxTextField(
+                  label: 'Helper',
+                  helpText: 'Useful guidance.',
+                  reserveSupportingTextSpace: true,
+                ),
+                FxTextField(
+                  label: 'Error',
+                  helpText: 'Hidden while error is shown.',
+                  errorText: 'Value is required.',
+                  reserveSupportingTextSpace: true,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      final fields = tester.widgetList<TextField>(find.byType(TextField));
+      expect(fields.elementAt(0).decoration?.helperText, 'Useful guidance.');
+      expect(fields.elementAt(0).decoration?.errorText, isNull);
+      expect(
+        fields.elementAt(1).decoration?.helperText,
+        'Hidden while error is shown.',
+      );
+      expect(fields.elementAt(1).decoration?.errorText, 'Value is required.');
+    });
+
     testWidgets('distinguishes disabled and read-only behavior', (
       tester,
     ) async {
@@ -338,6 +389,7 @@ void main() {
           'obscureText': true,
           'required': false,
           'showRequiredIndicator': true,
+          'reserveSupportingTextSpace': false,
           'hasPrefixIcon': true,
           'hasSuffixIcon': true,
           'constraints': null,
@@ -488,6 +540,20 @@ void main() {
       },
     );
 
+    testWidgets('can reserve multiline supporting text space', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: FxTextArea(label: 'Notes', reserveSupportingTextSpace: true),
+          ),
+        ),
+      );
+
+      final area = tester.widget<TextField>(find.byType(TextField));
+      expect(area.decoration?.helperText, ' ');
+      expect(area.decoration?.errorText, isNull);
+    });
+
     test('exports template metadata', () {
       final scrollController = ScrollController();
       expect(
@@ -513,6 +579,7 @@ void main() {
           'readOnly': true,
           'required': false,
           'showRequiredIndicator': true,
+          'reserveSupportingTextSpace': false,
           'minLines': 4,
           'maxLines': 8,
           'hasScrollController': true,
@@ -567,6 +634,43 @@ void main() {
       );
       expect(button.onChanged, isNull);
       expect(find.text('No statuses'), findsOneWidget);
+    });
+
+    testWidgets('supports helper, error, and reserved supporting text', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: Column(
+              children: [
+                FxPopupMenu(
+                  label: 'Helper',
+                  options: ['Open'],
+                  helpText: 'Choose a status.',
+                ),
+                FxPopupMenu(
+                  label: 'Error',
+                  options: ['Open'],
+                  errorText: 'Status is required.',
+                ),
+                FxPopupMenu(
+                  label: 'Reserved',
+                  options: ['Open'],
+                  reserveSupportingTextSpace: true,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      final menus = tester.widgetList<DropdownButtonFormField<String>>(
+        find.byType(DropdownButtonFormField<String>),
+      );
+      expect(menus.elementAt(0).decoration.helperText, 'Choose a status.');
+      expect(menus.elementAt(1).decoration.errorText, 'Status is required.');
+      expect(menus.elementAt(2).decoration.helperText, ' ');
     });
   });
 
@@ -655,6 +759,44 @@ void main() {
       await tester.tap(find.byType(TextField));
       await tester.pumpAndSettle();
       expect(find.text('Alpha'), findsNothing);
+    });
+
+    testWidgets('supports helper, error, and reserved supporting text', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: Column(
+              children: [
+                FxComboBox(
+                  label: 'Helper',
+                  options: ['Bangkok'],
+                  helpText: 'Type or choose a city.',
+                ),
+                FxComboBox(
+                  label: 'Error',
+                  options: ['Bangkok'],
+                  errorText: 'City is required.',
+                ),
+                FxComboBox(
+                  label: 'Reserved',
+                  options: ['Bangkok'],
+                  reserveSupportingTextSpace: true,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      final fields = tester.widgetList<TextField>(find.byType(TextField));
+      expect(
+        fields.elementAt(0).decoration?.helperText,
+        'Type or choose a city.',
+      );
+      expect(fields.elementAt(1).decoration?.errorText, 'City is required.');
+      expect(fields.elementAt(2).decoration?.helperText, ' ');
     });
   });
 }

@@ -71,6 +71,7 @@ GitHub Release before the next phase starts.
 | 2.3 | `v0.2.3` | Desktop utility controls, delivered |
 | 2.4 | `v0.2.4` | Text input depth, delivered |
 | 2.5 | `v0.2.5` | Text input constraints and formats, delivered |
+| 2.6 | `v0.2.6` | Mixed decorated input alignment, delivered |
 
 Because FxDesktop is still pre-1.0, the `0.2.x` release line represents
 Milestone 2, and the patch number maps to each phase.
@@ -352,6 +353,39 @@ Validation:
   required indicators, format masks, and number formatting.
 - Undo tests proving masks and number formatting still commit one semantic app
   value after submit or focus loss.
+- `dart run tool/agent_harness.dart` must pass.
+- The macOS example app must build and open successfully when UI changes are
+  included.
+
+### Phase 2.6: Mixed Decorated Input Alignment
+
+Status: delivered in `v0.2.6`.
+
+Polish decorated inputs that can appear in the same form row:
+
+- Add opt-in supporting-text reservation to `FxTextField`, `FxTextArea`,
+  `FxDateTimePicker`, `FxPopupMenu`, and `FxComboBox`.
+- Add helper/error text support to popup and combo inputs.
+- Top-align the example harness state samples so mixed-height controls align by
+  their first visual edge.
+
+Demo presentation:
+
+- Re-capture the Phase 2.5 text input rows after alignment correction.
+- Add a mixed decorated-input row that shows text, date/time, popup, and combo
+  controls together.
+- Save screenshots under `doc/screenshots/v0.2.6/` and attach them to the
+  GitHub Release.
+
+Phase 2.6 screenshot targets:
+
+- `fxdesktop-phase-2-6-text-input-alignment.png`
+- `fxdesktop-phase-2-6-mixed-decorated-inputs.png`
+
+Validation:
+
+- Widget tests for reserved supporting text, helper text, and error text across
+  each decorated input family.
 - `dart run tool/agent_harness.dart` must pass.
 - The macOS example app must build and open successfully when UI changes are
   included.
