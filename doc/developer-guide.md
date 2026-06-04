@@ -33,6 +33,11 @@ on the text control itself. That mirrors Xojo Web's caption-capable inputs and
 keeps AI/Xojo generators from manually pairing a separate label with every
 ordinary field.
 
+When several decorated inputs share one form row, align them from the top and
+use reserved supporting-text space for fields without helper, error, or counter
+text. This preserves a consistent desktop form rhythm without adding fake
+visible helper labels.
+
 For complex components, group related changes as one action. Grid row edits,
 layout property changes, or multi-field form updates should be committed as
 one user-visible operation with a clear label.

@@ -4,6 +4,40 @@
 
 No unreleased changes.
 
+## 0.2.6
+
+Phase 2.6 is a visual polish release for mixed desktop form rows. It fixes the
+alignment problem where decorated inputs without helper text or counters looked
+shorter than neighboring inputs with supporting text.
+
+The release keeps compact production defaults while giving form grids and the
+demo harness an explicit way to reserve supporting-text space.
+
+### Added
+
+- Added `reserveSupportingTextSpace` to `FxTextField` and `FxTextArea`.
+- Added `errorText` and `reserveSupportingTextSpace` to `FxDateTimePicker`.
+- Added `helpText`, `errorText`, and `reserveSupportingTextSpace` to
+  `FxPopupMenu` and `FxComboBox`.
+- Added a shared internal supporting-text policy for decorated input controls.
+- Added a mixed decorated-input demo row that compares `FxTextField`,
+  `FxDateTimePicker`, `FxPopupMenu`, and `FxComboBox` in one row.
+
+### Changed
+
+- Updated the demo harness to top-align state samples instead of center-aligning
+  mixed-height controls.
+- Updated text input, date/time, popup, and combo demo rows to opt into reserved
+  supporting text where visual comparison requires consistent field rhythm.
+
+### Validated
+
+- Added widget coverage for reserved supporting text, helper text, and error
+  text across text fields, text areas, date/time pickers, popup menus, and combo
+  boxes.
+- Re-captured Phase 2.5 screenshots so the corrected input alignment is visible
+  in release evidence.
+
 ## 0.2.5
 
 Phase 2.5 makes `FxTextField` and `FxTextArea` more useful for real desktop

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'fx_input_decoration.dart';
+
 /// A plain label comparable to Xojo's DesktopLabel.
 class FxLabel extends StatelessWidget {
   /// Creates an FxDesktop label.
@@ -55,6 +57,9 @@ class FxPopupMenu extends StatelessWidget {
     this.enabled = true,
     this.label,
     this.hintText,
+    this.helpText,
+    this.errorText,
+    this.reserveSupportingTextSpace = false,
     this.emptyText = 'No options',
   });
 
@@ -76,6 +81,16 @@ class FxPopupMenu extends StatelessWidget {
   /// Placeholder shown when no option is selected.
   final String? hintText;
 
+  /// Helper/balloon-help style text.
+  final String? helpText;
+
+  /// Validation error text shown below the menu.
+  final String? errorText;
+
+  /// Whether to reserve one supporting-text line when no helper or error is
+  /// present.
+  final bool reserveSupportingTextSpace;
+
   /// Text shown when the menu has no options.
   final String emptyText;
 
@@ -91,6 +106,12 @@ class FxPopupMenu extends StatelessWidget {
     return DropdownButtonFormField<String>(
       decoration: InputDecoration(
         border: const OutlineInputBorder(),
+        errorText: errorText,
+        helperText: fxEffectiveHelperText(
+          helpText: helpText,
+          errorText: errorText,
+          reserveSupportingTextSpace: reserveSupportingTextSpace,
+        ),
         isDense: true,
         labelText: label,
       ),
@@ -119,6 +140,9 @@ class FxComboBox extends StatefulWidget {
     this.enabled = true,
     this.label,
     this.hintText,
+    this.helpText,
+    this.errorText,
+    this.reserveSupportingTextSpace = false,
     this.maxVisibleOptions = 6,
   }) : assert(maxVisibleOptions > 0);
 
@@ -148,6 +172,16 @@ class FxComboBox extends StatefulWidget {
 
   /// Placeholder shown when the editable text is empty.
   final String? hintText;
+
+  /// Helper/balloon-help style text.
+  final String? helpText;
+
+  /// Validation error text shown below the combo box.
+  final String? errorText;
+
+  /// Whether to reserve one supporting-text line when no helper or error is
+  /// present.
+  final bool reserveSupportingTextSpace;
 
   /// Maximum number of autocomplete options visible at one time.
   final int maxVisibleOptions;
@@ -247,6 +281,12 @@ class _FxComboBoxState extends State<FxComboBox> {
               },
               decoration: InputDecoration(
                 border: const OutlineInputBorder(),
+                errorText: widget.errorText,
+                helperText: fxEffectiveHelperText(
+                  helpText: widget.helpText,
+                  errorText: widget.errorText,
+                  reserveSupportingTextSpace: widget.reserveSupportingTextSpace,
+                ),
                 hintText: widget.hintText,
                 isDense: true,
                 labelText: widget.label,

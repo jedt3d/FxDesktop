@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'fx_input_decoration.dart';
+
 /// How directly an FxDesktop component maps to a Xojo component.
 enum FxComponentSupportLevel {
   /// The component has a close semantic and visual match.
@@ -104,7 +106,8 @@ const fxComponentRegistry = <FxComponentDescriptor>[
     xojoDesktopClass: 'DesktopComboBox',
     xojoWebClass: 'WebComboBox',
     supportLevel: FxComponentSupportLevel.comparable,
-    notes: 'Editable text input with autocomplete suggestions.',
+    notes:
+        'Editable text input with autocomplete suggestions, helper/error text, and reserved supporting space.',
   ),
   FxComponentDescriptor(
     id: 'fx.popup_menu',
@@ -112,7 +115,8 @@ const fxComponentRegistry = <FxComponentDescriptor>[
     xojoDesktopClass: 'DesktopPopupMenu',
     xojoWebClass: 'WebPopupMenu',
     supportLevel: FxComponentSupportLevel.comparable,
-    notes: 'Fixed-choice selector without free text entry.',
+    notes:
+        'Fixed-choice selector without free text entry; supports helper/error text and reserved supporting space.',
   ),
   FxComponentDescriptor(
     id: 'fx.radio_button',
@@ -134,7 +138,8 @@ const fxComponentRegistry = <FxComponentDescriptor>[
     xojoDesktopClass: 'DesktopDateTimePicker',
     xojoWebClass: 'WebDatePicker',
     supportLevel: FxComponentSupportLevel.comparable,
-    notes: 'Date, time, and date-time picker; not a plain text field.',
+    notes:
+        'Date, time, and date-time picker with helper/error text; not a plain text field.',
   ),
   FxComponentDescriptor(
     id: 'fx.slider',
@@ -518,6 +523,7 @@ class FxTextField extends StatefulWidget {
     this.format = const FxTextInputFormat.none(),
     this.requiredInput = false,
     this.showRequiredIndicator = true,
+    this.reserveSupportingTextSpace = false,
   });
 
   /// Visible label.
@@ -574,6 +580,10 @@ class FxTextField extends StatefulWidget {
   /// Whether required inputs append an asterisk to their floating label.
   final bool showRequiredIndicator;
 
+  /// Whether to reserve one supporting-text line when no helper, error, or
+  /// visible counter is present.
+  final bool reserveSupportingTextSpace;
+
   /// Stable map for AI/generator use.
   Map<String, Object?> toTemplateMap() {
     return {
@@ -588,6 +598,7 @@ class FxTextField extends StatefulWidget {
       'obscureText': obscureText,
       'required': requiredInput,
       'showRequiredIndicator': showRequiredIndicator,
+      'reserveSupportingTextSpace': reserveSupportingTextSpace,
       'hasPrefixIcon': prefixIcon != null,
       'hasSuffixIcon': suffixIcon != null,
       'constraints': constraints?.toTemplateMap(),
@@ -692,7 +703,12 @@ class _FxTextFieldState extends State<FxTextField> {
         counterText: widget.constraints?.showCharacterCount == true ? null : '',
         border: const OutlineInputBorder(),
         errorText: widget.errorText,
-        helperText: widget.helpText,
+        helperText: fxEffectiveHelperText(
+          helpText: widget.helpText,
+          errorText: widget.errorText,
+          reserveSupportingTextSpace: widget.reserveSupportingTextSpace,
+          hasCounter: widget.constraints?.showCharacterCount == true,
+        ),
         hintText: widget.hintText,
         isDense: true,
         labelText: _labelWithRequiredIndicator(
@@ -733,6 +749,7 @@ class FxTextArea extends StatefulWidget {
     this.constraints,
     this.requiredInput = false,
     this.showRequiredIndicator = true,
+    this.reserveSupportingTextSpace = false,
   });
 
   /// Visible label.
@@ -786,6 +803,10 @@ class FxTextArea extends StatefulWidget {
   /// Whether required inputs append an asterisk to their floating label.
   final bool showRequiredIndicator;
 
+  /// Whether to reserve one supporting-text line when no helper, error, or
+  /// visible counter is present.
+  final bool reserveSupportingTextSpace;
+
   /// Stable map for AI/generator use.
   Map<String, Object?> toTemplateMap() {
     return {
@@ -799,6 +820,7 @@ class FxTextArea extends StatefulWidget {
       'readOnly': readOnly,
       'required': requiredInput,
       'showRequiredIndicator': showRequiredIndicator,
+      'reserveSupportingTextSpace': reserveSupportingTextSpace,
       'minLines': minLines,
       'maxLines': maxLines,
       'hasScrollController': scrollController != null,
@@ -896,7 +918,12 @@ class _FxTextAreaState extends State<FxTextArea> {
         counterText: widget.constraints?.showCharacterCount == true ? null : '',
         border: const OutlineInputBorder(),
         errorText: widget.errorText,
-        helperText: widget.helpText,
+        helperText: fxEffectiveHelperText(
+          helpText: widget.helpText,
+          errorText: widget.errorText,
+          reserveSupportingTextSpace: widget.reserveSupportingTextSpace,
+          hasCounter: widget.constraints?.showCharacterCount == true,
+        ),
         hintText: widget.hintText,
         isDense: true,
         labelText: _labelWithRequiredIndicator(

@@ -124,6 +124,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                                     label: 'Customer',
                                     value: 'Omega SA',
                                     requiredInput: true,
+                                    reserveSupportingTextSpace: true,
                                     helpText: 'Required single-line input.',
                                     constraints: FxTextInputConstraints(
                                       minLength: 3,
@@ -143,6 +144,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                                       maxLength: 8,
                                       showCharacterCount: true,
                                     ),
+                                    reserveSupportingTextSpace: true,
                                   ),
                                 ),
                                 _StateSample(
@@ -156,6 +158,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                                           .alphanumeric,
                                       maxLength: 12,
                                     ),
+                                    reserveSupportingTextSpace: true,
                                   ),
                                 ),
                                 _StateSample(
@@ -164,6 +167,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                                     label: 'Slug',
                                     value: 'omega-sa',
                                     helpText: 'Spaces and slashes are removed.',
+                                    reserveSupportingTextSpace: true,
                                     constraints: FxTextInputConstraints(
                                       forbiddenCharacters: [' ', '/'],
                                     ),
@@ -178,6 +182,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                                     format: FxTextInputFormat.pattern(
                                       '#-####-####',
                                     ),
+                                    reserveSupportingTextSpace: true,
                                   ),
                                 ),
                                 _StateSample(
@@ -189,6 +194,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                                     format: FxTextInputFormat.number(
                                       decimalDigits: 2,
                                     ),
+                                    reserveSupportingTextSpace: true,
                                   ),
                                 ),
                               ],
@@ -208,6 +214,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                                     requiredInput: true,
                                     helpText:
                                         'Character counter can be visible.',
+                                    reserveSupportingTextSpace: true,
                                     constraints: FxTextInputConstraints(
                                       minLength: 10,
                                       maxLength: 120,
@@ -225,6 +232,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                                         'Visible notes stay concise and reviewable.',
                                     helpText:
                                         'Rejects configured forbidden patterns.',
+                                    reserveSupportingTextSpace: true,
                                     constraints: FxTextInputConstraints(
                                       forbiddenPattern: r'password|secret',
                                     ),
@@ -240,12 +248,77 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                                         'Pasted tab characters can be preserved when needed.',
                                     helpText:
                                         'Keyboard Tab still follows focus traversal.',
+                                    reserveSupportingTextSpace: true,
                                     constraints: FxTextInputConstraints(
                                       allowTab: true,
                                       maxLength: 160,
                                     ),
                                     minLines: 3,
                                     maxLines: 4,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          _ComponentRow(
+                            name: 'Decorated Input Alignment',
+                            child: _StateSamples(
+                              sampleWidth: 320,
+                              children: [
+                                const _StateSample(
+                                  label: 'Text field',
+                                  child: FxTextField(
+                                    label: 'Reference',
+                                    value: 'A-589434',
+                                    helpText: 'Has supporting text.',
+                                    reserveSupportingTextSpace: true,
+                                  ),
+                                ),
+                                _StateSample(
+                                  label: 'Date/time',
+                                  child: FxDateTimePicker(
+                                    label: 'Due Date',
+                                    value: dueDate,
+                                    reserveSupportingTextSpace: true,
+                                    onChanged: (value) {
+                                      setState(() => dueDate = value);
+                                    },
+                                  ),
+                                ),
+                                _StateSample(
+                                  label: 'Popup menu',
+                                  child: FxPopupMenu(
+                                    label: 'Status',
+                                    selectedValue: popupStatus,
+                                    options: const [
+                                      'Open',
+                                      'Pending',
+                                      'Closed',
+                                    ],
+                                    reserveSupportingTextSpace: true,
+                                    onChanged: (value) {
+                                      setState(() => popupStatus = value);
+                                    },
+                                  ),
+                                ),
+                                _StateSample(
+                                  label: 'Combo box',
+                                  child: FxComboBox(
+                                    label: 'City',
+                                    value: comboValue,
+                                    options: const [
+                                      'Bangkok',
+                                      'Boston',
+                                      'Berlin',
+                                      'Zurich',
+                                    ],
+                                    reserveSupportingTextSpace: true,
+                                    onChanged: (value) {
+                                      setState(() => comboValue = value);
+                                    },
+                                    onOptionSelected: (value) {
+                                      setState(() => comboValue = value);
+                                    },
                                   ),
                                 ),
                               ],
@@ -263,6 +336,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                                     hintText: 'Company or person name',
                                     helpText:
                                         'Comparable to DesktopTextField/WebTextField.',
+                                    reserveSupportingTextSpace: true,
                                   ),
                                 ),
                                 _StateSample(
@@ -271,6 +345,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                                     label: 'Order No',
                                     hintText: 'Required order number',
                                     errorText: 'Order number is required.',
+                                    reserveSupportingTextSpace: true,
                                   ),
                                 ),
                                 _StateSample(
@@ -279,6 +354,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                                     label: 'Contract',
                                     value: 'A 589434',
                                     readOnly: true,
+                                    reserveSupportingTextSpace: true,
                                   ),
                                 ),
                                 _StateSample(
@@ -290,6 +366,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                                     prefixIcon: Icons.lock,
                                     suffixIcon: Icons.visibility,
                                     helpText: 'Obscured single-line input.',
+                                    reserveSupportingTextSpace: true,
                                   ),
                                 ),
                               ],
@@ -306,6 +383,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                                     label: 'Notes',
                                     hintText: 'Enter multiple lines',
                                     helpText: 'Visible to the operations team.',
+                                    reserveSupportingTextSpace: true,
                                     minLines: 3,
                                     maxLines: 4,
                                   ),
@@ -316,6 +394,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                                     label: 'Notes',
                                     hintText: 'Enter notes',
                                     errorText: 'Notes are required.',
+                                    reserveSupportingTextSpace: true,
                                     minLines: 3,
                                     maxLines: 4,
                                   ),
@@ -327,6 +406,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                                     value:
                                         'Created by order workflow.\nReviewed by operations.',
                                     readOnly: true,
+                                    reserveSupportingTextSpace: true,
                                     minLines: 3,
                                     maxLines: 4,
                                   ),
@@ -337,6 +417,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                                     label: 'History',
                                     value:
                                         'Line 1\nLine 2\nLine 3\nLine 4\nLine 5\nLine 6',
+                                    reserveSupportingTextSpace: true,
                                     minLines: 3,
                                     maxLines: 3,
                                   ),
@@ -543,6 +624,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                                     hintText: 'Company or person name',
                                     helpText:
                                         'Comparable to DesktopTextField/WebTextField.',
+                                    reserveSupportingTextSpace: true,
                                   ),
                                 ),
                                 _StateSample(
@@ -551,6 +633,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                                     label: 'Order No',
                                     hintText: 'Required order number',
                                     errorText: 'Order number is required.',
+                                    reserveSupportingTextSpace: true,
                                   ),
                                 ),
                                 _StateSample(
@@ -559,6 +642,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                                     label: 'Contract',
                                     value: 'A 589434',
                                     readOnly: true,
+                                    reserveSupportingTextSpace: true,
                                   ),
                                 ),
                                 _StateSample(
@@ -570,6 +654,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                                     prefixIcon: Icons.lock,
                                     suffixIcon: Icons.visibility,
                                     helpText: 'Obscured single-line input.',
+                                    reserveSupportingTextSpace: true,
                                   ),
                                 ),
                                 _StateSample(
@@ -578,6 +663,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                                     label: 'Customer',
                                     hintText: 'Disabled field',
                                     enabled: false,
+                                    reserveSupportingTextSpace: true,
                                   ),
                                 ),
                               ],
@@ -594,6 +680,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                                     label: 'Notes',
                                     hintText: 'Enter multiple lines',
                                     helpText: 'Visible to the operations team.',
+                                    reserveSupportingTextSpace: true,
                                     minLines: 3,
                                     maxLines: 4,
                                   ),
@@ -604,6 +691,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                                     label: 'Notes',
                                     hintText: 'Enter notes',
                                     errorText: 'Notes are required.',
+                                    reserveSupportingTextSpace: true,
                                     minLines: 3,
                                     maxLines: 4,
                                   ),
@@ -615,6 +703,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                                     value:
                                         'Created by order workflow.\nReviewed by operations.',
                                     readOnly: true,
+                                    reserveSupportingTextSpace: true,
                                     minLines: 3,
                                     maxLines: 4,
                                   ),
@@ -625,6 +714,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                                     label: 'History',
                                     value:
                                         'Line 1\nLine 2\nLine 3\nLine 4\nLine 5\nLine 6',
+                                    reserveSupportingTextSpace: true,
                                     minLines: 3,
                                     maxLines: 3,
                                   ),
@@ -634,6 +724,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                                   child: FxTextArea(
                                     label: 'Notes',
                                     hintText: 'Disabled text area',
+                                    reserveSupportingTextSpace: true,
                                     minLines: 3,
                                     maxLines: 4,
                                     enabled: false,
@@ -689,6 +780,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                                       'Closed',
                                     ],
                                     selectedValue: popupStatus,
+                                    reserveSupportingTextSpace: true,
                                     onChanged: (value) {
                                       setState(() => popupStatus = value);
                                     },
@@ -699,6 +791,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                                   child: FxPopupMenu(
                                     label: 'Status',
                                     options: [],
+                                    reserveSupportingTextSpace: true,
                                     emptyText: 'No statuses',
                                   ),
                                 ),
@@ -709,6 +802,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                                     options: ['Open', 'Pending', 'Closed'],
                                     selectedValue: 'Pending',
                                     enabled: false,
+                                    reserveSupportingTextSpace: true,
                                   ),
                                 ),
                               ],
@@ -730,6 +824,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                                       'Berlin',
                                       'Zurich',
                                     ],
+                                    reserveSupportingTextSpace: true,
                                     onChanged: (value) {
                                       setState(() => comboValue = value);
                                     },
@@ -745,6 +840,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                                     value: 'Zurich',
                                     options: ['Bangkok', 'Boston', 'Berlin'],
                                     enabled: false,
+                                    reserveSupportingTextSpace: true,
                                   ),
                                 ),
                               ],
@@ -914,6 +1010,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                                   child: FxDateTimePicker(
                                     label: 'Due Date',
                                     value: dueDate,
+                                    reserveSupportingTextSpace: true,
                                     onChanged: (value) {
                                       setState(() => dueDate = value);
                                     },
@@ -925,6 +1022,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                                     label: 'Reminder',
                                     mode: FxDateTimePickerMode.time,
                                     value: reminderTime,
+                                    reserveSupportingTextSpace: true,
                                     onChanged: (value) {
                                       setState(() => reminderTime = value);
                                     },
@@ -936,6 +1034,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                                     label: 'Appointment',
                                     mode: FxDateTimePickerMode.dateTime,
                                     value: appointment,
+                                    reserveSupportingTextSpace: true,
                                     onChanged: (value) {
                                       setState(() => appointment = value);
                                     },
@@ -947,6 +1046,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                                     label: 'Disabled Date',
                                     value: null,
                                     enabled: false,
+                                    reserveSupportingTextSpace: true,
                                   ),
                                 ),
                               ],
@@ -1580,7 +1680,7 @@ class _StateSamples extends StatelessWidget {
     return Wrap(
       spacing: 16,
       runSpacing: 14,
-      crossAxisAlignment: WrapCrossAlignment.center,
+      crossAxisAlignment: WrapCrossAlignment.start,
       children: [
         for (final child in children)
           SizedBox(width: sampleWidth, child: child),

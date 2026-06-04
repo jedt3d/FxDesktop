@@ -32,6 +32,7 @@ Milestone 2 uses the `0.2.x` release line:
 - Phase 2.3: `v0.2.3`
 - Phase 2.4: `v0.2.4`
 - Phase 2.5: `v0.2.5`
+- Phase 2.6: `v0.2.6`
 
 Each phase release must include the demo harness updates, screenshots, quality
 checks, version bump, documentation/process-surface updates, tag, and GitHub
@@ -89,7 +90,7 @@ Create a GitHub Release when:
 GitHub Releases are optional for small documentation-only updates.
 
 Milestone 2 implementation phases are not small documentation-only updates, so
-each Phase 2.1 through 2.5 release should create a GitHub Release and attach the
+each Phase 2.1 through 2.6 release should create a GitHub Release and attach the
 phase screenshots.
 
 ## Pub.dev

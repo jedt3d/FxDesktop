@@ -30,6 +30,8 @@ tablet layouts should normally use standard Flutter and adaptive patterns.
 - Live input formatters may filter characters or apply lightweight pattern
   masks, but business-value display formatting should happen on commit/blur
   when it affects app state or undo history.
+- When decorated inputs appear in the same form row, align them from the top
+  and use reserved supporting-text space instead of fake visible helper labels.
 - Use relative paths in source, docs, scripts, and CI.
 - Do not commit generated build outputs, platform caches, or machine-local paths.
 
@@ -87,7 +89,7 @@ indexed containers without visible tab headers.
   one change: `pubspec.yaml`, README install snippet, CHANGELOG, release notes,
   and any docs that mention the current version.
 - For Milestone 2, release each implementation phase separately:
-  `v0.2.1`, `v0.2.2`, `v0.2.3`, `v0.2.4`, and `v0.2.5`.
+  `v0.2.1`, `v0.2.2`, `v0.2.3`, `v0.2.4`, `v0.2.5`, and `v0.2.6`.
 - For every Milestone 2 phase, update the example harness, capture screenshots,
   run the full quality harness, tag the version, and create a GitHub Release
   with screenshots attached.

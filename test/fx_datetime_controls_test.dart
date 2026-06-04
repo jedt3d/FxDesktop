@@ -180,6 +180,43 @@ void main() {
       expect(changedValue, isNull);
     });
 
+    testWidgets('supports helper, error, and reserved supporting text', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: Column(
+              children: [
+                FxDateTimePicker(
+                  label: 'Helper',
+                  helpText: 'Choose a due date.',
+                ),
+                FxDateTimePicker(
+                  label: 'Error',
+                  errorText: 'Date is required.',
+                ),
+                FxDateTimePicker(
+                  label: 'Reserved',
+                  reserveSupportingTextSpace: true,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      final decorators = tester.widgetList<InputDecorator>(
+        find.byType(InputDecorator),
+      );
+      expect(
+        decorators.elementAt(0).decoration.helperText,
+        'Choose a due date.',
+      );
+      expect(decorators.elementAt(1).decoration.errorText, 'Date is required.');
+      expect(decorators.elementAt(2).decoration.helperText, ' ');
+    });
+
     test('exposes DesktopDateTimePicker template metadata', () {
       expect(
         const FxDateTimePicker(
@@ -194,6 +231,9 @@ void main() {
           'mode': 'dateTime',
           'nullable': false,
           'enabled': false,
+          'helpText': null,
+          'errorText': null,
+          'reserveSupportingTextSpace': false,
         },
       );
     });

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'fx_input_decoration.dart';
+
 /// Display and selection mode for [FxDateTimePicker].
 enum FxDateTimePickerMode {
   /// Selects and displays only the calendar date.
@@ -43,6 +45,8 @@ class FxDateTimePicker extends StatelessWidget {
     this.lastDate,
     this.currentDate,
     this.helpText,
+    this.errorText,
+    this.reserveSupportingTextSpace = false,
     this.datePicker,
     this.timePicker,
   });
@@ -81,6 +85,13 @@ class FxDateTimePicker extends StatelessWidget {
   /// Helper/balloon-help style text.
   final String? helpText;
 
+  /// Validation error text shown below the picker.
+  final String? errorText;
+
+  /// Whether to reserve one supporting-text line when no helper or error is
+  /// present.
+  final bool reserveSupportingTextSpace;
+
   /// Optional date picker delegate for tests or custom integrations.
   final FxDatePickerDelegate? datePicker;
 
@@ -95,6 +106,9 @@ class FxDateTimePicker extends StatelessWidget {
       'mode': mode.name,
       'nullable': nullable,
       'enabled': enabled,
+      'helpText': helpText,
+      'errorText': errorText,
+      'reserveSupportingTextSpace': reserveSupportingTextSpace,
     };
   }
 
@@ -114,8 +128,13 @@ class FxDateTimePicker extends StatelessWidget {
       child: InputDecorator(
         decoration: InputDecoration(
           border: const OutlineInputBorder(),
+          errorText: errorText,
           floatingLabelBehavior: FloatingLabelBehavior.always,
-          helperText: helpText,
+          helperText: fxEffectiveHelperText(
+            helpText: helpText,
+            errorText: errorText,
+            reserveSupportingTextSpace: reserveSupportingTextSpace,
+          ),
           hintText: hasValue ? null : emptyHint,
           isDense: true,
           labelText: label,
