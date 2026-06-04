@@ -177,7 +177,7 @@ nav    content
     });
 
     testWidgets('FxListBox supports row selection', (tester) async {
-      String? selected;
+      Set<String>? selected;
 
       await tester.pumpWidget(
         MaterialApp(
@@ -191,17 +191,17 @@ nav    content
               FxListBoxRow(id: 'r1', cells: {'id': '1', 'name': 'Alpha'}),
               FxListBoxRow(id: 'r2', cells: {'id': '2', 'name': 'Beta'}),
             ],
-            onSelectionChanged: (rowId) => selected = rowId,
+            onSelectionChanged: (rowIds) => selected = rowIds,
           ),
         ),
       );
 
       await tester.tap(find.text('Beta'));
-      expect(selected, 'r2');
+      expect(selected, {'r2'});
     });
 
     testWidgets('FxGrid supports cell selection', (tester) async {
-      ({String rowId, String columnId})? selected;
+      Set<({String rowId, String columnId})>? selected;
 
       await tester.pumpWidget(
         MaterialApp(
@@ -214,15 +214,15 @@ nav    content
             rows: const [
               FxGridRow(id: 'r1', cells: {'name': 'Alpha', 'status': 'Open'}),
             ],
-            onCellSelected: (rowId, columnId) {
-              selected = (rowId: rowId, columnId: columnId);
+            onCellsSelected: (cells) {
+              selected = cells;
             },
           ),
         ),
       );
 
       await tester.tap(find.text('Open'));
-      expect(selected, (rowId: 'r1', columnId: 'status'));
+      expect(selected, {(rowId: 'r1', columnId: 'status')});
     });
 
     testWidgets(

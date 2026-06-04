@@ -34,8 +34,8 @@ class ExampleHomePage extends StatefulWidget {
 class _ExampleHomePageState extends State<ExampleHomePage> {
   final ScrollController scrollController = ScrollController();
   final FxUndoController undoController = FxUndoController();
-  String? selectedRowId = 'order-1';
-  ({String rowId, String columnId})? selectedCell;
+  Set<String> selectedRowIds = const {'order-1'};
+  Set<({String rowId, String columnId})> selectedCells = const {};
   bool active = true;
   bool inactive = false;
   bool? optional;
@@ -1592,9 +1592,9 @@ label action
                             name: 'FxListBox',
                             child: FxListBox(
                               height: 180,
-                              selectedRowId: selectedRowId,
-                              onSelectionChanged: (rowId) {
-                                setState(() => selectedRowId = rowId);
+                              selectedRowIds: selectedRowIds,
+                              onSelectionChanged: (rowIds) {
+                                setState(() => selectedRowIds = rowIds);
                               },
                               columns: const [
                                 FxListBoxColumn(
@@ -1646,13 +1646,10 @@ label action
                             name: 'FxGrid',
                             child: FxGrid(
                               height: 180,
-                              selectedCell: selectedCell,
-                              onCellSelected: (rowId, columnId) {
+                              selectedCells: selectedCells,
+                              onCellsSelected: (cells) {
                                 setState(() {
-                                  selectedCell = (
-                                    rowId: rowId,
-                                    columnId: columnId,
-                                  );
+                                  selectedCells = cells;
                                 });
                               },
                               columns: const [
