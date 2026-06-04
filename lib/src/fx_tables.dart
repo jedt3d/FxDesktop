@@ -4,6 +4,7 @@ import 'package:two_dimensional_scrollables/two_dimensional_scrollables.dart'
     as table;
 
 import 'fx_theme.dart';
+import 'fx_undo.dart';
 
 /// Horizontal alignment for text in list/grid cells.
 enum FxCellAlignment {
@@ -42,6 +43,48 @@ enum FxGridSelectionMode {
 
   /// Rectangular range of cells selection.
   range,
+}
+
+/// Represents a rectangular selection range of cells in an [FxGrid].
+class FxGridCellRange {
+  /// Creates a cell range from start cell to end cell.
+  const FxGridCellRange({
+    required this.startRowId,
+    required this.startColumnId,
+    required this.endRowId,
+    required this.endColumnId,
+  });
+
+  /// The row ID of the starting cell.
+  final String startRowId;
+
+  /// The column ID of the starting cell.
+  final String startColumnId;
+
+  /// The row ID of the ending cell.
+  final String endRowId;
+
+  /// The column ID of the ending cell.
+  final String endColumnId;
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is FxGridCellRange &&
+        other.startRowId == startRowId &&
+        other.startColumnId == startColumnId &&
+        other.endRowId == endRowId &&
+        other.endColumnId == endColumnId;
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(startRowId, startColumnId, endRowId, endColumnId);
+
+  @override
+  String toString() {
+    return 'FxGridCellRange(start: ($startRowId, $startColumnId), end: ($endRowId, $endColumnId))';
+  }
 }
 
 /// Presentation states for FxDesktop table controls.
@@ -417,6 +460,132 @@ class _FxListBoxState extends State<FxListBox> {
   String? _editingColumnId;
   TextEditingController? _editingController;
 
+  void _commitCellEdit(String rowId, String columnId, Object? newValue) {
+    final row = widget.rows.firstWhere((r) => r.id == rowId);
+    final oldValue = row.cells[columnId];
+    if (oldValue == newValue) {
+      return;
+    }
+
+    final undoController = FxUndoScope.maybeOf(context);
+    if (undoController != null && widget.onCellEdited != null) {
+      final col = widget.columns.firstWhere((c) => c.id == columnId);
+      final colLabel = col.caption.isNotEmpty ? col.caption : col.id;
+      undoController.commit(
+        FxUndoAction(
+          label: 'Edit $colLabel',
+          apply: () => widget.onCellEdited?.call(rowId, columnId, newValue),
+          revert: () => widget.onCellEdited?.call(rowId, columnId, oldValue),
+        ),
+      );
+    } else {
+      widget.onCellEdited?.call(rowId, columnId, newValue);
+    }
+  }
+
+  Future<void> _handleCopy() async {
+    if (widget.selectedRowIds.isEmpty || widget.rows.isEmpty) return;
+
+    final visibleColumns = widget.columns.where((c) => c.visible).toList();
+    final List<String> lines = [];
+
+    for (final row in widget.rows) {
+      if (widget.selectedRowIds.contains(row.id)) {
+        final List<String> rowVals = [];
+        for (final col in visibleColumns) {
+          rowVals.add(row.cells[col.id]?.toString() ?? '');
+        }
+        lines.add(rowVals.join('\t'));
+      }
+    }
+
+    if (lines.isEmpty) return;
+    await Clipboard.setData(ClipboardData(text: lines.join('\n')));
+  }
+
+  List<List<String>> _parseTsv(String text) {
+    final lines = text.split(RegExp(r'\r?\n'));
+    final List<List<String>> result = [];
+    for (final line in lines) {
+      if (line.isEmpty && line == lines.last) {
+        continue;
+      }
+      result.add(line.split('\t'));
+    }
+    return result;
+  }
+
+  Future<void> _handlePaste() async {
+    final data = await Clipboard.getData(Clipboard.kTextPlain);
+    if (!mounted) return;
+    final text = data?.text;
+    if (text == null || text.isEmpty) return;
+
+    final grid = _parseTsv(text);
+    if (grid.isEmpty) return;
+
+    final visibleColumns = widget.columns.where((c) => c.visible).toList();
+    if (visibleColumns.isEmpty || widget.rows.isEmpty) return;
+
+    int startRowIdx = 0;
+    if (widget.selectedRowIds.isNotEmpty) {
+      final firstSelectedId = widget.selectedRowIds.first;
+      final rIdx = widget.rows.indexWhere((r) => r.id == firstSelectedId);
+      if (rIdx != -1) startRowIdx = rIdx;
+    }
+
+    final actions = <FxUndoAction>[];
+
+    for (var r = 0; r < grid.length; r++) {
+      final targetRowIdx = startRowIdx + r;
+      if (targetRowIdx >= widget.rows.length) break;
+
+      final row = widget.rows[targetRowIdx];
+      if (!row.enabled) continue;
+
+      final rowVals = grid[r];
+      for (var c = 0; c < rowVals.length; c++) {
+        if (c >= visibleColumns.length) break;
+
+        final col = visibleColumns[c];
+        if (!col.editable) continue;
+
+        final rawValue = rowVals[c];
+        final oldValue = row.cells[col.id];
+
+        Object? newValue;
+        if (col.type is FxBooleanCellType) {
+          final valLower = rawValue.trim().toLowerCase();
+          newValue = valLower == 'true' || valLower == '1' || valLower == 'yes';
+        } else {
+          newValue = rawValue;
+        }
+
+        if (oldValue != newValue) {
+          final colLabel = col.caption.isNotEmpty ? col.caption : col.id;
+          actions.add(
+            FxUndoAction(
+              label: 'Edit $colLabel',
+              apply: () => widget.onCellEdited?.call(row.id, col.id, newValue),
+              revert: () => widget.onCellEdited?.call(row.id, col.id, oldValue),
+            ),
+          );
+        }
+      }
+    }
+
+    if (actions.isEmpty) return;
+
+    final undoController = FxUndoScope.maybeOf(context);
+    if (undoController != null) {
+      undoController.commitBatch('Paste Values', actions);
+    } else {
+      for (final action in actions) {
+        action.apply();
+      }
+    }
+  }
+
   void _startEditing(String rowId, String columnId, Object? currentValue) {
     setState(() {
       _editingRowId = rowId;
@@ -428,9 +597,7 @@ class _FxListBoxState extends State<FxListBox> {
   }
 
   void _commitEdit(String rowId, String columnId, String newValue) {
-    if (widget.onCellEdited != null) {
-      widget.onCellEdited!(rowId, columnId, newValue);
-    }
+    _commitCellEdit(rowId, columnId, newValue);
     _cancelEdit();
   }
 
@@ -449,9 +616,7 @@ class _FxListBoxState extends State<FxListBox> {
   }
 
   void _commitAndMoveToNext(String rowId, String columnId, String newValue) {
-    if (widget.onCellEdited != null) {
-      widget.onCellEdited!(rowId, columnId, newValue);
-    }
+    _commitCellEdit(rowId, columnId, newValue);
 
     final visibleColumns = widget.columns.where((c) => c.visible).toList();
     final colIdx = visibleColumns.indexWhere((c) => c.id == columnId);
@@ -568,6 +733,20 @@ class _FxListBoxState extends State<FxListBox> {
 
     if (_editingRowId != null) {
       return KeyEventResult.ignored;
+    }
+
+    final hasModifier =
+        HardwareKeyboard.instance.isMetaPressed ||
+        HardwareKeyboard.instance.isControlPressed;
+
+    if (event.logicalKey == LogicalKeyboardKey.keyC && hasModifier) {
+      _handleCopy();
+      return KeyEventResult.handled;
+    }
+
+    if (event.logicalKey == LogicalKeyboardKey.keyV && hasModifier) {
+      _handlePaste();
+      return KeyEventResult.handled;
     }
 
     if (widget.rows.isEmpty ||
@@ -933,13 +1112,7 @@ class _FxListBoxState extends State<FxListBox> {
                           value: val,
                           onChanged: (row.enabled && column.editable)
                               ? (newValue) {
-                                  if (widget.onCellEdited != null) {
-                                    widget.onCellEdited!(
-                                      row.id,
-                                      column.id,
-                                      newValue,
-                                    );
-                                  }
+                                  _commitCellEdit(row.id, column.id, newValue);
                                 }
                               : null,
                         ),
@@ -1120,6 +1293,8 @@ class FxGrid extends StatefulWidget {
     required this.rows,
     this.selectedCells = const <({String rowId, String columnId})>{},
     this.onCellsSelected,
+    this.selectedRange,
+    this.onRangeSelected,
     this.selectionMode = FxGridSelectionMode.cell,
     this.state = FxTableState.ready,
     this.errorText,
@@ -1151,6 +1326,12 @@ class FxGrid extends StatefulWidget {
 
   /// Cell selection callback.
   final ValueChanged<Set<({String rowId, String columnId})>>? onCellsSelected;
+
+  /// Optional rectangular selection range.
+  final FxGridCellRange? selectedRange;
+
+  /// Optional callback when a range is selected.
+  final ValueChanged<FxGridCellRange?>? onRangeSelected;
 
   /// Cell selection mode.
   final FxGridSelectionMode selectionMode;
@@ -1233,6 +1414,262 @@ class _FxGridState extends State<FxGrid> {
   String? _editingColumnId;
   TextEditingController? _editingController;
 
+  final Map<({String rowId, String columnId}), BuildContext> _cellContexts = {};
+  ({String rowId, String columnId})? _dragStartCell;
+  ({String rowId, String columnId})? _lastDragEndCell;
+  ({String rowId, String columnId})? _keyboardRangeAnchor;
+
+  void _registerCell(String rowId, String columnId, BuildContext context) {
+    _cellContexts[(rowId: rowId, columnId: columnId)] = context;
+  }
+
+  void _unregisterCell(String rowId, String columnId) {
+    _cellContexts.remove((rowId: rowId, columnId: columnId));
+  }
+
+  ({String rowId, String columnId})? _findCellUnderPosition(
+    Offset globalPosition,
+  ) {
+    for (final entry in _cellContexts.entries) {
+      final context = entry.value;
+      if (!context.mounted) continue;
+      final renderBox = context.findRenderObject() as RenderBox?;
+      if (renderBox != null && renderBox.hasSize) {
+        final localPos = renderBox.globalToLocal(globalPosition);
+        if (renderBox.paintBounds.contains(localPos)) {
+          return entry.key;
+        }
+      }
+    }
+    return null;
+  }
+
+  Set<({String rowId, String columnId})> _calculateRangeSelection(
+    ({String rowId, String columnId}) start,
+    ({String rowId, String columnId}) end,
+  ) {
+    final visibleColumns = widget.columns.where((c) => c.visible).toList();
+    final startRowIdx = widget.rows.indexWhere((r) => r.id == start.rowId);
+    final endRowIdx = widget.rows.indexWhere((r) => r.id == end.rowId);
+    final startColIdx = visibleColumns.indexWhere(
+      (c) => c.id == start.columnId,
+    );
+    final endColIdx = visibleColumns.indexWhere((c) => c.id == end.columnId);
+
+    if (startRowIdx == -1 ||
+        endRowIdx == -1 ||
+        startColIdx == -1 ||
+        endColIdx == -1) {
+      return {};
+    }
+
+    final minRow = startRowIdx < endRowIdx ? startRowIdx : endRowIdx;
+    final maxRow = startRowIdx > endRowIdx ? startRowIdx : endRowIdx;
+    final minCol = startColIdx < endColIdx ? startColIdx : endColIdx;
+    final maxCol = startColIdx > endColIdx ? startColIdx : endColIdx;
+
+    final selection = <({String rowId, String columnId})>{};
+    for (var r = minRow; r <= maxRow; r++) {
+      final row = widget.rows[r];
+      if (row.enabled) {
+        for (var c = minCol; c <= maxCol; c++) {
+          selection.add((rowId: row.id, columnId: visibleColumns[c].id));
+        }
+      }
+    }
+    return selection;
+  }
+
+  bool _isCellInRange(String rowId, String columnId, FxGridCellRange range) {
+    final visibleColumns = widget.columns.where((c) => c.visible).toList();
+    final startRowIdx = widget.rows.indexWhere((r) => r.id == range.startRowId);
+    final endRowIdx = widget.rows.indexWhere((r) => r.id == range.endRowId);
+    final startColIdx = visibleColumns.indexWhere(
+      (c) => c.id == range.startColumnId,
+    );
+    final endColIdx = visibleColumns.indexWhere(
+      (c) => c.id == range.endColumnId,
+    );
+
+    if (startRowIdx == -1 ||
+        endRowIdx == -1 ||
+        startColIdx == -1 ||
+        endColIdx == -1) {
+      return false;
+    }
+
+    final rowIdx = widget.rows.indexWhere((r) => r.id == rowId);
+    final colIdx = visibleColumns.indexWhere((c) => c.id == columnId);
+    if (rowIdx == -1 || colIdx == -1) return false;
+
+    final minRow = startRowIdx < endRowIdx ? startRowIdx : endRowIdx;
+    final maxRow = startRowIdx > endRowIdx ? startRowIdx : endRowIdx;
+    final minCol = startColIdx < endColIdx ? startColIdx : endColIdx;
+    final maxCol = startColIdx > endColIdx ? startColIdx : endColIdx;
+
+    return rowIdx >= minRow &&
+        rowIdx <= maxRow &&
+        colIdx >= minCol &&
+        colIdx <= maxCol;
+  }
+
+  void _commitCellEdit(String rowId, String columnId, Object? newValue) {
+    final row = widget.rows.firstWhere((r) => r.id == rowId);
+    final oldValue = row.cells[columnId];
+    if (oldValue == newValue) {
+      return;
+    }
+
+    final undoController = FxUndoScope.maybeOf(context);
+    if (undoController != null && widget.onCellEdited != null) {
+      final col = widget.columns.firstWhere((c) => c.id == columnId);
+      final colLabel = col.caption ?? col.id;
+      undoController.commit(
+        FxUndoAction(
+          label: 'Edit $colLabel',
+          apply: () => widget.onCellEdited?.call(rowId, columnId, newValue),
+          revert: () => widget.onCellEdited?.call(rowId, columnId, oldValue),
+        ),
+      );
+    } else {
+      widget.onCellEdited?.call(rowId, columnId, newValue);
+    }
+  }
+
+  Future<void> _handleCopy() async {
+    if (widget.selectedCells.isEmpty || widget.rows.isEmpty) return;
+
+    final visibleColumns = widget.columns.where((c) => c.visible).toList();
+    final selectedRowIndices = <int>{};
+    final selectedColIndices = <int>{};
+    for (final cell in widget.selectedCells) {
+      final rIdx = widget.rows.indexWhere((r) => r.id == cell.rowId);
+      final cIdx = visibleColumns.indexWhere((c) => c.id == cell.columnId);
+      if (rIdx != -1) selectedRowIndices.add(rIdx);
+      if (cIdx != -1) selectedColIndices.add(cIdx);
+    }
+    if (selectedRowIndices.isEmpty || selectedColIndices.isEmpty) return;
+
+    final minRow = selectedRowIndices.reduce((a, b) => a < b ? a : b);
+    final maxRow = selectedRowIndices.reduce((a, b) => a > b ? a : b);
+    final minCol = selectedColIndices.reduce((a, b) => a < b ? a : b);
+    final maxCol = selectedColIndices.reduce((a, b) => a > b ? a : b);
+
+    final List<String> lines = [];
+    for (var r = minRow; r <= maxRow; r++) {
+      final row = widget.rows[r];
+      final List<String> rowVals = [];
+      for (var c = minCol; c <= maxCol; c++) {
+        final col = visibleColumns[c];
+        final isSelected = widget.selectedCells.any(
+          (cell) => cell.rowId == row.id && cell.columnId == col.id,
+        );
+        if (isSelected) {
+          rowVals.add(row.cells[col.id]?.toString() ?? '');
+        } else {
+          rowVals.add('');
+        }
+      }
+      lines.add(rowVals.join('\t'));
+    }
+    final tsvString = lines.join('\n');
+    await Clipboard.setData(ClipboardData(text: tsvString));
+  }
+
+  List<List<String>> _parseTsv(String text) {
+    final lines = text.split(RegExp(r'\r?\n'));
+    final List<List<String>> result = [];
+    for (final line in lines) {
+      if (line.isEmpty && line == lines.last) {
+        continue;
+      }
+      result.add(line.split('\t'));
+    }
+    return result;
+  }
+
+  Future<void> _handlePaste() async {
+    final data = await Clipboard.getData(Clipboard.kTextPlain);
+    if (!mounted) return;
+    final text = data?.text;
+    if (text == null || text.isEmpty) return;
+
+    final grid = _parseTsv(text);
+    if (grid.isEmpty) return;
+
+    final visibleColumns = widget.columns.where((c) => c.visible).toList();
+    if (visibleColumns.isEmpty || widget.rows.isEmpty) return;
+
+    int startRowIdx = 0;
+    int startColIdx = 0;
+
+    if (widget.selectedCells.isNotEmpty) {
+      int minRow = widget.rows.length;
+      int minCol = visibleColumns.length;
+
+      for (final cell in widget.selectedCells) {
+        final rIdx = widget.rows.indexWhere((r) => r.id == cell.rowId);
+        final cIdx = visibleColumns.indexWhere((c) => c.id == cell.columnId);
+        if (rIdx != -1 && rIdx < minRow) minRow = rIdx;
+        if (cIdx != -1 && cIdx < minCol) minCol = cIdx;
+      }
+      if (minRow < widget.rows.length) startRowIdx = minRow;
+      if (minCol < visibleColumns.length) startColIdx = minCol;
+    }
+
+    final actions = <FxUndoAction>[];
+
+    for (var r = 0; r < grid.length; r++) {
+      final targetRowIdx = startRowIdx + r;
+      if (targetRowIdx >= widget.rows.length) break;
+
+      final row = widget.rows[targetRowIdx];
+      if (!row.enabled) continue;
+
+      final rowVals = grid[r];
+      for (var c = 0; c < rowVals.length; c++) {
+        final targetColIdx = startColIdx + c;
+        if (targetColIdx >= visibleColumns.length) break;
+
+        final col = visibleColumns[targetColIdx];
+        if (!col.editable) continue;
+
+        final rawValue = rowVals[c];
+        final oldValue = row.cells[col.id];
+
+        Object? newValue;
+        if (col.type is FxBooleanCellType) {
+          final valLower = rawValue.trim().toLowerCase();
+          newValue = valLower == 'true' || valLower == '1' || valLower == 'yes';
+        } else {
+          newValue = rawValue;
+        }
+
+        if (oldValue != newValue) {
+          final colLabel = col.caption ?? col.id;
+          actions.add(
+            FxUndoAction(
+              label: 'Edit $colLabel',
+              apply: () => widget.onCellEdited?.call(row.id, col.id, newValue),
+              revert: () => widget.onCellEdited?.call(row.id, col.id, oldValue),
+            ),
+          );
+        }
+      }
+    }
+
+    if (actions.isEmpty) return;
+
+    final undoController = FxUndoScope.maybeOf(context);
+    if (undoController != null) {
+      undoController.commitBatch('Paste Values', actions);
+    } else {
+      for (final action in actions) {
+        action.apply();
+      }
+    }
+  }
+
   void _startEditing(String rowId, String columnId, Object? currentValue) {
     setState(() {
       _editingRowId = rowId;
@@ -1244,9 +1681,7 @@ class _FxGridState extends State<FxGrid> {
   }
 
   void _commitEdit(String rowId, String columnId, String newValue) {
-    if (widget.onCellEdited != null) {
-      widget.onCellEdited!(rowId, columnId, newValue);
-    }
+    _commitCellEdit(rowId, columnId, newValue);
     _cancelEdit();
   }
 
@@ -1265,9 +1700,7 @@ class _FxGridState extends State<FxGrid> {
   }
 
   void _commitAndMoveToNext(String rowId, String columnId, String newValue) {
-    if (widget.onCellEdited != null) {
-      widget.onCellEdited!(rowId, columnId, newValue);
-    }
+    _commitCellEdit(rowId, columnId, newValue);
 
     final visibleColumns = widget.columns.where((c) => c.visible).toList();
     final colIdx = visibleColumns.indexWhere((c) => c.id == columnId);
@@ -1350,6 +1783,17 @@ class _FxGridState extends State<FxGrid> {
         nextSelection.add((rowId: rowId, columnId: col.id));
       }
       widget.onCellsSelected!(nextSelection);
+    } else if (widget.selectionMode == FxGridSelectionMode.range) {
+      _keyboardRangeAnchor = (rowId: rowId, columnId: columnId);
+      widget.onCellsSelected!({(rowId: rowId, columnId: columnId)});
+      widget.onRangeSelected?.call(
+        FxGridCellRange(
+          startRowId: rowId,
+          startColumnId: columnId,
+          endRowId: rowId,
+          endColumnId: columnId,
+        ),
+      );
     }
   }
 
@@ -1360,6 +1804,20 @@ class _FxGridState extends State<FxGrid> {
 
     if (_editingRowId != null) {
       return KeyEventResult.ignored;
+    }
+
+    final hasModifier =
+        HardwareKeyboard.instance.isMetaPressed ||
+        HardwareKeyboard.instance.isControlPressed;
+
+    if (event.logicalKey == LogicalKeyboardKey.keyC && hasModifier) {
+      _handleCopy();
+      return KeyEventResult.handled;
+    }
+
+    if (event.logicalKey == LogicalKeyboardKey.keyV && hasModifier) {
+      _handlePaste();
+      return KeyEventResult.handled;
     }
 
     final visibleColumns = widget.columns.where((c) => c.visible).toList();
@@ -1460,6 +1918,8 @@ class _FxGridState extends State<FxGrid> {
     final targetRow = widget.rows[nextRow];
     final targetCol = visibleColumns[nextCol];
 
+    final isShiftPressed = HardwareKeyboard.instance.isShiftPressed;
+
     if (widget.selectionMode == FxGridSelectionMode.cell) {
       widget.onCellsSelected!({(rowId: targetRow.id, columnId: targetCol.id)});
     } else if (widget.selectionMode == FxGridSelectionMode.row) {
@@ -1468,6 +1928,36 @@ class _FxGridState extends State<FxGrid> {
         nextSelection.add((rowId: targetRow.id, columnId: col.id));
       }
       widget.onCellsSelected!(nextSelection);
+    } else if (widget.selectionMode == FxGridSelectionMode.range) {
+      if (isShiftPressed) {
+        _keyboardRangeAnchor ??= widget.selectedCells.isNotEmpty
+            ? widget.selectedCells.first
+            : (rowId: targetRow.id, columnId: targetCol.id);
+        final range = _calculateRangeSelection(_keyboardRangeAnchor!, (
+          rowId: targetRow.id,
+          columnId: targetCol.id,
+        ));
+        widget.onCellsSelected?.call(range);
+        widget.onRangeSelected?.call(
+          FxGridCellRange(
+            startRowId: _keyboardRangeAnchor!.rowId,
+            startColumnId: _keyboardRangeAnchor!.columnId,
+            endRowId: targetRow.id,
+            endColumnId: targetCol.id,
+          ),
+        );
+      } else {
+        _keyboardRangeAnchor = (rowId: targetRow.id, columnId: targetCol.id);
+        widget.onCellsSelected?.call({_keyboardRangeAnchor!});
+        widget.onRangeSelected?.call(
+          FxGridCellRange(
+            startRowId: _keyboardRangeAnchor!.rowId,
+            startColumnId: _keyboardRangeAnchor!.columnId,
+            endRowId: _keyboardRangeAnchor!.rowId,
+            endColumnId: _keyboardRangeAnchor!.columnId,
+          ),
+        );
+      }
     }
 
     return KeyEventResult.handled;
@@ -1651,10 +2141,16 @@ class _FxGridState extends State<FxGrid> {
                     );
                   }
                   final row = widget.rows[vicinity.row - rowOffset];
-                  final selected = widget.selectedCells.any(
-                    (cell) =>
-                        cell.rowId == row.id && cell.columnId == column.id,
-                  );
+                  final inRange =
+                      widget.selectionMode == FxGridSelectionMode.range &&
+                      widget.selectedRange != null &&
+                      _isCellInRange(row.id, column.id, widget.selectedRange!);
+                  final selected =
+                      inRange ||
+                      widget.selectedCells.any(
+                        (cell) =>
+                            cell.rowId == row.id && cell.columnId == column.id,
+                      );
                   final hovered =
                       row.enabled &&
                       _hoveredCell != null &&
@@ -1839,6 +2335,59 @@ class _FxGridState extends State<FxGrid> {
                     );
                   }
 
+                  if (row.enabled &&
+                      widget.selectionMode == FxGridSelectionMode.range) {
+                    cellChild = Listener(
+                      behavior: HitTestBehavior.opaque,
+                      onPointerDown: (event) {
+                        _dragStartCell = (rowId: row.id, columnId: column.id);
+                        _lastDragEndCell = _dragStartCell;
+                        _keyboardRangeAnchor = _dragStartCell;
+                        widget.onCellsSelected?.call({_dragStartCell!});
+                        widget.onRangeSelected?.call(
+                          FxGridCellRange(
+                            startRowId: _dragStartCell!.rowId,
+                            startColumnId: _dragStartCell!.columnId,
+                            endRowId: _dragStartCell!.rowId,
+                            endColumnId: _dragStartCell!.columnId,
+                          ),
+                        );
+                      },
+                      onPointerMove: (event) {
+                        if (_dragStartCell == null) return;
+                        final cell = _findCellUnderPosition(event.position);
+                        if (cell != null && cell != _lastDragEndCell) {
+                          _lastDragEndCell = cell;
+                          final rangeCells = _calculateRangeSelection(
+                            _dragStartCell!,
+                            cell,
+                          );
+                          widget.onCellsSelected?.call(rangeCells);
+                          widget.onRangeSelected?.call(
+                            FxGridCellRange(
+                              startRowId: _dragStartCell!.rowId,
+                              startColumnId: _dragStartCell!.columnId,
+                              endRowId: cell.rowId,
+                              endColumnId: cell.columnId,
+                            ),
+                          );
+                        }
+                      },
+                      onPointerUp: (event) {
+                        _dragStartCell = null;
+                        _lastDragEndCell = null;
+                      },
+                      child: cellChild,
+                    );
+                  }
+
+                  final cellWrapper = _GridCellWrapper(
+                    rowId: row.id,
+                    columnId: column.id,
+                    gridState: this,
+                    child: cellChild,
+                  );
+
                   return table.TableViewCell(
                     child: MouseRegion(
                       onEnter: (_) {
@@ -1851,7 +2400,7 @@ class _FxGridState extends State<FxGrid> {
                           setState(() => _hoveredCell = null);
                         }
                       },
-                      child: cellChild,
+                      child: cellWrapper,
                     ),
                   );
                 },
@@ -2055,5 +2604,52 @@ class _HeaderCell extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+class _GridCellWrapper extends StatefulWidget {
+  final String rowId;
+  final String columnId;
+  final Widget child;
+  final _FxGridState gridState;
+
+  const _GridCellWrapper({
+    required this.rowId,
+    required this.columnId,
+    required this.child,
+    required this.gridState,
+  });
+
+  @override
+  State<_GridCellWrapper> createState() => _GridCellWrapperState();
+}
+
+class _GridCellWrapperState extends State<_GridCellWrapper> {
+  @override
+  void initState() {
+    super.initState();
+    widget.gridState._registerCell(widget.rowId, widget.columnId, context);
+  }
+
+  @override
+  void didUpdateWidget(_GridCellWrapper oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.gridState != widget.gridState ||
+        oldWidget.rowId != widget.rowId ||
+        oldWidget.columnId != widget.columnId) {
+      oldWidget.gridState._unregisterCell(oldWidget.rowId, oldWidget.columnId);
+      widget.gridState._registerCell(widget.rowId, widget.columnId, context);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.gridState._unregisterCell(widget.rowId, widget.columnId);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return widget.child;
   }
 }

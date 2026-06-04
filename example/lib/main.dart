@@ -36,6 +36,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
   final FxUndoController undoController = FxUndoController();
   Set<String> selectedRowIds = const {'order-1'};
   Set<({String rowId, String columnId})> selectedCells = const {};
+  FxGridCellRange? selectedRange;
   List<FxListBoxRow> listBoxRows = [
     const FxListBoxRow(
       id: 'order-1',
@@ -1649,214 +1650,260 @@ label action
                           ),
                           _ComponentRow(
                             name: 'FxListBox',
-                            child: FxListBox(
-                              height: 180,
-                              selectedRowIds: selectedRowIds,
-                              onSelectionChanged: (rowIds) {
-                                setState(() => selectedRowIds = rowIds);
-                              },
-                              sortedColumnId: sortedListBoxColumnId,
-                              sortAscending: sortedListBoxAscending,
-                              onSortChanged: (columnId, ascending) {
-                                setState(() {
-                                  sortedListBoxColumnId = columnId;
-                                  sortedListBoxAscending = ascending;
-                                  listBoxRows.sort((a, b) {
-                                    final valA =
-                                        a.cells[columnId]?.toString() ?? '';
-                                    final valB =
-                                        b.cells[columnId]?.toString() ?? '';
-                                    final cmp = valA.compareTo(valB);
-                                    return ascending ? cmp : -cmp;
-                                  });
-                                });
-                              },
-                              validationErrors: listBoxValidationErrors,
-                              onCellEdited: (rowId, columnId, newValue) {
-                                setState(() {
-                                  final rowIndex = listBoxRows.indexWhere(
-                                    (r) => r.id == rowId,
-                                  );
-                                  if (rowIndex != -1) {
-                                    final oldRow = listBoxRows[rowIndex];
-                                    final nextCells = Map<String, Object?>.from(
-                                      oldRow.cells,
-                                    );
-                                    nextCells[columnId] = newValue;
-                                    listBoxRows[rowIndex] = FxListBoxRow(
-                                      id: oldRow.id,
-                                      cells: nextCells,
-                                      enabled: oldRow.enabled,
-                                      height: oldRow.height,
-                                      rowTag: oldRow.rowTag,
-                                    );
-
-                                    // Dynamic validation
-                                    final errors =
-                                        Map<String, Map<String, String>>.from(
-                                          listBoxValidationErrors,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                FxListBox(
+                                  height: 180,
+                                  selectedRowIds: selectedRowIds,
+                                  onSelectionChanged: (rowIds) {
+                                    setState(() => selectedRowIds = rowIds);
+                                  },
+                                  sortedColumnId: sortedListBoxColumnId,
+                                  sortAscending: sortedListBoxAscending,
+                                  onSortChanged: (columnId, ascending) {
+                                    setState(() {
+                                      sortedListBoxColumnId = columnId;
+                                      sortedListBoxAscending = ascending;
+                                      listBoxRows.sort((a, b) {
+                                        final valA =
+                                            a.cells[columnId]?.toString() ?? '';
+                                        final valB =
+                                            b.cells[columnId]?.toString() ?? '';
+                                        final cmp = valA.compareTo(valB);
+                                        return ascending ? cmp : -cmp;
+                                      });
+                                    });
+                                  },
+                                  validationErrors: listBoxValidationErrors,
+                                  onCellEdited: (rowId, columnId, newValue) {
+                                    setState(() {
+                                      final rowIndex = listBoxRows.indexWhere(
+                                        (r) => r.id == rowId,
+                                      );
+                                      if (rowIndex != -1) {
+                                        final oldRow = listBoxRows[rowIndex];
+                                        final nextCells =
+                                            Map<String, Object?>.from(
+                                              oldRow.cells,
+                                            );
+                                        nextCells[columnId] = newValue;
+                                        listBoxRows[rowIndex] = FxListBoxRow(
+                                          id: oldRow.id,
+                                          cells: nextCells,
+                                          enabled: oldRow.enabled,
+                                          height: oldRow.height,
+                                          rowTag: oldRow.rowTag,
                                         );
-                                    if (columnId == 'customer') {
-                                      final strVal = newValue?.toString() ?? '';
-                                      if (strVal.isEmpty) {
-                                        errors.putIfAbsent(
-                                              rowId,
-                                              () => {},
-                                            )[columnId] =
-                                            'Customer name cannot be empty';
-                                      } else if (strVal.length < 3) {
-                                        errors.putIfAbsent(
-                                              rowId,
-                                              () => {},
-                                            )[columnId] =
-                                            'Must be at least 3 characters';
-                                      } else {
-                                        errors[rowId]?.remove(columnId);
+
+                                        // Dynamic validation
+                                        final errors =
+                                            Map<
+                                              String,
+                                              Map<String, String>
+                                            >.from(listBoxValidationErrors);
+                                        if (columnId == 'customer') {
+                                          final strVal =
+                                              newValue?.toString() ?? '';
+                                          if (strVal.isEmpty) {
+                                            errors.putIfAbsent(
+                                                  rowId,
+                                                  () => {},
+                                                )[columnId] =
+                                                'Customer name cannot be empty';
+                                          } else if (strVal.length < 3) {
+                                            errors.putIfAbsent(
+                                                  rowId,
+                                                  () => {},
+                                                )[columnId] =
+                                                'Must be at least 3 characters';
+                                          } else {
+                                            errors[rowId]?.remove(columnId);
+                                          }
+                                        }
+                                        listBoxValidationErrors = errors;
                                       }
-                                    }
-                                    listBoxValidationErrors = errors;
-                                  }
-                                });
-                              },
-                              columns: const [
-                                FxListBoxColumn(
-                                  id: 'number',
-                                  caption: 'Order',
-                                  width: FxColumnWidth.fixed(110),
-                                  sortable: true,
-                                  editable: true,
+                                    });
+                                  },
+                                  columns: const [
+                                    FxListBoxColumn(
+                                      id: 'number',
+                                      caption: 'Order',
+                                      width: FxColumnWidth.fixed(110),
+                                      sortable: true,
+                                      editable: true,
+                                    ),
+                                    FxListBoxColumn(
+                                      id: 'customer',
+                                      caption: 'Customer',
+                                      width: FxColumnWidth.fixed(180),
+                                      sortable: true,
+                                      editable: true,
+                                    ),
+                                    FxListBoxColumn(
+                                      id: 'status',
+                                      caption: 'Status',
+                                      width: FxColumnWidth.fixed(130),
+                                      sortable: true,
+                                      editable: true,
+                                      type: FxCellType.choice([
+                                        'Draft',
+                                        'Open',
+                                        'Confirmed',
+                                        'Closed',
+                                      ]),
+                                    ),
+                                    FxListBoxColumn(
+                                      id: 'approved',
+                                      caption: 'Approved',
+                                      width: FxColumnWidth.fixed(100),
+                                      sortable: true,
+                                      editable: true,
+                                      type: FxCellType.boolean(),
+                                    ),
+                                  ],
+                                  rows: listBoxRows,
                                 ),
-                                FxListBoxColumn(
-                                  id: 'customer',
-                                  caption: 'Customer',
-                                  width: FxColumnWidth.fixed(180),
-                                  sortable: true,
-                                  editable: true,
-                                ),
-                                FxListBoxColumn(
-                                  id: 'status',
-                                  caption: 'Status',
-                                  width: FxColumnWidth.fixed(130),
-                                  sortable: true,
-                                  editable: true,
-                                  type: FxCellType.choice([
-                                    'Draft',
-                                    'Open',
-                                    'Confirmed',
-                                    'Closed',
-                                  ]),
-                                ),
-                                FxListBoxColumn(
-                                  id: 'approved',
-                                  caption: 'Approved',
-                                  width: FxColumnWidth.fixed(100),
-                                  sortable: true,
-                                  editable: true,
-                                  type: FxCellType.boolean(),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Tip: Use double-click or Enter to edit cells. Use Ctrl+C/Cmd+C to copy selected rows, and Ctrl+V/Cmd+V to paste TSV data. Edits are tracked in the Undo history.',
+                                  style: Theme.of(context).textTheme.bodySmall
+                                      ?.copyWith(
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onSurfaceVariant,
+                                        fontStyle: FontStyle.italic,
+                                      ),
                                 ),
                               ],
-                              rows: listBoxRows,
                             ),
                           ),
                           _ComponentRow(
                             name: 'FxGrid',
-                            child: FxGrid(
-                              height: 180,
-                              selectedCells: selectedCells,
-                              onCellsSelected: (cells) {
-                                setState(() {
-                                  selectedCells = cells;
-                                });
-                              },
-                              sortedColumnId: sortedGridColumnId,
-                              sortAscending: sortedGridAscending,
-                              onSortChanged: (columnId, ascending) {
-                                setState(() {
-                                  sortedGridColumnId = columnId;
-                                  sortedGridAscending = ascending;
-                                  gridRows.sort((a, b) {
-                                    final valA =
-                                        a.cells[columnId]?.toString() ?? '';
-                                    final valB =
-                                        b.cells[columnId]?.toString() ?? '';
-                                    final cmp = valA.compareTo(valB);
-                                    return ascending ? cmp : -cmp;
-                                  });
-                                });
-                              },
-                              validationErrors: gridValidationErrors,
-                              onCellEdited: (rowId, columnId, newValue) {
-                                setState(() {
-                                  final rowIndex = gridRows.indexWhere(
-                                    (r) => r.id == rowId,
-                                  );
-                                  if (rowIndex != -1) {
-                                    final oldRow = gridRows[rowIndex];
-                                    final nextCells = Map<String, Object?>.from(
-                                      oldRow.cells,
-                                    );
-                                    nextCells[columnId] = newValue;
-                                    gridRows[rowIndex] = FxGridRow(
-                                      id: oldRow.id,
-                                      cells: nextCells,
-                                      enabled: oldRow.enabled,
-                                      height: oldRow.height,
-                                      rowTag: oldRow.rowTag,
-                                      cellTags: oldRow.cellTags,
-                                    );
-
-                                    // Dynamic validation
-                                    final errors =
-                                        Map<String, Map<String, String>>.from(
-                                          gridValidationErrors,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                FxGrid(
+                                  height: 180,
+                                  selectedCells: selectedCells,
+                                  selectedRange: selectedRange,
+                                  selectionMode: FxGridSelectionMode.range,
+                                  onCellsSelected: (cells) {
+                                    setState(() {
+                                      selectedCells = cells;
+                                    });
+                                  },
+                                  onRangeSelected: (range) {
+                                    setState(() {
+                                      selectedRange = range;
+                                    });
+                                  },
+                                  sortedColumnId: sortedGridColumnId,
+                                  sortAscending: sortedGridAscending,
+                                  onSortChanged: (columnId, ascending) {
+                                    setState(() {
+                                      sortedGridColumnId = columnId;
+                                      sortedGridAscending = ascending;
+                                      gridRows.sort((a, b) {
+                                        final valA =
+                                            a.cells[columnId]?.toString() ?? '';
+                                        final valB =
+                                            b.cells[columnId]?.toString() ?? '';
+                                        final cmp = valA.compareTo(valB);
+                                        return ascending ? cmp : -cmp;
+                                      });
+                                    });
+                                  },
+                                  validationErrors: gridValidationErrors,
+                                  onCellEdited: (rowId, columnId, newValue) {
+                                    setState(() {
+                                      final rowIndex = gridRows.indexWhere(
+                                        (r) => r.id == rowId,
+                                      );
+                                      if (rowIndex != -1) {
+                                        final oldRow = gridRows[rowIndex];
+                                        final nextCells =
+                                            Map<String, Object?>.from(
+                                              oldRow.cells,
+                                            );
+                                        nextCells[columnId] = newValue;
+                                        gridRows[rowIndex] = FxGridRow(
+                                          id: oldRow.id,
+                                          cells: nextCells,
+                                          enabled: oldRow.enabled,
+                                          height: oldRow.height,
+                                          rowTag: oldRow.rowTag,
+                                          cellTags: oldRow.cellTags,
                                         );
-                                    if (columnId == 'desktop' ||
-                                        columnId == 'web') {
-                                      final strVal = newValue?.toString() ?? '';
-                                      if (strVal.isEmpty) {
-                                        errors.putIfAbsent(
-                                          rowId,
-                                          () => {},
-                                        )[columnId] = 'Value cannot be empty';
-                                      } else {
-                                        errors[rowId]?.remove(columnId);
+
+                                        // Dynamic validation
+                                        final errors =
+                                            Map<
+                                              String,
+                                              Map<String, String>
+                                            >.from(gridValidationErrors);
+                                        if (columnId == 'desktop' ||
+                                            columnId == 'web') {
+                                          final strVal =
+                                              newValue?.toString() ?? '';
+                                          if (strVal.isEmpty) {
+                                            errors.putIfAbsent(
+                                                  rowId,
+                                                  () => {},
+                                                )[columnId] =
+                                                'Value cannot be empty';
+                                          } else {
+                                            errors[rowId]?.remove(columnId);
+                                          }
+                                        }
+                                        gridValidationErrors = errors;
                                       }
-                                    }
-                                    gridValidationErrors = errors;
-                                  }
-                                });
-                              },
-                              columns: const [
-                                FxGridColumn(
-                                  id: 'field',
-                                  caption: 'Field',
-                                  width: FxColumnWidth.fixed(140),
-                                  sortable: true,
+                                    });
+                                  },
+                                  columns: const [
+                                    FxGridColumn(
+                                      id: 'field',
+                                      caption: 'Field',
+                                      width: FxColumnWidth.fixed(140),
+                                      sortable: true,
+                                    ),
+                                    FxGridColumn(
+                                      id: 'desktop',
+                                      caption: 'Xojo Desktop',
+                                      width: FxColumnWidth.fixed(230),
+                                      sortable: true,
+                                      editable: true,
+                                    ),
+                                    FxGridColumn(
+                                      id: 'web',
+                                      caption: 'Xojo Web',
+                                      width: FxColumnWidth.fixed(190),
+                                      sortable: true,
+                                      editable: true,
+                                    ),
+                                    FxGridColumn(
+                                      id: 'enabled',
+                                      caption: 'Enabled',
+                                      width: FxColumnWidth.fixed(100),
+                                      sortable: true,
+                                      editable: true,
+                                      type: FxCellType.boolean(),
+                                    ),
+                                  ],
+                                  rows: gridRows,
                                 ),
-                                FxGridColumn(
-                                  id: 'desktop',
-                                  caption: 'Xojo Desktop',
-                                  width: FxColumnWidth.fixed(230),
-                                  sortable: true,
-                                  editable: true,
-                                ),
-                                FxGridColumn(
-                                  id: 'web',
-                                  caption: 'Xojo Web',
-                                  width: FxColumnWidth.fixed(190),
-                                  sortable: true,
-                                  editable: true,
-                                ),
-                                FxGridColumn(
-                                  id: 'enabled',
-                                  caption: 'Enabled',
-                                  width: FxColumnWidth.fixed(100),
-                                  sortable: true,
-                                  editable: true,
-                                  type: FxCellType.boolean(),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Tip: Click and drag to select a range of cells. Use Ctrl+C/Cmd+C to copy selected cells, and Ctrl+V/Cmd+V to paste TSV data. Edits are tracked in the Undo history.',
+                                  style: Theme.of(context).textTheme.bodySmall
+                                      ?.copyWith(
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onSurfaceVariant,
+                                        fontStyle: FontStyle.italic,
+                                      ),
                                 ),
                               ],
-                              rows: gridRows,
                             ),
                           ),
                         ],
