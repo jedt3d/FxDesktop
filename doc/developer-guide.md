@@ -68,6 +68,21 @@ Milestone 1 dependencies:
 - `flutter_layout_grid` for `FxGridLayout`
 - `two_dimensional_scrollables` for `FxListBox` and `FxGrid`
 
+## ListBox and Grid Components
+
+FxDesktop provides two distinct table controls, matching Xojo's layout patterns:
+1. **`FxListBox`** (comparable to Xojo `DesktopListBox`/`WebListBox`): Used for row-oriented record selection and display. The primary unit of selection and interaction is the row.
+2. **`FxGrid`** (comparable to Xojo `DesktopGrid`): Used for cell-oriented data editing, matrix configuration, and structured spreadsheet-like workloads. The primary unit of selection and interaction is the cell or a cell range.
+
+### When to Use Which
+- Use `FxListBox` when the user needs to scan lists of entities (e.g. customers, documents, logs) and select or trigger actions on whole records.
+- Use `FxGrid` when the user edits cells directly, expects rectangular range selections (click-and-drag or Shift+Arrow keys), needs per-cell validation markers, or copies/pastes multiple cells as Tab-Separated Values (TSV).
+
+### Xojo Parity Alignment
+- **Supported features**: Column resizing, multi-selection modes, column sorting descriptors, custom empty/loading/error placeholder overrides, inline cell editors (text, checkbox/boolean, choice/dropdown), validation styling, raw pointer range selection, TSV clipboard copy/paste, and atomic undo/redo integration.
+- **Approximate features**: alternating row colors, column sizing metrics (fixed, flexible, min/max).
+- **Deferred / Out-of-scope**: cell merging, formulas, pivot tables, and drawing custom canvas elements inside cells (although in Flutter this is easily done by providing custom cell builders).
+
 ## Release Workflow
 
 Normal CI validates every pull request. Publishing to pub.dev is tag-based only.

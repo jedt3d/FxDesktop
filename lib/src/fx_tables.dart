@@ -1165,7 +1165,19 @@ class _FxListBoxState extends State<FxListBox> {
                     );
                   }
 
-                  return table.TableViewCell(
+                  final cellVal = row.cells[column.id];
+                  final String valueText;
+                  if (column.type is FxBooleanCellType) {
+                    valueText = (cellVal == true) ? 'checked' : 'unchecked';
+                  } else {
+                    valueText = cellVal?.toString() ?? '';
+                  }
+
+                  final cellSemantics = Semantics(
+                    selected: isSelected,
+                    enabled: row.enabled,
+                    label:
+                        'Row ${vicinity.row}, Column ${column.caption}: $valueText',
                     child: MouseRegion(
                       onEnter: (_) {
                         if (row.enabled) {
@@ -1180,6 +1192,8 @@ class _FxListBoxState extends State<FxListBox> {
                       child: cellChild,
                     ),
                   );
+
+                  return table.TableViewCell(child: cellSemantics);
                 },
               ),
             ),
@@ -2388,7 +2402,25 @@ class _FxGridState extends State<FxGrid> {
                     child: cellChild,
                   );
 
-                  return table.TableViewCell(
+                  final cellVal = row.cells[column.id];
+                  final String valueText;
+                  if (column.type is FxBooleanCellType) {
+                    valueText = (cellVal == true) ? 'checked' : 'unchecked';
+                  } else {
+                    valueText = cellVal?.toString() ?? '';
+                  }
+
+                  final errorMsg = widget.validationErrors?[row.id]?[column.id];
+                  final String errorSuffix = errorMsg != null
+                      ? ', validation error: $errorMsg'
+                      : '';
+                  final colLabel = column.caption ?? column.id;
+
+                  final cellSemantics = Semantics(
+                    selected: selected,
+                    enabled: row.enabled,
+                    label:
+                        'Row ${vicinity.row}, Column $colLabel: $valueText$errorSuffix',
                     child: MouseRegion(
                       onEnter: (_) {
                         if (row.enabled) {
@@ -2403,6 +2435,8 @@ class _FxGridState extends State<FxGrid> {
                       child: cellWrapper,
                     ),
                   );
+
+                  return table.TableViewCell(child: cellSemantics);
                 },
               ),
             ),
@@ -2565,44 +2599,55 @@ class _HeaderCell extends StatelessWidget {
       ),
     );
 
-    if (onResize == null) {
-      return Align(
-        alignment: switch (alignment) {
-          FxCellAlignment.leading => Alignment.centerLeft,
-          FxCellAlignment.center => Alignment.center,
-          FxCellAlignment.trailing => Alignment.centerRight,
-        },
-        child: content,
-      );
-    }
+    final sortAnnouncement = sorted
+        ? (ascending ? ', sorted ascending' : ', sorted descending')
+        : '';
+    final labelText =
+        '$caption column header${sortable ? ", sortable" : ""}$sortAnnouncement';
 
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Align(
-          alignment: switch (alignment) {
-            FxCellAlignment.leading => Alignment.centerLeft,
-            FxCellAlignment.center => Alignment.center,
-            FxCellAlignment.trailing => Alignment.centerRight,
-          },
-          child: content,
-        ),
-        Positioned(
-          top: 0,
-          bottom: 0,
-          right: 0,
-          width: 8,
-          child: MouseRegion(
-            cursor: SystemMouseCursors.resizeLeftRight,
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onHorizontalDragUpdate: (details) {
-                onResize?.call(details.primaryDelta ?? 0.0);
-              },
-            ),
-          ),
-        ),
-      ],
+    final Widget childWidget = onResize == null
+        ? Align(
+            alignment: switch (alignment) {
+              FxCellAlignment.leading => Alignment.centerLeft,
+              FxCellAlignment.center => Alignment.center,
+              FxCellAlignment.trailing => Alignment.centerRight,
+            },
+            child: content,
+          )
+        : Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Align(
+                alignment: switch (alignment) {
+                  FxCellAlignment.leading => Alignment.centerLeft,
+                  FxCellAlignment.center => Alignment.center,
+                  FxCellAlignment.trailing => Alignment.centerRight,
+                },
+                child: content,
+              ),
+              Positioned(
+                top: 0,
+                bottom: 0,
+                right: 0,
+                width: 8,
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.resizeLeftRight,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onHorizontalDragUpdate: (details) {
+                      onResize?.call(details.primaryDelta ?? 0.0);
+                    },
+                  ),
+                ),
+              ),
+            ],
+          );
+
+    return Semantics(
+      label: labelText,
+      button: sortable,
+      enabled: true,
+      child: childWidget,
     );
   }
 }
