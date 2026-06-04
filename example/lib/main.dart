@@ -36,6 +36,48 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
   final FxUndoController undoController = FxUndoController();
   Set<String> selectedRowIds = const {'order-1'};
   Set<({String rowId, String columnId})> selectedCells = const {};
+  List<FxListBoxRow> listBoxRows = [
+    const FxListBoxRow(
+      id: 'order-1',
+      cells: {'number': '1001', 'customer': 'Omega SA', 'status': 'Open'},
+    ),
+    const FxListBoxRow(
+      id: 'order-2',
+      cells: {'number': '1002', 'customer': 'Gepard', 'status': 'Confirmed'},
+    ),
+    const FxListBoxRow(
+      id: 'order-3',
+      cells: {
+        'number': '1003',
+        'customer': 'Cindy Crawford',
+        'status': 'Draft',
+      },
+      enabled: false,
+    ),
+  ];
+  List<FxGridRow> gridRows = [
+    const FxGridRow(
+      id: 'layout',
+      cells: {
+        'field': 'Layout',
+        'desktop': 'DesktopFlexLayoutManager',
+        'web': 'WebFlexLayoutManager',
+      },
+    ),
+    const FxGridRow(
+      id: 'table',
+      cells: {
+        'field': 'Table',
+        'desktop': 'DesktopListBox',
+        'web': 'WebListBox',
+      },
+    ),
+  ];
+  String? sortedListBoxColumnId;
+  bool sortedListBoxAscending = true;
+  String? sortedGridColumnId;
+  bool sortedGridAscending = true;
+
   bool active = true;
   bool inactive = false;
   bool? optional;
@@ -1596,50 +1638,43 @@ label action
                               onSelectionChanged: (rowIds) {
                                 setState(() => selectedRowIds = rowIds);
                               },
+                              sortedColumnId: sortedListBoxColumnId,
+                              sortAscending: sortedListBoxAscending,
+                              onSortChanged: (columnId, ascending) {
+                                setState(() {
+                                  sortedListBoxColumnId = columnId;
+                                  sortedListBoxAscending = ascending;
+                                  listBoxRows.sort((a, b) {
+                                    final valA =
+                                        a.cells[columnId]?.toString() ?? '';
+                                    final valB =
+                                        b.cells[columnId]?.toString() ?? '';
+                                    final cmp = valA.compareTo(valB);
+                                    return ascending ? cmp : -cmp;
+                                  });
+                                });
+                              },
                               columns: const [
                                 FxListBoxColumn(
                                   id: 'number',
                                   caption: 'Order',
-                                  width: 110,
+                                  width: FxColumnWidth.fixed(110),
+                                  sortable: true,
                                 ),
                                 FxListBoxColumn(
                                   id: 'customer',
                                   caption: 'Customer',
-                                  width: 180,
+                                  width: FxColumnWidth.fixed(180),
+                                  sortable: true,
                                 ),
                                 FxListBoxColumn(
                                   id: 'status',
                                   caption: 'Status',
-                                  width: 130,
+                                  width: FxColumnWidth.fixed(130),
+                                  sortable: true,
                                 ),
                               ],
-                              rows: const [
-                                FxListBoxRow(
-                                  id: 'order-1',
-                                  cells: {
-                                    'number': '1001',
-                                    'customer': 'Omega SA',
-                                    'status': 'Open',
-                                  },
-                                ),
-                                FxListBoxRow(
-                                  id: 'order-2',
-                                  cells: {
-                                    'number': '1002',
-                                    'customer': 'Gepard',
-                                    'status': 'Confirmed',
-                                  },
-                                ),
-                                FxListBoxRow(
-                                  id: 'order-3',
-                                  cells: {
-                                    'number': '1003',
-                                    'customer': 'Cindy Crawford',
-                                    'status': 'Draft',
-                                  },
-                                  enabled: false,
-                                ),
-                              ],
+                              rows: listBoxRows,
                             ),
                           ),
                           _ComponentRow(
@@ -1652,41 +1687,43 @@ label action
                                   selectedCells = cells;
                                 });
                               },
+                              sortedColumnId: sortedGridColumnId,
+                              sortAscending: sortedGridAscending,
+                              onSortChanged: (columnId, ascending) {
+                                setState(() {
+                                  sortedGridColumnId = columnId;
+                                  sortedGridAscending = ascending;
+                                  gridRows.sort((a, b) {
+                                    final valA =
+                                        a.cells[columnId]?.toString() ?? '';
+                                    final valB =
+                                        b.cells[columnId]?.toString() ?? '';
+                                    final cmp = valA.compareTo(valB);
+                                    return ascending ? cmp : -cmp;
+                                  });
+                                });
+                              },
                               columns: const [
                                 FxGridColumn(
                                   id: 'field',
                                   caption: 'Field',
-                                  width: 140,
+                                  width: FxColumnWidth.fixed(140),
+                                  sortable: true,
                                 ),
                                 FxGridColumn(
                                   id: 'desktop',
                                   caption: 'Xojo Desktop',
-                                  width: 230,
+                                  width: FxColumnWidth.fixed(230),
+                                  sortable: true,
                                 ),
                                 FxGridColumn(
                                   id: 'web',
                                   caption: 'Xojo Web',
-                                  width: 190,
+                                  width: FxColumnWidth.fixed(190),
+                                  sortable: true,
                                 ),
                               ],
-                              rows: const [
-                                FxGridRow(
-                                  id: 'layout',
-                                  cells: {
-                                    'field': 'Layout',
-                                    'desktop': 'DesktopFlexLayoutManager',
-                                    'web': 'WebFlexLayoutManager',
-                                  },
-                                ),
-                                FxGridRow(
-                                  id: 'table',
-                                  cells: {
-                                    'field': 'Table',
-                                    'desktop': 'DesktopListBox',
-                                    'web': 'WebListBox',
-                                  },
-                                ),
-                              ],
+                              rows: gridRows,
                             ),
                           ),
                         ],

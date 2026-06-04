@@ -184,8 +184,16 @@ nav    content
           home: FxListBox(
             height: 160,
             columns: const [
-              FxListBoxColumn(id: 'id', caption: 'ID', width: 80),
-              FxListBoxColumn(id: 'name', caption: 'Name', width: 140),
+              FxListBoxColumn(
+                id: 'id',
+                caption: 'ID',
+                width: FxColumnWidth.fixed(80),
+              ),
+              FxListBoxColumn(
+                id: 'name',
+                caption: 'Name',
+                width: FxColumnWidth.fixed(140),
+              ),
             ],
             rows: const [
               FxListBoxRow(id: 'r1', cells: {'id': '1', 'name': 'Alpha'}),
@@ -208,8 +216,16 @@ nav    content
           home: FxGrid(
             height: 160,
             columns: const [
-              FxGridColumn(id: 'name', caption: 'Name', width: 140),
-              FxGridColumn(id: 'status', caption: 'Status', width: 120),
+              FxGridColumn(
+                id: 'name',
+                caption: 'Name',
+                width: FxColumnWidth.fixed(140),
+              ),
+              FxGridColumn(
+                id: 'status',
+                caption: 'Status',
+                width: FxColumnWidth.fixed(120),
+              ),
             ],
             rows: const [
               FxGridRow(id: 'r1', cells: {'name': 'Alpha', 'status': 'Open'}),

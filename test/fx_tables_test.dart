@@ -438,7 +438,7 @@ void main() {
       const col = FxListBoxColumn(
         id: 'c1',
         caption: 'Col 1',
-        width: 100,
+        width: FxColumnWidth.fixed(100),
         minWidth: 50,
         alignment: FxCellAlignment.center,
         editable: true,
@@ -453,10 +453,12 @@ void main() {
       expect(col.toJson(), {
         'id': 'c1',
         'caption': 'Col 1',
-        'width': 100.0,
+        'width': {'type': 'fixed', 'value': 100.0},
         'minWidth': 50.0,
         'alignment': 'center',
         'editable': true,
+        'visible': true,
+        'sortable': false,
       });
 
       expect(row.toJson(), {
@@ -485,7 +487,7 @@ void main() {
       const col = FxGridColumn(
         id: 'c1',
         caption: 'Col 1',
-        width: 120,
+        width: FxColumnWidth.fixed(120),
         alignment: FxCellAlignment.trailing,
       );
       const row = FxGridRow(
@@ -498,8 +500,11 @@ void main() {
       expect(col.toJson(), {
         'id': 'c1',
         'caption': 'Col 1',
-        'width': 120.0,
+        'width': {'type': 'fixed', 'value': 120.0},
+        'minWidth': 48.0,
         'alignment': 'trailing',
+        'visible': true,
+        'sortable': false,
       });
 
       expect(row.toJson(), {
@@ -571,6 +576,160 @@ void main() {
         expect(find.text('Custom Error'), findsOneWidget);
       },
     );
+
+    testWidgets(
+      'FxListBox filters hidden columns and supports sorting/resizing',
+      (tester) async {
+        String? sortedCol;
+        bool? sortAsc;
+        double? resizedWidth;
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: FxListBox(
+                columns: [
+                  const FxListBoxColumn(
+                    id: 'c1',
+                    caption: 'Col 1',
+                    width: FxColumnWidth.fixed(100),
+                    sortable: true,
+                  ),
+                  const FxListBoxColumn(
+                    id: 'c2',
+                    caption: 'Col 2',
+                    width: FxColumnWidth.fixed(100),
+                    visible: false,
+                  ),
+                  const FxListBoxColumn(
+                    id: 'c3',
+                    caption: 'Col 3',
+                    width: FxColumnWidth.fixed(100),
+                    sortable: true,
+                  ),
+                ],
+                rows: const [
+                  FxListBoxRow(
+                    id: 'r1',
+                    cells: {'c1': 'A', 'c2': 'B', 'c3': 'C'},
+                  ),
+                ],
+                sortedColumnId: 'c1',
+                sortAscending: true,
+                onSortChanged: (id, asc) {
+                  sortedCol = id;
+                  sortAsc = asc;
+                },
+                onColumnResized: (id, width) {
+                  resizedWidth = width;
+                },
+              ),
+            ),
+          ),
+        );
+
+        expect(find.text('Col 1'), findsOneWidget);
+        expect(find.text('Col 2'), findsNothing);
+        expect(find.text('Col 3'), findsOneWidget);
+        expect(find.text('A'), findsOneWidget);
+        expect(find.text('B'), findsNothing);
+        expect(find.text('C'), findsOneWidget);
+
+        expect(find.byIcon(Icons.keyboard_arrow_up), findsOneWidget);
+
+        await tester.tap(find.text('Col 3'));
+        await tester.pump();
+        expect(sortedCol, 'c3');
+        expect(sortAsc, true);
+
+        final resizeHandleFinder = find.byWidgetPredicate(
+          (widget) =>
+              widget is MouseRegion &&
+              widget.cursor == SystemMouseCursors.resizeLeftRight,
+        );
+        expect(resizeHandleFinder, findsNWidgets(2));
+
+        await tester.drag(resizeHandleFinder.first, const Offset(20, 0));
+        await tester.pump();
+        expect(resizedWidth, isNotNull);
+        expect(resizedWidth!, 120.0);
+      },
+    );
+
+    testWidgets('FxGrid filters hidden columns and supports sorting/resizing', (
+      tester,
+    ) async {
+      String? sortedCol;
+      bool? sortAsc;
+      double? resizedWidth;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: FxGrid(
+              columns: [
+                const FxGridColumn(
+                  id: 'c1',
+                  caption: 'Col 1',
+                  width: FxColumnWidth.fixed(100),
+                  sortable: true,
+                ),
+                const FxGridColumn(
+                  id: 'c2',
+                  caption: 'Col 2',
+                  width: FxColumnWidth.fixed(100),
+                  visible: false,
+                ),
+                const FxGridColumn(
+                  id: 'c3',
+                  caption: 'Col 3',
+                  width: FxColumnWidth.fixed(100),
+                  sortable: true,
+                ),
+              ],
+              rows: const [
+                FxGridRow(id: 'r1', cells: {'c1': 'A', 'c2': 'B', 'c3': 'C'}),
+              ],
+              sortedColumnId: 'c1',
+              sortAscending: true,
+              onSortChanged: (id, asc) {
+                sortedCol = id;
+                sortAsc = asc;
+              },
+              onColumnResized: (id, width) {
+                resizedWidth = width;
+              },
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Col 1'), findsOneWidget);
+      expect(find.text('Col 2'), findsNothing);
+      expect(find.text('Col 3'), findsOneWidget);
+      expect(find.text('A'), findsOneWidget);
+      expect(find.text('B'), findsNothing);
+      expect(find.text('C'), findsOneWidget);
+
+      expect(find.byIcon(Icons.keyboard_arrow_up), findsOneWidget);
+
+      await tester.tap(find.text('Col 3'));
+      await tester.pump();
+      expect(sortedCol, 'c3');
+      expect(sortAsc, true);
+
+      final resizeHandleFinder = find.byWidgetPredicate(
+        (widget) =>
+            widget is MouseRegion &&
+            widget.cursor == SystemMouseCursors.resizeLeftRight,
+      );
+      expect(resizeHandleFinder, findsNWidgets(2));
+
+      await tester.drag(resizeHandleFinder.first, const Offset(-30, 0));
+      await tester.pump();
+      expect(resizedWidth, isNotNull);
+      expect(resizedWidth!, 70.0);
+    });
 
     testWidgets('throws ArgumentError on duplicate column ids in FxListBox', (
       tester,

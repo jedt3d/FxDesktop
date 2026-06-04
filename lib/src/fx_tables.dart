@@ -59,16 +59,101 @@ enum FxTableState {
   error,
 }
 
+/// Defines column sizing strategies for FxDesktop tables.
+sealed class FxColumnWidth {
+  /// Base constant constructor.
+  const FxColumnWidth();
+
+  /// Creates a fixed column width in logical pixels.
+  const factory FxColumnWidth.fixed(double pixels) = FxFixedColumnWidth;
+
+  /// Creates a fractional column width representing a ratio (0.0 to 1.0) of
+  /// the total viewport width.
+  const factory FxColumnWidth.fraction(double fraction) =
+      FxFractionalColumnWidth;
+
+  /// Creates a flexible column width that consumes remaining viewport space.
+  const factory FxColumnWidth.remaining() = FxRemainingColumnWidth;
+
+  /// Parses an [FxColumnWidth] from a JSON map.
+  factory FxColumnWidth.fromJson(Map<String, Object?> json) {
+    final type = json['type'] as String?;
+    switch (type) {
+      case 'fixed':
+        return FxColumnWidth.fixed((json['value'] as num).toDouble());
+      case 'fraction':
+        return FxColumnWidth.fraction((json['value'] as num).toDouble());
+      case 'remaining':
+        return const FxColumnWidth.remaining();
+      default:
+        return const FxColumnWidth.fixed(120.0);
+    }
+  }
+
+  /// Converts this sizing strategy to JSON.
+  Map<String, Object?> toJson();
+
+  /// Converts this specification to the underlying [table.TableSpanExtent].
+  table.TableSpanExtent toTableSpanExtent();
+}
+
+/// A fixed column width specification.
+class FxFixedColumnWidth extends FxColumnWidth {
+  /// Creates a fixed column width.
+  const FxFixedColumnWidth(this.value);
+
+  /// Width in logical pixels.
+  final double value;
+
+  @override
+  Map<String, Object?> toJson() => {'type': 'fixed', 'value': value};
+
+  @override
+  table.TableSpanExtent toTableSpanExtent() =>
+      table.FixedTableSpanExtent(value);
+}
+
+/// A fractional column width specification.
+class FxFractionalColumnWidth extends FxColumnWidth {
+  /// Creates a fractional column width.
+  const FxFractionalColumnWidth(this.value);
+
+  /// Fraction of viewport width (0.0 to 1.0).
+  final double value;
+
+  @override
+  Map<String, Object?> toJson() => {'type': 'fraction', 'value': value};
+
+  @override
+  table.TableSpanExtent toTableSpanExtent() =>
+      table.FractionalTableSpanExtent(value);
+}
+
+/// A column width that consumes remaining viewport space.
+class FxRemainingColumnWidth extends FxColumnWidth {
+  /// Creates a remaining column width.
+  const FxRemainingColumnWidth();
+
+  @override
+  Map<String, Object?> toJson() => {'type': 'remaining'};
+
+  @override
+  table.TableSpanExtent toTableSpanExtent() =>
+      const table.RemainingTableSpanExtent();
+}
+
 /// A column descriptor for [FxListBox].
 class FxListBoxColumn {
   /// Creates a list box column.
   const FxListBoxColumn({
     required this.id,
     required this.caption,
-    this.width = 120,
+    this.width = const FxColumnWidth.fixed(120),
     this.minWidth = 48,
     this.alignment = FxCellAlignment.leading,
     this.editable = false,
+    this.visible = true,
+    this.sortable = false,
   });
 
   /// Stable column id.
@@ -77,8 +162,8 @@ class FxListBoxColumn {
   /// Header caption.
   final String caption;
 
-  /// Preferred width.
-  final double width;
+  /// Preferred width specification.
+  final FxColumnWidth width;
 
   /// Minimum width metadata for generator use.
   final double minWidth;
@@ -89,15 +174,23 @@ class FxListBoxColumn {
   /// Whether the column is editable in generated UI.
   final bool editable;
 
+  /// Whether the column is visible.
+  final bool visible;
+
+  /// Whether the column can be sorted.
+  final bool sortable;
+
   /// Converts this column to JSON.
   Map<String, Object?> toJson() {
     return {
       'id': id,
       'caption': caption,
-      'width': width,
+      'width': width.toJson(),
       'minWidth': minWidth,
       'alignment': alignment.name,
       'editable': editable,
+      'visible': visible,
+      'sortable': sortable,
     };
   }
 }
@@ -151,6 +244,10 @@ class FxListBox extends StatefulWidget {
     this.rowHeight = 28,
     this.showGridLines = true,
     this.focusNode,
+    this.sortedColumnId,
+    this.sortAscending = true,
+    this.onSortChanged,
+    this.onColumnResized,
   });
 
   /// Column descriptors.
@@ -198,6 +295,18 @@ class FxListBox extends StatefulWidget {
   /// Focus node for keyboard interactions.
   final FocusNode? focusNode;
 
+  /// Stable column id that is currently sorted.
+  final String? sortedColumnId;
+
+  /// Whether sorting is ascending.
+  final bool sortAscending;
+
+  /// Callback when column sort order changes.
+  final void Function(String columnId, bool ascending)? onSortChanged;
+
+  /// Callback when column is resized.
+  final void Function(String columnId, double newWidth)? onColumnResized;
+
   /// Stable map for AI/generator use.
   Map<String, Object?> toTemplateMap() {
     return {
@@ -206,6 +315,8 @@ class FxListBox extends StatefulWidget {
       'xojo_web_class': 'WebListBox',
       'selectionMode': selectionMode.name,
       'state': state.name,
+      'sortedColumnId': sortedColumnId,
+      'sortAscending': sortAscending,
       'columns': [for (final column in columns) column.toJson()],
       'rows': [for (final row in rows) row.toJson()],
     };
@@ -218,6 +329,7 @@ class FxListBox extends StatefulWidget {
 class _FxListBoxState extends State<FxListBox> {
   late FocusNode _focusNode;
   int? _hoveredRowIndex;
+  final Map<String, double> _columnWidths = {};
 
   @override
   void initState() {
@@ -365,6 +477,29 @@ class _FxListBoxState extends State<FxListBox> {
     return KeyEventResult.ignored;
   }
 
+  double _getColumnWidth(FxListBoxColumn column, double totalWidth) {
+    final dynamicWidth = _columnWidths[column.id];
+    if (dynamicWidth != null) {
+      return dynamicWidth;
+    }
+    return switch (column.width) {
+      FxFixedColumnWidth(:final value) => value,
+      FxFractionalColumnWidth(:final value) => value * totalWidth,
+      FxRemainingColumnWidth() => 120.0,
+    };
+  }
+
+  table.TableSpanExtent _getColumnExtent(
+    FxListBoxColumn column,
+    double totalWidth,
+  ) {
+    final dynamicWidth = _columnWidths[column.id];
+    if (dynamicWidth != null) {
+      return table.FixedTableSpanExtent(dynamicWidth);
+    }
+    return column.width.toTableSpanExtent();
+  }
+
   Widget _buildStateView(BuildContext context, FxTheme theme) {
     return Container(
       height: widget.height,
@@ -426,105 +561,135 @@ class _FxListBoxState extends State<FxListBox> {
     }
 
     final isFocused = _focusNode.hasFocus;
+    final visibleColumns = widget.columns.where((c) => c.visible).toList();
 
     return Focus(
       focusNode: _focusNode,
       onKeyEvent: _handleKeyEvent,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          border: Border.all(
-            color: isFocused
-                ? Theme.of(context).colorScheme.primary
-                : theme.gridLineColor,
-            width: isFocused ? 1.5 : 1.0,
-          ),
-        ),
-        child: SizedBox(
-          height: widget.height,
-          child: table.TableView.builder(
-            pinnedRowCount: 1,
-            columnCount: widget.columns.length,
-            rowCount: widget.rows.length + 1,
-            columnBuilder: (index) {
-              return table.TableSpan(
-                extent: table.FixedTableSpanExtent(widget.columns[index].width),
-                foregroundDecoration: _borderDecoration(
-                  theme,
-                  widget.showGridLines,
-                ),
-              );
-            },
-            rowBuilder: (index) {
-              final isHeader = index == 0;
-              final row = isHeader ? null : widget.rows[index - 1];
-              final isSelected =
-                  row != null && widget.selectedRowIds.contains(row.id);
-              final isHovered = index == _hoveredRowIndex;
-              return table.TableSpan(
-                extent: table.FixedTableSpanExtent(
-                  isHeader
-                      ? widget.headerHeight
-                      : (row?.height ?? widget.rowHeight),
-                ),
-                backgroundDecoration: table.TableSpanDecoration(
-                  color: isHeader
-                      ? theme.headerBackground
-                      : isSelected
-                      ? theme.selectionBackground
-                      : isHovered
-                      ? Theme.of(context).hoverColor
-                      : index.isEven
-                      ? theme.alternatingRowBackground
-                      : Theme.of(context).colorScheme.surface,
-                ),
-                foregroundDecoration: _borderDecoration(
-                  theme,
-                  widget.showGridLines,
-                ),
-              );
-            },
-            cellBuilder: (context, vicinity) {
-              final column = widget.columns[vicinity.column];
-              if (vicinity.row == 0) {
-                return table.TableViewCell(
-                  child: _CellText(
-                    text: column.caption,
-                    alignment: column.alignment,
-                    isHeader: true,
-                  ),
-                );
-              }
-              final row = widget.rows[vicinity.row - 1];
-              final value = row.cells[column.id];
-              final isSelected = widget.selectedRowIds.contains(row.id);
-              return table.TableViewCell(
-                child: MouseRegion(
-                  onEnter: (_) {
-                    if (row.enabled) {
-                      setState(() => _hoveredRowIndex = vicinity.row);
-                    }
-                  },
-                  onExit: (_) {
-                    if (row.enabled) {
-                      setState(() => _hoveredRowIndex = null);
-                    }
-                  },
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: row.enabled ? () => _handleRowTap(row.id) : null,
-                    child: _CellText(
-                      text: value?.toString() ?? '',
-                      alignment: column.alignment,
-                      enabled: row.enabled,
-                      isSelected: isSelected,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final totalWidth = constraints.maxWidth;
+          return DecoratedBox(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              border: Border.all(
+                color: isFocused
+                    ? Theme.of(context).colorScheme.primary
+                    : theme.gridLineColor,
+                width: isFocused ? 1.5 : 1.0,
+              ),
+            ),
+            child: SizedBox(
+              height: widget.height,
+              child: table.TableView.builder(
+                pinnedRowCount: 1,
+                columnCount: visibleColumns.length,
+                rowCount: widget.rows.length + 1,
+                columnBuilder: (index) {
+                  final column = visibleColumns[index];
+                  return table.TableSpan(
+                    extent: _getColumnExtent(column, totalWidth),
+                    foregroundDecoration: _borderDecoration(
+                      theme,
+                      widget.showGridLines,
                     ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
+                  );
+                },
+                rowBuilder: (index) {
+                  final isHeader = index == 0;
+                  final row = isHeader ? null : widget.rows[index - 1];
+                  final isSelected =
+                      row != null && widget.selectedRowIds.contains(row.id);
+                  final isHovered = index == _hoveredRowIndex;
+                  return table.TableSpan(
+                    extent: table.FixedTableSpanExtent(
+                      isHeader
+                          ? widget.headerHeight
+                          : (row?.height ?? widget.rowHeight),
+                    ),
+                    backgroundDecoration: table.TableSpanDecoration(
+                      color: isHeader
+                          ? theme.headerBackground
+                          : isSelected
+                          ? theme.selectionBackground
+                          : isHovered
+                          ? Theme.of(context).hoverColor
+                          : index.isEven
+                          ? theme.alternatingRowBackground
+                          : Theme.of(context).colorScheme.surface,
+                    ),
+                    foregroundDecoration: _borderDecoration(
+                      theme,
+                      widget.showGridLines,
+                    ),
+                  );
+                },
+                cellBuilder: (context, vicinity) {
+                  final column = visibleColumns[vicinity.column];
+                  if (vicinity.row == 0) {
+                    final sorted = column.id == widget.sortedColumnId;
+                    return table.TableViewCell(
+                      child: _HeaderCell(
+                        caption: column.caption,
+                        alignment: column.alignment,
+                        sortable: column.sortable,
+                        sorted: sorted,
+                        ascending: widget.sortAscending,
+                        onSort: () {
+                          widget.onSortChanged?.call(
+                            column.id,
+                            sorted ? !widget.sortAscending : true,
+                          );
+                        },
+                        onResize: (delta) {
+                          final currentWidth = _getColumnWidth(
+                            column,
+                            totalWidth,
+                          );
+                          final newWidth = (currentWidth + delta).clamp(
+                            column.minWidth,
+                            1000.0,
+                          );
+                          setState(() {
+                            _columnWidths[column.id] = newWidth;
+                          });
+                          widget.onColumnResized?.call(column.id, newWidth);
+                        },
+                      ),
+                    );
+                  }
+                  final row = widget.rows[vicinity.row - 1];
+                  final value = row.cells[column.id];
+                  final isSelected = widget.selectedRowIds.contains(row.id);
+                  return table.TableViewCell(
+                    child: MouseRegion(
+                      onEnter: (_) {
+                        if (row.enabled) {
+                          setState(() => _hoveredRowIndex = vicinity.row);
+                        }
+                      },
+                      onExit: (_) {
+                        if (row.enabled) {
+                          setState(() => _hoveredRowIndex = null);
+                        }
+                      },
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: row.enabled ? () => _handleRowTap(row.id) : null,
+                        child: _CellText(
+                          text: value?.toString() ?? '',
+                          alignment: column.alignment,
+                          enabled: row.enabled,
+                          isSelected: isSelected,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -536,8 +701,11 @@ class FxGridColumn {
   const FxGridColumn({
     required this.id,
     this.caption,
-    this.width = 100,
+    this.width = const FxColumnWidth.fixed(100),
+    this.minWidth = 48,
     this.alignment = FxCellAlignment.leading,
+    this.visible = true,
+    this.sortable = false,
   });
 
   /// Stable column id.
@@ -546,19 +714,31 @@ class FxGridColumn {
   /// Optional header caption.
   final String? caption;
 
-  /// Column width.
-  final double width;
+  /// Column width specification.
+  final FxColumnWidth width;
+
+  /// Minimum width metadata.
+  final double minWidth;
 
   /// Cell alignment.
   final FxCellAlignment alignment;
+
+  /// Whether the column is visible.
+  final bool visible;
+
+  /// Whether the column can be sorted.
+  final bool sortable;
 
   /// Converts this column to JSON.
   Map<String, Object?> toJson() {
     return {
       'id': id,
       'caption': caption,
-      'width': width,
+      'width': width.toJson(),
+      'minWidth': minWidth,
       'alignment': alignment.name,
+      'visible': visible,
+      'sortable': sortable,
     };
   }
 }
@@ -592,6 +772,7 @@ class FxGridRow {
 }
 
 /// A desktop data/cell grid comparable to Xojo's DesktopGrid.
+/// A desktop data/cell grid comparable to Xojo's DesktopGrid.
 class FxGrid extends StatefulWidget {
   /// Creates an FxDesktop data grid.
   const FxGrid({
@@ -612,6 +793,10 @@ class FxGrid extends StatefulWidget {
     this.showHeaders = true,
     this.showGridLines = true,
     this.focusNode,
+    this.sortedColumnId,
+    this.sortAscending = true,
+    this.onSortChanged,
+    this.onColumnResized,
   });
 
   /// Column descriptors.
@@ -662,6 +847,18 @@ class FxGrid extends StatefulWidget {
   /// Focus node for keyboard interactions.
   final FocusNode? focusNode;
 
+  /// Stable column id that is currently sorted.
+  final String? sortedColumnId;
+
+  /// Whether sorting is ascending.
+  final bool sortAscending;
+
+  /// Callback when column sort order changes.
+  final void Function(String columnId, bool ascending)? onSortChanged;
+
+  /// Callback when column is resized.
+  final void Function(String columnId, double newWidth)? onColumnResized;
+
   /// Stable map for AI/generator use.
   Map<String, Object?> toTemplateMap() {
     return {
@@ -669,6 +866,8 @@ class FxGrid extends StatefulWidget {
       'xojo_desktop_class': 'DesktopGrid',
       'selectionMode': selectionMode.name,
       'state': state.name,
+      'sortedColumnId': sortedColumnId,
+      'sortAscending': sortAscending,
       'columns': [for (final column in columns) column.toJson()],
       'rows': [for (final row in rows) row.toJson()],
     };
@@ -681,6 +880,7 @@ class FxGrid extends StatefulWidget {
 class _FxGridState extends State<FxGrid> {
   late FocusNode _focusNode;
   table.TableVicinity? _hoveredCell;
+  final Map<String, double> _columnWidths = {};
 
   @override
   void initState() {
@@ -722,7 +922,8 @@ class _FxGridState extends State<FxGrid> {
       widget.onCellsSelected!({(rowId: rowId, columnId: columnId)});
     } else if (widget.selectionMode == FxGridSelectionMode.row) {
       final nextSelection = <({String rowId, String columnId})>{};
-      for (final col in widget.columns) {
+      final visibleColumns = widget.columns.where((c) => c.visible).toList();
+      for (final col in visibleColumns) {
         nextSelection.add((rowId: rowId, columnId: col.id));
       }
       widget.onCellsSelected!(nextSelection);
@@ -734,8 +935,9 @@ class _FxGridState extends State<FxGrid> {
       return KeyEventResult.ignored;
     }
 
+    final visibleColumns = widget.columns.where((c) => c.visible).toList();
     if (widget.rows.isEmpty ||
-        widget.columns.isEmpty ||
+        visibleColumns.isEmpty ||
         widget.onCellsSelected == null ||
         widget.selectionMode == FxGridSelectionMode.none) {
       return KeyEventResult.ignored;
@@ -746,7 +948,7 @@ class _FxGridState extends State<FxGrid> {
     if (widget.selectedCells.isNotEmpty) {
       final lastSelected = widget.selectedCells.last;
       currentRow = widget.rows.indexWhere((r) => r.id == lastSelected.rowId);
-      currentCol = widget.columns.indexWhere(
+      currentCol = visibleColumns.indexWhere(
         (c) => c.id == lastSelected.columnId,
       );
     }
@@ -768,13 +970,13 @@ class _FxGridState extends State<FxGrid> {
       nextCol = currentCol == -1 ? 0 : currentCol + 1;
     } else if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
       nextRow = currentRow == -1 ? 0 : currentRow;
-      nextCol = currentCol == -1 ? widget.columns.length - 1 : currentCol - 1;
+      nextCol = currentCol == -1 ? visibleColumns.length - 1 : currentCol - 1;
     } else if (event.logicalKey == LogicalKeyboardKey.home) {
       nextRow = currentRow == -1 ? 0 : currentRow;
       nextCol = 0;
     } else if (event.logicalKey == LogicalKeyboardKey.end) {
       nextRow = currentRow == -1 ? 0 : currentRow;
-      nextCol = widget.columns.length - 1;
+      nextCol = visibleColumns.length - 1;
     } else {
       return KeyEventResult.ignored;
     }
@@ -782,7 +984,7 @@ class _FxGridState extends State<FxGrid> {
     if (nextRow < 0) nextRow = 0;
     if (nextRow >= widget.rows.length) nextRow = widget.rows.length - 1;
     if (nextCol < 0) nextCol = 0;
-    if (nextCol >= widget.columns.length) nextCol = widget.columns.length - 1;
+    if (nextCol >= visibleColumns.length) nextCol = visibleColumns.length - 1;
 
     // Skip disabled rows if navigating vertically
     if (rowStep != 0) {
@@ -810,19 +1012,42 @@ class _FxGridState extends State<FxGrid> {
     }
 
     final targetRow = widget.rows[nextRow];
-    final targetCol = widget.columns[nextCol];
+    final targetCol = visibleColumns[nextCol];
 
     if (widget.selectionMode == FxGridSelectionMode.cell) {
       widget.onCellsSelected!({(rowId: targetRow.id, columnId: targetCol.id)});
     } else if (widget.selectionMode == FxGridSelectionMode.row) {
       final nextSelection = <({String rowId, String columnId})>{};
-      for (final col in widget.columns) {
+      for (final col in visibleColumns) {
         nextSelection.add((rowId: targetRow.id, columnId: col.id));
       }
       widget.onCellsSelected!(nextSelection);
     }
 
     return KeyEventResult.handled;
+  }
+
+  double _getColumnWidth(FxGridColumn column, double totalWidth) {
+    final dynamicWidth = _columnWidths[column.id];
+    if (dynamicWidth != null) {
+      return dynamicWidth;
+    }
+    return switch (column.width) {
+      FxFixedColumnWidth(:final value) => value,
+      FxFractionalColumnWidth(:final value) => value * totalWidth,
+      FxRemainingColumnWidth() => 100.0,
+    };
+  }
+
+  table.TableSpanExtent _getColumnExtent(
+    FxGridColumn column,
+    double totalWidth,
+  ) {
+    final dynamicWidth = _columnWidths[column.id];
+    if (dynamicWidth != null) {
+      return table.FixedTableSpanExtent(dynamicWidth);
+    }
+    return column.width.toTableSpanExtent();
   }
 
   Widget _buildStateView(BuildContext context, FxTheme theme) {
@@ -887,114 +1112,147 @@ class _FxGridState extends State<FxGrid> {
 
     final rowOffset = widget.showHeaders ? 1 : 0;
     final isFocused = _focusNode.hasFocus;
+    final visibleColumns = widget.columns.where((c) => c.visible).toList();
 
     return Focus(
       focusNode: _focusNode,
       onKeyEvent: _handleGridKeyEvent,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          border: Border.all(
-            color: isFocused
-                ? Theme.of(context).colorScheme.primary
-                : theme.gridLineColor,
-            width: isFocused ? 1.5 : 1.0,
-          ),
-        ),
-        child: SizedBox(
-          height: widget.height,
-          child: table.TableView.builder(
-            pinnedRowCount: widget.showHeaders ? 1 : 0,
-            columnCount: widget.columns.length,
-            rowCount: widget.rows.length + rowOffset,
-            columnBuilder: (index) {
-              return table.TableSpan(
-                extent: table.FixedTableSpanExtent(widget.columns[index].width),
-                foregroundDecoration: _borderDecoration(
-                  theme,
-                  widget.showGridLines,
-                ),
-              );
-            },
-            rowBuilder: (index) {
-              final isHeader = widget.showHeaders && index == 0;
-              final dataRow = isHeader ? null : widget.rows[index - rowOffset];
-              return table.TableSpan(
-                extent: table.FixedTableSpanExtent(
-                  isHeader
-                      ? widget.headerHeight
-                      : (dataRow?.height ?? widget.rowHeight),
-                ),
-                backgroundDecoration: table.TableSpanDecoration(
-                  color: isHeader
-                      ? theme.headerBackground
-                      : index.isEven
-                      ? theme.alternatingRowBackground
-                      : Theme.of(context).colorScheme.surface,
-                ),
-                foregroundDecoration: _borderDecoration(
-                  theme,
-                  widget.showGridLines,
-                ),
-              );
-            },
-            cellBuilder: (context, vicinity) {
-              final column = widget.columns[vicinity.column];
-              if (widget.showHeaders && vicinity.row == 0) {
-                return table.TableViewCell(
-                  child: _CellText(
-                    text: column.caption ?? column.id,
-                    alignment: column.alignment,
-                    isHeader: true,
-                  ),
-                );
-              }
-              final row = widget.rows[vicinity.row - rowOffset];
-              final selected = widget.selectedCells.any(
-                (cell) => cell.rowId == row.id && cell.columnId == column.id,
-              );
-              final hovered =
-                  row.enabled &&
-                  _hoveredCell != null &&
-                  _hoveredCell!.row == vicinity.row &&
-                  _hoveredCell!.column == vicinity.column;
-              final value = row.cells[column.id];
-              return table.TableViewCell(
-                child: MouseRegion(
-                  onEnter: (_) {
-                    if (row.enabled) {
-                      setState(() => _hoveredCell = vicinity);
-                    }
-                  },
-                  onExit: (_) {
-                    if (row.enabled) {
-                      setState(() => _hoveredCell = null);
-                    }
-                  },
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: row.enabled
-                        ? () => _handleCellTap(row.id, column.id)
-                        : null,
-                    child: ColoredBox(
-                      color: selected
-                          ? theme.selectionBackground
-                          : hovered
-                          ? Theme.of(context).hoverColor
-                          : Colors.transparent,
-                      child: _CellText(
-                        text: value?.toString() ?? '',
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final totalWidth = constraints.maxWidth;
+          return DecoratedBox(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              border: Border.all(
+                color: isFocused
+                    ? Theme.of(context).colorScheme.primary
+                    : theme.gridLineColor,
+                width: isFocused ? 1.5 : 1.0,
+              ),
+            ),
+            child: SizedBox(
+              height: widget.height,
+              child: table.TableView.builder(
+                pinnedRowCount: widget.showHeaders ? 1 : 0,
+                columnCount: visibleColumns.length,
+                rowCount: widget.rows.length + rowOffset,
+                columnBuilder: (index) {
+                  final column = visibleColumns[index];
+                  return table.TableSpan(
+                    extent: _getColumnExtent(column, totalWidth),
+                    foregroundDecoration: _borderDecoration(
+                      theme,
+                      widget.showGridLines,
+                    ),
+                  );
+                },
+                rowBuilder: (index) {
+                  final isHeader = widget.showHeaders && index == 0;
+                  final dataRow = isHeader
+                      ? null
+                      : widget.rows[index - rowOffset];
+                  return table.TableSpan(
+                    extent: table.FixedTableSpanExtent(
+                      isHeader
+                          ? widget.headerHeight
+                          : (dataRow?.height ?? widget.rowHeight),
+                    ),
+                    backgroundDecoration: table.TableSpanDecoration(
+                      color: isHeader
+                          ? theme.headerBackground
+                          : index.isEven
+                          ? theme.alternatingRowBackground
+                          : Theme.of(context).colorScheme.surface,
+                    ),
+                    foregroundDecoration: _borderDecoration(
+                      theme,
+                      widget.showGridLines,
+                    ),
+                  );
+                },
+                cellBuilder: (context, vicinity) {
+                  final column = visibleColumns[vicinity.column];
+                  if (widget.showHeaders && vicinity.row == 0) {
+                    final sorted = column.id == widget.sortedColumnId;
+                    return table.TableViewCell(
+                      child: _HeaderCell(
+                        caption: column.caption ?? column.id,
                         alignment: column.alignment,
-                        enabled: row.enabled,
-                        isSelected: selected,
+                        sortable: column.sortable,
+                        sorted: sorted,
+                        ascending: widget.sortAscending,
+                        onSort: () {
+                          widget.onSortChanged?.call(
+                            column.id,
+                            sorted ? !widget.sortAscending : true,
+                          );
+                        },
+                        onResize: (delta) {
+                          final currentWidth = _getColumnWidth(
+                            column,
+                            totalWidth,
+                          );
+                          final newWidth = (currentWidth + delta).clamp(
+                            column.minWidth,
+                            1000.0,
+                          );
+                          setState(() {
+                            _columnWidths[column.id] = newWidth;
+                          });
+                          widget.onColumnResized?.call(column.id, newWidth);
+                        },
+                      ),
+                    );
+                  }
+                  final row = widget.rows[vicinity.row - rowOffset];
+                  final selected = widget.selectedCells.any(
+                    (cell) =>
+                        cell.rowId == row.id && cell.columnId == column.id,
+                  );
+                  final hovered =
+                      row.enabled &&
+                      _hoveredCell != null &&
+                      _hoveredCell!.row == vicinity.row &&
+                      _hoveredCell!.column == vicinity.column;
+                  final value = row.cells[column.id];
+                  return table.TableViewCell(
+                    child: MouseRegion(
+                      onEnter: (_) {
+                        if (row.enabled) {
+                          setState(() => _hoveredCell = vicinity);
+                        }
+                      },
+                      onExit: (_) {
+                        if (row.enabled) {
+                          setState(() => _hoveredCell = null);
+                        }
+                      },
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: row.enabled
+                            ? () => _handleCellTap(row.id, column.id)
+                            : null,
+                        child: ColoredBox(
+                          color: selected
+                              ? theme.selectionBackground
+                              : hovered
+                              ? Theme.of(context).hoverColor
+                              : Colors.transparent,
+                          child: _CellText(
+                            text: value?.toString() ?? '',
+                            alignment: column.alignment,
+                            enabled: row.enabled,
+                            isSelected: selected,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
+                  );
+                },
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -1036,14 +1294,12 @@ class _CellText extends StatelessWidget {
   const _CellText({
     required this.text,
     required this.alignment,
-    this.isHeader = false,
     this.enabled = true,
     this.isSelected = false,
   });
 
   final String text;
   final FxCellAlignment alignment;
-  final bool isHeader;
   final bool enabled;
   final bool isSelected;
 
@@ -1083,12 +1339,115 @@ class _CellText extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           textAlign: textAlign,
-          style: TextStyle(
-            fontWeight: isHeader ? FontWeight.w600 : FontWeight.normal,
-            color: textColor,
+          style: TextStyle(fontWeight: FontWeight.normal, color: textColor),
+        ),
+      ),
+    );
+  }
+}
+
+class _HeaderCell extends StatelessWidget {
+  const _HeaderCell({
+    required this.caption,
+    required this.alignment,
+    required this.sortable,
+    required this.sorted,
+    required this.ascending,
+    this.onSort,
+    this.onResize,
+  });
+
+  final String caption;
+  final FxCellAlignment alignment;
+  final bool sortable;
+  final bool sorted;
+  final bool ascending;
+  final VoidCallback? onSort;
+  final ValueChanged<double>? onResize;
+
+  @override
+  Widget build(BuildContext context) {
+    // Chevron sort indicator
+    Widget? sortIndicator;
+    if (sortable && sorted) {
+      sortIndicator = Icon(
+        ascending ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+        size: 16,
+        color: Theme.of(context).colorScheme.onSurface,
+      );
+    }
+
+    final content = GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: sortable ? onSort : null,
+      child: MouseRegion(
+        cursor: sortable ? SystemMouseCursors.click : MouseCursor.defer,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: switch (alignment) {
+              FxCellAlignment.leading => MainAxisAlignment.start,
+              FxCellAlignment.center => MainAxisAlignment.center,
+              FxCellAlignment.trailing => MainAxisAlignment.end,
+            },
+            children: [
+              Flexible(
+                child: Text(
+                  caption,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+              if (sortIndicator != null) ...[
+                const SizedBox(width: 4),
+                sortIndicator,
+              ],
+            ],
           ),
         ),
       ),
+    );
+
+    if (onResize == null) {
+      return Align(
+        alignment: switch (alignment) {
+          FxCellAlignment.leading => Alignment.centerLeft,
+          FxCellAlignment.center => Alignment.center,
+          FxCellAlignment.trailing => Alignment.centerRight,
+        },
+        child: content,
+      );
+    }
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Align(
+          alignment: switch (alignment) {
+            FxCellAlignment.leading => Alignment.centerLeft,
+            FxCellAlignment.center => Alignment.center,
+            FxCellAlignment.trailing => Alignment.centerRight,
+          },
+          child: content,
+        ),
+        Positioned(
+          top: 0,
+          bottom: 0,
+          right: 0,
+          width: 8,
+          child: MouseRegion(
+            cursor: SystemMouseCursors.resizeLeftRight,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onHorizontalDragUpdate: (details) {
+                onResize?.call(details.primaryDelta ?? 0.0);
+              },
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
