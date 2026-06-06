@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.5
+
+Version `0.3.5` introduces custom cell rendering, database-grade key-value lookups, and hosted combobox overlays.
+
+### Added
+- **Lookup Providers (`FxLookupProvider`)**: Added `FxMapLookupProvider` and `FxEnumLookupProvider` to decouple database Keys/IDs from user-facing labels in grid/list views.
+- **Custom Cell Renderers (`cellRenderer`)**: Added column-level widget builders supporting custom inline graphics (badges, Canvas sparklines) with `RepaintBoundary` caching.
+- **Hosted Overlay Editors (`FxLookupComboBox`)**: Implemented non-clipped overlay dropdowns linked via `CompositedTransformFollower` and auto-dismissed on table scroll.
+- **Undo/Redo Integration**: All lookup choices committed as raw keys to the undo stack, automatically updating reactive label visual lookups on revert/apply.
+- **Demo Gallery Page 10**: Interactive sandbox page illustrating map/enum lookups, undo stacks, and Canvas trend sparklines.
+
 ## 0.3.4
 
 Version `0.3.4` introduces advanced choice controls, grid interactions, visual guidance enhancements, and inline text formatting.

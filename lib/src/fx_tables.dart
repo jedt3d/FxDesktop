@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:two_dimensional_scrollables/two_dimensional_scrollables.dart'
     as table;
 
+import 'fx_lookup_provider.dart';
 import 'fx_theme.dart';
 import 'fx_undo.dart';
 
@@ -199,6 +200,9 @@ sealed class FxCellType {
   /// Creates a choice cell type (renders a dropdown menu when editing).
   const factory FxCellType.choice(List<String> options) = FxChoiceCellType;
 
+  /// Creates a lookup cell type.
+  const factory FxCellType.lookup(FxLookupProvider provider) = FxLookupCellType;
+
   /// Parses an [FxCellType] from a JSON map.
   factory FxCellType.fromJson(Map<String, Object?> json) {
     final type = json['type'] as String?;
@@ -211,6 +215,28 @@ sealed class FxCellType {
         final options =
             (json['options'] as List?)?.cast<String>() ?? const <String>[];
         return FxCellType.choice(options);
+      case 'lookup':
+        final providerJson = json['provider'] as Map<String, Object?>?;
+        FxLookupProvider provider;
+        if (providerJson != null) {
+          final pType = providerJson['type'] as String?;
+          if (pType == 'map') {
+            final mapData = (providerJson['map'] as Map?)?.cast<Object?, String>().map(
+                  (k, v) => MapEntry(k, v),
+                ) ??
+                const <Object?, String>{};
+            provider = FxMapLookupProvider(mapData);
+          } else if (pType == 'enum') {
+            final labels = (providerJson['labels'] as Map?)?.cast<String, String>() ??
+                const <String, String>{};
+            provider = FxMapLookupProvider<String>(labels);
+          } else {
+            provider = const FxMapLookupProvider<String>({});
+          }
+        } else {
+          provider = const FxMapLookupProvider<String>({});
+        }
+        return FxLookupCellType(provider);
       default:
         return const FxCellType.text();
     }
@@ -250,6 +276,31 @@ class FxChoiceCellType extends FxCellType {
   Map<String, Object?> toJson() => {'type': 'choice', 'options': options};
 }
 
+/// A lookup cell type.
+class FxLookupCellType extends FxCellType {
+  /// Creates a lookup cell type.
+  const FxLookupCellType(this.provider);
+
+  /// The lookup provider.
+  final FxLookupProvider provider;
+
+  @override
+  Map<String, Object?> toJson() => {
+        'type': 'lookup',
+        'provider': provider.toJson(),
+      };
+}
+
+/// Callback signature for custom cell rendering.
+typedef FxCellRendererBuilder = Widget Function(
+  BuildContext context,
+  String rowId,
+  String columnId,
+  Object? value,
+  bool isSelected,
+  bool isHovered,
+);
+
 /// A column descriptor for [FxListBox].
 class FxListBoxColumn {
   /// Creates a list box column.
@@ -265,6 +316,7 @@ class FxListBoxColumn {
     this.type = const FxCellType.text(),
     this.lineWrap = false,
     this.supportStyledText = false,
+    this.cellRenderer,
   });
 
   /// Stable column id.
@@ -299,6 +351,9 @@ class FxListBoxColumn {
 
   /// Whether the cell text supports rich styled tags (**bold**, *italic*, ~underline~).
   final bool supportStyledText;
+
+  /// Optional custom cell renderer builder callback.
+  final FxCellRendererBuilder? cellRenderer;
 
   /// Converts this column to JSON.
   Map<String, Object?> toJson() {
@@ -621,12 +676,17 @@ class _FxListBoxState extends State<FxListBox> {
   }
 
   void _startEditing(String rowId, String columnId, Object? currentValue) {
+    final col = widget.columns.firstWhere((c) => c.id == columnId, orElse: () => widget.columns.first);
+    final String initialText;
+    if (col.type is FxLookupCellType) {
+      initialText = (col.type as FxLookupCellType).provider.getDisplayValue(currentValue);
+    } else {
+      initialText = currentValue?.toString() ?? '';
+    }
     setState(() {
       _editingRowId = rowId;
       _editingColumnId = columnId;
-      _editingController = TextEditingController(
-        text: currentValue?.toString() ?? '',
-      );
+      _editingController = TextEditingController(text: initialText);
     });
   }
 
@@ -688,8 +748,8 @@ class _FxListBoxState extends State<FxListBox> {
     super.initState();
     _focusNode = widget.focusNode ?? FocusNode();
     _focusNode.addListener(_onFocusChanged);
-    _verticalController = ScrollController();
-    _horizontalController = ScrollController();
+    _verticalController = ScrollController()..addListener(_cancelEdit);
+    _horizontalController = ScrollController()..addListener(_cancelEdit);
   }
 
   @override
@@ -1299,6 +1359,16 @@ class _FxListBoxState extends State<FxListBox> {
                               ),
                             ),
                           );
+                        } else if (column.type is FxLookupCellType) {
+                          cellChild = FxLookupComboBox(
+                            provider: (column.type as FxLookupCellType).provider,
+                            initialValue: value,
+                            onCommit: (newValue) {
+                              _commitCellEdit(row.id, column.id, newValue);
+                              _cancelEdit();
+                            },
+                            onCancel: _cancelEdit,
+                          );
                         } else {
                           cellChild = Container(
                             color: Theme.of(context).colorScheme.surface,
@@ -1353,6 +1423,36 @@ class _FxListBoxState extends State<FxListBox> {
                             ),
                           );
                         }
+                      } else if (column.cellRenderer != null) {
+                        final isHovered = (vicinity.row - 1 == _hoveredRowIndex);
+                        final customChild = column.cellRenderer!(
+                          context,
+                          row.id,
+                          column.id,
+                          value,
+                          isSelected,
+                          isHovered,
+                        );
+                        cellChild = GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: row.enabled
+                              ? () {
+                                  setState(() {
+                                    _activeColumnId = column.id;
+                                  });
+                                  _handleRowTap(row.id);
+                                }
+                              : null,
+                          onDoubleTap: (row.enabled && column.editable)
+                              ? () {
+                                  setState(() {
+                                    _activeColumnId = column.id;
+                                  });
+                                  _startEditing(row.id, column.id, value);
+                                }
+                              : null,
+                          child: customChild,
+                        );
                       } else {
                         final isCheckbox = column.type is FxBooleanCellType || _isImplicitCheckbox(column, value);
                         if (isCheckbox) {
@@ -1376,6 +1476,12 @@ class _FxListBoxState extends State<FxListBox> {
                             ),
                           );
                         } else {
+                          final String displayText;
+                          if (column.type is FxLookupCellType) {
+                            displayText = (column.type as FxLookupCellType).provider.getDisplayValue(value);
+                          } else {
+                            displayText = value?.toString() ?? '';
+                          }
                           cellChild = GestureDetector(
                             behavior: HitTestBehavior.opaque,
                             onTap: row.enabled
@@ -1395,7 +1501,7 @@ class _FxListBoxState extends State<FxListBox> {
                                   }
                                 : null,
                             child: _CellText(
-                              text: value?.toString() ?? '',
+                              text: displayText,
                               alignment: _getResolvedAlignment(column, widget.rows),
                               enabled: row.enabled,
                               isSelected: isSelected,
@@ -1567,6 +1673,7 @@ class FxGridColumn {
     this.type = const FxCellType.text(),
     this.lineWrap = false,
     this.supportStyledText = false,
+    this.cellRenderer,
   });
 
   /// Stable column id.
@@ -1601,6 +1708,9 @@ class FxGridColumn {
 
   /// Whether the cell text supports rich styled tags (**bold**, *italic*, ~underline~).
   final bool supportStyledText;
+
+  /// Optional custom cell renderer builder callback.
+  final FxCellRendererBuilder? cellRenderer;
 
   /// Converts this column to JSON.
   Map<String, Object?> toJson() {
@@ -2067,12 +2177,17 @@ class _FxGridState extends State<FxGrid> {
   }
 
   void _startEditing(String rowId, String columnId, Object? currentValue) {
+    final col = widget.columns.firstWhere((c) => c.id == columnId, orElse: () => widget.columns.first);
+    final String initialText;
+    if (col.type is FxLookupCellType) {
+      initialText = (col.type as FxLookupCellType).provider.getDisplayValue(currentValue);
+    } else {
+      initialText = currentValue?.toString() ?? '';
+    }
     setState(() {
       _editingRowId = rowId;
       _editingColumnId = columnId;
-      _editingController = TextEditingController(
-        text: currentValue?.toString() ?? '',
-      );
+      _editingController = TextEditingController(text: initialText);
     });
   }
 
@@ -2138,8 +2253,8 @@ class _FxGridState extends State<FxGrid> {
     super.initState();
     _focusNode = widget.focusNode ?? FocusNode();
     _focusNode.addListener(_onFocusChanged);
-    _verticalController = ScrollController();
-    _horizontalController = ScrollController();
+    _verticalController = ScrollController()..addListener(_cancelEdit);
+    _horizontalController = ScrollController()..addListener(_cancelEdit);
   }
 
   @override
@@ -2819,6 +2934,16 @@ class _FxGridState extends State<FxGrid> {
                               ),
                             ),
                           );
+                        } else if (column.type is FxLookupCellType) {
+                          cellChild = FxLookupComboBox(
+                            provider: (column.type as FxLookupCellType).provider,
+                            initialValue: value,
+                            onCommit: (newValue) {
+                              _commitCellEdit(row.id, column.id, newValue);
+                              _cancelEdit();
+                            },
+                            onCancel: _cancelEdit,
+                          );
                         } else {
                           cellChild = Container(
                             color: Theme.of(context).colorScheme.surface,
@@ -2875,42 +3000,15 @@ class _FxGridState extends State<FxGrid> {
                         }
                       } else {
                         final customBgColor = widget.cellBackgroundColorBuilder?.call(row.id, column.id, value);
-                        final isCheckbox = column.type is FxBooleanCellType || _isImplicitCheckbox(column, value);
-                        if (isCheckbox) {
-                          final bool val = (value == true || value?.toString().toLowerCase().trim() == 'true');
-                          cellChild = GestureDetector(
-                            behavior: HitTestBehavior.opaque,
-                            onTap: row.enabled
-                                ? () => _handleCellTap(row.id, column.id)
-                                : null,
-                            child: ColoredBox(
-                              color: selected
-                                  ? theme.selectionBackground
-                                  : hovered
-                                  ? Theme.of(context).hoverColor
-                                  : (customBgColor ?? Colors.transparent),
-                              child: Center(
-                                child: Checkbox(
-                                  value: val,
-                                  onChanged: (row.enabled && column.editable)
-                                      ? (newValue) {
-                                          Object? committedValue = newValue;
-                                          if (value is String) {
-                                            committedValue = newValue.toString();
-                                          }
-                                          _commitCellEdit(
-                                            row.id,
-                                            column.id,
-                                            committedValue,
-                                          );
-                                          _handleCellTap(row.id, column.id);
-                                        }
-                                      : null,
-                                ),
-                              ),
-                            ),
+                        if (column.cellRenderer != null) {
+                          final customChild = column.cellRenderer!(
+                            context,
+                            row.id,
+                            column.id,
+                            value,
+                            selected,
+                            hovered,
                           );
-                        } else {
                           cellChild = GestureDetector(
                             behavior: HitTestBehavior.opaque,
                             onTap: row.enabled
@@ -2925,16 +3023,77 @@ class _FxGridState extends State<FxGrid> {
                                   : hovered
                                   ? Theme.of(context).hoverColor
                                   : (customBgColor ?? Colors.transparent),
-                              child: _CellText(
-                                text: value?.toString() ?? '',
-                                alignment: _getResolvedAlignment(column, widget.rows),
-                                enabled: row.enabled,
-                                isSelected: selected,
-                                lineWrap: _getColumnLineWrap(column),
-                                supportStyledText: column.supportStyledText,
-                              ),
+                              child: customChild,
                             ),
                           );
+                        } else {
+                          final isCheckbox = column.type is FxBooleanCellType || _isImplicitCheckbox(column, value);
+                          if (isCheckbox) {
+                            final bool val = (value == true || value?.toString().toLowerCase().trim() == 'true');
+                            cellChild = GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onTap: row.enabled
+                                  ? () => _handleCellTap(row.id, column.id)
+                                  : null,
+                              child: ColoredBox(
+                                color: selected
+                                    ? theme.selectionBackground
+                                    : hovered
+                                    ? Theme.of(context).hoverColor
+                                    : (customBgColor ?? Colors.transparent),
+                                child: Center(
+                                  child: Checkbox(
+                                    value: val,
+                                    onChanged: (row.enabled && column.editable)
+                                        ? (newValue) {
+                                            Object? committedValue = newValue;
+                                            if (value is String) {
+                                              committedValue = newValue.toString();
+                                            }
+                                            _commitCellEdit(
+                                              row.id,
+                                              column.id,
+                                              committedValue,
+                                            );
+                                            _handleCellTap(row.id, column.id);
+                                          }
+                                        : null,
+                                  ),
+                                ),
+                              ),
+                            );
+                          } else {
+                            final String displayText;
+                            if (column.type is FxLookupCellType) {
+                              displayText = (column.type as FxLookupCellType).provider.getDisplayValue(value);
+                            } else {
+                              displayText = value?.toString() ?? '';
+                            }
+                            cellChild = GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onTap: row.enabled
+                                  ? () => _handleCellTap(row.id, column.id)
+                                  : null,
+                              onDoubleTap: (row.enabled && column.editable)
+                                  ? () => _startEditing(row.id, column.id, value)
+                                  : null,
+                              child: ColoredBox(
+                                color: selected
+                                    ? theme.selectionBackground
+                                    : hovered
+                                    ? Theme.of(context).hoverColor
+                                    : (customBgColor ?? Colors.transparent),
+                                child: _CellText(
+                                  text: displayText,
+                                  alignment: _getResolvedAlignment(column, widget.rows),
+                                  enabled: row.enabled,
+                                  isSelected: selected,
+                                  lineWrap: _getColumnLineWrap(column),
+                                  supportStyledText: column.supportStyledText,
+                                ),
+                              ),
+                            );
+                          }
                         }
                       }
 
@@ -3588,4 +3747,263 @@ FxCellAlignment _getResolvedAlignment(dynamic column, List<dynamic> rows) {
     }
   }
   return column.alignment;
+}
+
+/// A combo box dropdown cell editor hosted in Flutter's global Overlay.
+class FxLookupComboBox<K> extends StatefulWidget {
+  /// The lookup provider.
+  final FxLookupProvider<K> provider;
+
+  /// Initial key value.
+  final Object? initialValue;
+
+  /// Callback when a value is selected and committed.
+  final void Function(K newValue) onCommit;
+
+  /// Callback when editing is cancelled.
+  final VoidCallback onCancel;
+
+  /// Creates a lookup combo box.
+  const FxLookupComboBox({
+    super.key,
+    required this.provider,
+    required this.initialValue,
+    required this.onCommit,
+    required this.onCancel,
+  });
+
+  @override
+  State<FxLookupComboBox<K>> createState() => _FxLookupComboBoxState<K>();
+}
+
+class _FxLookupComboBoxState<K> extends State<FxLookupComboBox<K>> {
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
+  final LayerLink _layerLink = LayerLink();
+  OverlayEntry? _overlayEntry;
+  List<FxLookupItem<K>> _options = [];
+  bool _isLoading = false;
+  int _highlightedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    final initialKey = widget.initialValue;
+    if (initialKey is K) {
+      _searchController.text = widget.provider.getDisplayValue(initialKey);
+    }
+    _loadOptions('');
+    _focusNode.addListener(_onFocusChange);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _showOverlay();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _hideOverlay();
+    _searchController.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  void _onFocusChange() {
+    if (!_focusNode.hasFocus) {
+      Future.delayed(const Duration(milliseconds: 150), () {
+        if (mounted && !_focusNode.hasFocus) {
+          _commitActive();
+        }
+      });
+    }
+  }
+
+  Future<void> _loadOptions(String query) async {
+    setState(() => _isLoading = true);
+    try {
+      final opts = await widget.provider.getOptions(query);
+      if (mounted) {
+        setState(() {
+          _options = opts;
+          _highlightedIndex = 0;
+          _isLoading = false;
+        });
+        _overlayEntry?.markNeedsBuild();
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  void _showOverlay() {
+    if (_overlayEntry != null) return;
+
+    final overlay = Overlay.of(context);
+    final renderBox = context.findRenderObject() as RenderBox?;
+    if (renderBox == null) return;
+    final size = renderBox.size;
+
+    _overlayEntry = OverlayEntry(
+      builder: (context) {
+        return Positioned(
+          width: size.width.clamp(200.0, 600.0),
+          child: CompositedTransformFollower(
+            link: _layerLink,
+            showWhenUnlinked: false,
+            offset: Offset(0, size.height + 4),
+            child: Material(
+              elevation: 8,
+              borderRadius: BorderRadius.circular(4),
+              color: Theme.of(context).colorScheme.surface,
+              child: Container(
+                constraints: const BoxConstraints(maxHeight: 250),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey.shade300),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: _isLoading
+                    ? const Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: Center(
+                          child: SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                      )
+                    : _options.isEmpty
+                        ? const Padding(
+                            padding: EdgeInsets.all(12.0),
+                            child: Text(
+                              'No options found',
+                              style: TextStyle(fontSize: 13, color: Colors.grey),
+                            ),
+                          )
+                        : ListView.builder(
+                            padding: EdgeInsets.zero,
+                            shrinkWrap: true,
+                            itemCount: _options.length,
+                            itemBuilder: (context, index) {
+                              final option = _options[index];
+                              final isHighlighted = index == _highlightedIndex;
+                              return GestureDetector(
+                                onTap: () {
+                                  widget.onCommit(option.key);
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 8,
+                                  ),
+                                  color: isHighlighted
+                                      ? Theme.of(context)
+                                          .colorScheme
+                                          .primaryContainer
+                                      : Colors.transparent,
+                                  child: Text(
+                                    option.display,
+                                    style: const TextStyle(fontSize: 13),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
+    overlay.insert(_overlayEntry!);
+  }
+
+  void _hideOverlay() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+  }
+
+  void _commitActive() {
+    if (_options.isNotEmpty && _highlightedIndex < _options.length) {
+      widget.onCommit(_options[_highlightedIndex].key);
+    } else {
+      widget.onCancel();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CompositedTransformTarget(
+      link: _layerLink,
+      child: Focus(
+        onKeyEvent: (node, event) {
+          if (event is KeyDownEvent) {
+            if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+              setState(() {
+                if (_options.isNotEmpty) {
+                  _highlightedIndex = (_highlightedIndex + 1) % _options.length;
+                }
+              });
+              _overlayEntry?.markNeedsBuild();
+              return KeyEventResult.handled;
+            }
+            if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
+              setState(() {
+                if (_options.isNotEmpty) {
+                  _highlightedIndex =
+                      (_highlightedIndex - 1 + _options.length) % _options.length;
+                }
+              });
+              _overlayEntry?.markNeedsBuild();
+              return KeyEventResult.handled;
+            }
+            if (event.logicalKey == LogicalKeyboardKey.enter) {
+              _commitActive();
+              return KeyEventResult.handled;
+            }
+            if (event.logicalKey == LogicalKeyboardKey.escape) {
+              _hideOverlay();
+              widget.onCancel();
+              return KeyEventResult.handled;
+            }
+          }
+          return KeyEventResult.ignored;
+        },
+        child: Container(
+          color: Theme.of(context).colorScheme.surface,
+          alignment: Alignment.centerLeft,
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _searchController,
+                  focusNode: _focusNode,
+                  autofocus: true,
+                  style: const TextStyle(fontSize: 13),
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: EdgeInsets.symmetric(vertical: 8),
+                  ),
+                  onChanged: (val) {
+                    _loadOptions(val);
+                    if (_overlayEntry == null) {
+                      _showOverlay();
+                    }
+                  },
+                ),
+              ),
+              const Icon(Icons.arrow_drop_down, size: 18, color: Colors.grey),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }

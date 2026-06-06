@@ -25,6 +25,12 @@ class FxListBoxDemoApp extends StatelessWidget {
   }
 }
 
+enum TaskPriority {
+  low,
+  medium,
+  high,
+}
+
 class DemoGalleryPage extends StatefulWidget {
   const DemoGalleryPage({super.key});
 
@@ -34,7 +40,14 @@ class DemoGalleryPage extends StatefulWidget {
 
 class _DemoGalleryPageState extends State<DemoGalleryPage> {
   int _currentPageIndex = 0;
-  static const int _totalPages = 9;
+  static const int _totalPages = 10;
+
+  // Page 10: Lookup Fields & Custom Rendering
+  final List<Map<String, Object?>> _lookupDataPage10 = [
+    {'id': 'item-1', 'category_id': 1, 'priority': TaskPriority.high, 'sales_trend': [10.0, 15.0, 8.0, 25.0, 30.0]},
+    {'id': 'item-2', 'category_id': 2, 'priority': TaskPriority.medium, 'sales_trend': [20.0, 10.0, 15.0, 12.0, 18.0]},
+    {'id': 'item-3', 'category_id': 1, 'priority': TaskPriority.low, 'sales_trend': [5.0, 8.0, 12.0, 15.0, 10.0]},
+  ];
 
   // Event Log Console
   final List<String> _logs = ['Welcome to the FxListBox Demo Console.'];
@@ -245,6 +258,7 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
                             _buildPage7Virtualization(),
                             _buildPage8AdvancedFeatures(),
                             _buildPage9RangeSliderAndCrosshairs(),
+                            _buildPage10LookupAndBadges(),
                           ],
                         ),
                       ),
@@ -363,6 +377,7 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
       'Large-Data Virtualization',
       'Excel-Style Advanced Features',
       'Range Slider & Crosshair Highlight',
+      'Lookup Fields & Custom Rendering',
     ];
 
     final descriptions = [
@@ -417,6 +432,11 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
           '• Range Slider: select a minimum and maximum bounds range in a single component.\n'
           '• Selection Crosshair: selecting a cell highlights the correlated row (top/bottom) and column (left/right) with 50% darker border lines.\n'
           '• Row Reordering: drag the grab handles on the left side of rows to rearrange them manually. Row indices update instantly.',
+
+      'Demonstrates Delphi-style Key-Value lookups and custom inline cell rendering:\n\n'
+          '• Category (Lookup Map): stores integer IDs (e.g. 1) under the hood but displays and edits human-readable labels (e.g. Electronics) using a dropdown ComboBox.\n'
+          '• Priority (Lookup Enum): stores TaskPriority enum values but resolves them using custom enum labels.\n'
+          '• Sales Trend (Sparkline): uses custom cellRenderer to draw a lightweight Canvas line chart with cached RepaintBoundary.',
     ];
 
     final guidanceSteps = [
@@ -478,6 +498,13 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
         'Observe how the selected cell\'s row and column borders are redrawn 50% darker.',
         'Navigate to Page 8 to try Drag-and-Drop Row Reordering using the left grab handles.',
         'Notice that the notes on Page 8 support styled text (bold, italic, underline).',
+      ],
+      [
+        'Double-click a cell in the Category column to open the lookup ComboBox.',
+        'Select a new category (e.g. Office Supplies) from the floating dropdown list.',
+        'Double-click a cell in the Priority column and change the enum value.',
+        'Observe the custom Canvas-drawn Sales Trend sparklines rendering inline.',
+        'Observe that clicking Undo/Redo in the console correctly reverts lookup selection changes.',
       ],
     ];
 
@@ -1644,5 +1671,151 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
         ),
       ],
     );
+  }
+
+  Widget _buildPage10LookupAndBadges() {
+    final theme = Theme.of(context);
+    final categoryProvider = FxMapLookupProvider<int>(const {
+      1: 'Electronics',
+      2: 'Apparel',
+      3: 'Office Supplies',
+    });
+    
+    final priorityProvider = FxEnumLookupProvider<TaskPriority>(
+      values: TaskPriority.values,
+      labels: const {
+        TaskPriority.low: 'Low Priority',
+        TaskPriority.medium: 'Medium Priority',
+        TaskPriority.high: 'High Priority',
+      },
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          'Page 10: Lookup Fields & Custom Rendering',
+          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        Expanded(
+          child: FxListBox(
+            columns: [
+              const FxListBoxColumn(
+                id: 'id',
+                caption: 'ID',
+                width: FxColumnWidth.fixed(80),
+              ),
+              FxListBoxColumn(
+                id: 'category_id',
+                caption: 'Category (Lookup Map)',
+                editable: true,
+                type: FxCellType.lookup(categoryProvider),
+                width: const FxColumnWidth.fixed(200),
+              ),
+              FxListBoxColumn(
+                id: 'priority',
+                caption: 'Priority (Lookup Enum)',
+                editable: true,
+                type: FxCellType.lookup(priorityProvider),
+                width: const FxColumnWidth.fixed(180),
+              ),
+              FxListBoxColumn(
+                id: 'sales_trend',
+                caption: 'Sales Trend (Sparkline Renderer)',
+                width: const FxColumnWidth.fixed(220),
+                cellRenderer: (context, rowId, columnId, value, isSelected, isHovered) {
+                  final list = (value as List?)?.cast<double>() ?? const <double>[];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Row(
+                      children: [
+                        SparklineWidget(values: list),
+                        const SizedBox(width: 8),
+                        Text(list.isNotEmpty ? '${list.last.round()}%' : 'N/A', style: const TextStyle(fontSize: 12)),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ],
+            rows: [
+              for (final map in _lookupDataPage10)
+                FxListBoxRow(
+                  id: map['id'] as String,
+                  cells: map,
+                ),
+            ],
+            onCellEdited: (rowId, colId, newValue) {
+              final oldValue = _lookupDataPage10.firstWhere((r) => r['id'] == rowId)[colId];
+              _undoController.commitValue<Object?>(
+                'Edit Category/Priority',
+                oldValue: oldValue,
+                newValue: newValue,
+                apply: (val) {
+                  setState(() {
+                    final row = _lookupDataPage10.firstWhere((r) => r['id'] == rowId);
+                    row[colId] = val;
+                  });
+                  _log('Edit Page 10 commit: Row $rowId, Col $colId -> $val');
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class SparklineWidget extends StatelessWidget {
+  final List<double> values;
+  const SparklineWidget({super.key, required this.values});
+
+  @override
+  Widget build(BuildContext context) {
+    return RepaintBoundary(
+      child: CustomPaint(
+        size: const Size(80, 20),
+        painter: _SparklinePainter(values),
+      ),
+    );
+  }
+}
+
+class _SparklinePainter extends CustomPainter {
+  final List<double> values;
+  const _SparklinePainter(this.values);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (values.isEmpty) return;
+    final paint = Paint()
+      ..color = Colors.blue.shade600
+      ..strokeWidth = 2.0
+      ..style = PaintingStyle.stroke;
+
+    final maxVal = values.reduce((a, b) => a > b ? a : b);
+    final minVal = values.reduce((a, b) => a < b ? a : b);
+    final range = maxVal - minVal == 0 ? 1.0 : maxVal - minVal;
+
+    final path = Path();
+    final stepX = size.width / (values.length - 1);
+
+    for (var i = 0; i < values.length; i++) {
+      final x = i * stepX;
+      final y = size.height - ((values[i] - minVal) / range) * size.height;
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
+    }
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _SparklinePainter oldDelegate) {
+    return oldDelegate.values != values;
   }
 }
