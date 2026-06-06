@@ -197,9 +197,6 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
                 ),
               ),
 
-              // Divider
-              Container(height: 1, color: const Color(0xffd9dde5)),
-
               // 3. Callback Logs Console & Undo Panel
               _buildBottomConsolePanel(theme),
             ],
@@ -484,85 +481,90 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
 
   // --- BOTTOM CALLBACK LOG CONSOLE & UNDO PANEL ---
   Widget _buildBottomConsolePanel(ThemeData theme) {
-    return Theme(
-      data: ThemeData.dark(),
-      child: Container(
-        height: 150,
-        color: const Color(0xFF0F172A),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Console Logs Output
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                color: const Color(0xFF020617), // Slate 950
-                child: ListView.builder(
-                  controller: _logScrollController,
-                  itemCount: _logs.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 4),
-                      child: Text(
-                        _logs[index],
-                        style: const TextStyle(
-                          fontFamily: 'Courier',
-                          fontSize: 12,
-                          color: Color(0xFF10B981), // Emerald 500
-                        ),
+    return Container(
+      height: 150,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: Color(0xffd9dde5))),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Console Logs Output
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              color: const Color(0xFFF8FAFC), // Slate 50
+              child: ListView.builder(
+                controller: _logScrollController,
+                itemCount: _logs.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: Text(
+                      _logs[index],
+                      style: const TextStyle(
+                        fontFamily: 'Courier',
+                        fontSize: 12,
+                        color: Color(
+                          0xFF047857,
+                        ), // Emerald 700 (high contrast in light mode)
                       ),
-                    );
-                  },
-                ),
-              ),
-            ),
-
-            // Undo/Redo & Utility Panel
-            Container(
-              width: 200,
-              color: const Color(0xFF1E293B),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    'UNDO HISTORY',
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF94A3B8),
                     ),
-                  ),
-                  const SizedBox(height: 6),
-                  FxButton(
-                    label: 'Undo Action',
-                    onPressed: _undoController.canUndo
-                        ? () {
-                            setState(() {
-                              _undoController.undo();
-                            });
-                            _log('Undo operation performed.');
-                          }
-                        : null,
-                  ),
-                  const SizedBox(height: 6),
-                  FxButton(
-                    label: 'Redo Action',
-                    onPressed: _undoController.canRedo
-                        ? () {
-                            setState(() {
-                              _undoController.redo();
-                            });
-                            _log('Redo operation performed.');
-                          }
-                        : null,
-                  ),
-                ],
+                  );
+                },
               ),
             ),
-          ],
-        ),
+          ),
+
+          // Undo/Redo & Utility Panel
+          Container(
+            width: 200,
+            decoration: const BoxDecoration(
+              color: Color(0xFFF1F5F9), // Slate 100
+              border: Border(left: BorderSide(color: Color(0xffd9dde5))),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  'UNDO HISTORY',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF475569), // Slate 600
+                  ),
+                ),
+                const SizedBox(height: 6),
+                FxButton(
+                  label: 'Undo Action',
+                  onPressed: _undoController.canUndo
+                      ? () {
+                          setState(() {
+                            _undoController.undo();
+                          });
+                          _log('Undo operation performed.');
+                        }
+                      : null,
+                ),
+                const SizedBox(height: 6),
+                FxButton(
+                  label: 'Redo Action',
+                  onPressed: _undoController.canRedo
+                      ? () {
+                          setState(() {
+                            _undoController.redo();
+                          });
+                          _log('Redo operation performed.');
+                        }
+                      : null,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
