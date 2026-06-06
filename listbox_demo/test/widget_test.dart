@@ -16,9 +16,9 @@ void main() {
     // Build the app
     await tester.pumpWidget(const FxListBoxDemoApp());
 
-    // Verify app title and start on Page 1 / 7
+    // Verify app title and start on Page 1 / 8
     expect(find.text('FxListBox Interactive Spec Gallery'), findsOneWidget);
-    expect(find.text('Page 1 / 7'), findsOneWidget);
+    expect(find.text('Page 1 / 8'), findsOneWidget);
 
     // Verify Previous button is disabled (or does nothing/null callback)
     final prevButtonFinder = find.widgetWithText(FxButton, 'Previous');
@@ -36,8 +36,8 @@ void main() {
     await tester.tap(nextButtonFinder);
     await tester.pumpAndSettle();
 
-    // Verify we navigated to Page 2 / 7
-    expect(find.text('Page 2 / 7'), findsOneWidget);
+    // Verify we navigated to Page 2 / 8
+    expect(find.text('Page 2 / 8'), findsOneWidget);
 
     // Verify Previous button is now enabled
     final prevButtonWidget2 = tester.widget<FxButton>(prevButtonFinder);
@@ -47,7 +47,7 @@ void main() {
     await tester.tap(prevButtonFinder);
     await tester.pumpAndSettle();
 
-    // Verify we are back on Page 1 / 7
-    expect(find.text('Page 1 / 7'), findsOneWidget);
+    // Verify we are back on Page 1 / 8
+    expect(find.text('Page 1 / 8'), findsOneWidget);
   });
 }

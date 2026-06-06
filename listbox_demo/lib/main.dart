@@ -34,7 +34,7 @@ class DemoGalleryPage extends StatefulWidget {
 
 class _DemoGalleryPageState extends State<DemoGalleryPage> {
   int _currentPageIndex = 0;
-  static const int _totalPages = 7;
+  static const int _totalPages = 8;
 
   // Event Log Console
   final List<String> _logs = ['Welcome to the FxListBox Demo Console.'];
@@ -123,6 +123,48 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
   int _largeRowCount = 10000;
   Set<String> _selectedRowIdsPage7 = <String>{};
 
+  // Page 8: Advanced Formatting & Excel-Style Features
+  bool _page8LineWrap = true;
+  final List<Map<String, Object?>> _advancedData = [
+    {
+      'id': 'P01',
+      'name': 'John Doe',
+      'sugar': '95',
+      'status': 'true',
+      'score': 12500,
+      'progress': '75%',
+      'notes': 'Everything looks optimal. Patient is responding well to dietary adjustments.',
+    },
+    {
+      'id': 'P02',
+      'name': 'Jane Smith',
+      'sugar': '145',
+      'status': 'false',
+      'score': 9800,
+      'progress': '30%',
+      'notes': 'Blood sugar levels are high. Requires immediate attention and insulin dose regulation.',
+    },
+    {
+      'id': 'P03',
+      'name': 'Sam Wilson',
+      'sugar': '62',
+      'status': 'true',
+      'score': 15620,
+      'progress': '100%',
+      'notes': 'Hypoglycemia warning. Recommend glucose intake and monitoring every 15 minutes.',
+    },
+    {
+      'id': 'P04',
+      'name': 'Diana Prince',
+      'sugar': '88',
+      'status': 'true',
+      'score': 22400,
+      'progress': '55%',
+      'notes': 'Stable condition. Active physical exercises maintained regularly.',
+    },
+  ];
+  final Map<String, double> _page8ColumnWidths = {};
+
   @override
   void initState() {
     super.initState();
@@ -189,6 +231,7 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
                             _buildPage5Validation(),
                             _buildPage6TableStates(),
                             _buildPage7Virtualization(),
+                            _buildPage8AdvancedFeatures(),
                           ],
                         ),
                       ),
@@ -252,7 +295,7 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
                     ),
                   ),
                   child: Text(
-                    'v0.3.0 Ready',
+                    'v0.3.2 Ready',
                     style: TextStyle(
                       color: theme.colorScheme.primary,
                       fontSize: 11,
@@ -305,6 +348,7 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
       'Cell-Level Validation',
       'Table States & Placeholders',
       'Large-Data Virtualization',
+      'Excel-Style Advanced Features',
     ];
 
     final descriptions = [
@@ -346,6 +390,14 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
           '• Loads 10,000 rows x 50 columns seamlessly.\n'
           '• Uses two-dimensional virtualization layout to only mount visible viewport cells.\n'
           '• Keeps memory usage constant and runs scroll operations with high frame-rates.',
+
+      'Demonstrates Excel-style advanced formatting and layout behaviors:\n\n'
+          '• Auto-Fit Width: double-click the header\'s right border to automatically resize the column to fit its longest content.\n'
+          '• Dynamic Row Heights: when Line Wrapping is enabled, row heights adjust automatically to display multi-line wrapped text.\n'
+          '• Implicit Right Alignment: columns with numeric values automatically align trailing (right) for both headers and cells.\n'
+          '• Implicit Checkboxes: case-insensitive "true"/"false" strings automatically render as interactive checkboxes.\n'
+          '• Progress Bar Overlay: cells with percentage strings (e.g., "75%") draw a visual bottom-border progress chart.\n'
+          '• Conditional Formatting: blood sugar values highlight red when abnormal (< 70 or > 100).',
     ];
 
     final guidanceSteps = [
@@ -392,6 +444,14 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
         'Scroll vertically and horizontally using scrollbars.',
         'Select a cell and press ArrowKeys (Up/Down/Right/Left) to stress traverse.',
         'Notice frame-rate performance stability.',
+      ],
+      [
+        'Double-click the resize border of "Doctor Notes" or "Patient" header to auto-fit to content.',
+        'Toggle Line Wrapping to see row heights adapt automatically.',
+        'Observe implicit right alignment for "Score" and "Blood Sugar".',
+        'Notice case-insensitive "true"/"false" render as interactive checkboxes.',
+        'Look at the bottom progress bar chart on the "Progress" column cells.',
+        'Notice abnormal Blood Sugar cells are conditionally highlighted in red.',
       ],
     ];
 
@@ -1259,6 +1319,148 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
                   },
                 ),
               ],
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // --- PAGE 8: ADVANCED FEATURES ---
+  Widget _buildPage8AdvancedFeatures() {
+    final columns = [
+      FxListBoxColumn(
+        id: 'id',
+        caption: 'ID',
+        width: FxColumnWidth.fixed(_page8ColumnWidths['id'] ?? 50),
+      ),
+      FxListBoxColumn(
+        id: 'name',
+        caption: 'Patient',
+        width: FxColumnWidth.fixed(_page8ColumnWidths['name'] ?? 100),
+      ),
+      FxListBoxColumn(
+        id: 'sugar',
+        caption: 'Blood Sugar',
+        width: FxColumnWidth.fixed(_page8ColumnWidths['sugar'] ?? 90),
+      ),
+      FxListBoxColumn(
+        id: 'status',
+        caption: 'Insured',
+        width: FxColumnWidth.fixed(_page8ColumnWidths['status'] ?? 70),
+        editable: true,
+      ),
+      FxListBoxColumn(
+        id: 'score',
+        caption: 'Score',
+        width: FxColumnWidth.fixed(_page8ColumnWidths['score'] ?? 80),
+      ),
+      FxListBoxColumn(
+        id: 'progress',
+        caption: 'Progress',
+        width: FxColumnWidth.fixed(_page8ColumnWidths['progress'] ?? 90),
+      ),
+      FxListBoxColumn(
+        id: 'notes',
+        caption: 'Doctor Notes',
+        width: _page8ColumnWidths['notes'] != null
+            ? FxColumnWidth.fixed(_page8ColumnWidths['notes']!)
+            : const FxColumnWidth.remaining(),
+        lineWrap: _page8LineWrap,
+      ),
+    ];
+
+    final rows = _advancedData.map((data) {
+      return FxListBoxRow(
+        id: data['id'] as String,
+        cells: {
+          'id': data['id'],
+          'name': data['name'],
+          'sugar': data['sugar'],
+          'status': data['status'],
+          'score': data['score'],
+          'progress': data['progress'],
+          'notes': data['notes'],
+        },
+      );
+    }).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Text(
+          'Excel-Style Formatting & Advanced Features',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        Expanded(
+          child: FxListBox(
+            columns: columns,
+            rows: rows,
+            rowHeight: 28,
+            onColumnResized: (columnId, newWidth) {
+              setState(() {
+                _page8ColumnWidths[columnId] = newWidth;
+              });
+              _log('Page 8 Column resized: $columnId -> ${newWidth.round()}px');
+            },
+            cellBackgroundColorBuilder: (rowId, columnId, value) {
+              if (columnId == 'sugar') {
+                final val = double.tryParse(value?.toString() ?? '');
+                if (val != null && (val > 100 || val < 70)) {
+                  return const Color(0xfffee2e2); // soft red highlight
+                }
+              }
+              return null;
+            },
+            onCellEdited: (rowId, columnId, newValue) {
+              setState(() {
+                final rowIndex = _advancedData.indexWhere((r) => r['id'] == rowId);
+                if (rowIndex != -1) {
+                  _advancedData[rowIndex][columnId] = newValue;
+                }
+              });
+              _log('Page 8 Edited Cell: Row: $rowId, Col: $columnId -> $newValue');
+            },
+          ),
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 12,
+          runSpacing: 8,
+          alignment: WrapAlignment.spaceBetween,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('Line Wrapping: '),
+                const SizedBox(width: 8),
+                Switch(
+                  value: _page8LineWrap,
+                  activeThumbColor: const Color(0xFF38BDF8),
+                  onChanged: (val) {
+                    setState(() {
+                      _page8LineWrap = val;
+                    });
+                    _log('Page 8 Line wrap set to: $val');
+                  },
+                ),
+                const SizedBox(width: 16),
+                FxButton(
+                  label: 'Reset Column Widths',
+                  onPressed: () {
+                    setState(() {
+                      _page8ColumnWidths.clear();
+                    });
+                    _log('Page 8 Column widths reset to default.');
+                  },
+                ),
+              ],
+            ),
+            const Text(
+              'Try: Double-click resize borders, toggle Line Wrap, edit Insured checkboxes.',
+              style: TextStyle(fontSize: 12, color: Color(0xFF64748B), fontStyle: FontStyle.italic),
             ),
           ],
         ),

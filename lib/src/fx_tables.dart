@@ -263,6 +263,7 @@ class FxListBoxColumn {
     this.visible = true,
     this.sortable = false,
     this.type = const FxCellType.text(),
+    this.lineWrap = false,
   });
 
   /// Stable column id.
@@ -292,6 +293,9 @@ class FxListBoxColumn {
   /// Sizing and interaction type of the cells in this column.
   final FxCellType type;
 
+  /// Whether long text line wraps in cells of this column.
+  final bool lineWrap;
+
   /// Converts this column to JSON.
   Map<String, Object?> toJson() {
     return {
@@ -304,6 +308,7 @@ class FxListBoxColumn {
       'visible': visible,
       'sortable': sortable,
       'type': type.toJson(),
+      'lineWrap': lineWrap,
     };
   }
 }
@@ -367,6 +372,7 @@ class FxListBox extends StatefulWidget {
     this.onColumnResized,
     this.validationErrors,
     this.onCellEdited,
+    this.cellBackgroundColorBuilder,
   });
 
   /// Column descriptors.
@@ -432,6 +438,10 @@ class FxListBox extends StatefulWidget {
   /// Callback when a cell is successfully edited/committed.
   final void Function(String rowId, String columnId, Object? newValue)?
   onCellEdited;
+
+  /// Callback to build conditional background color for a cell.
+  final Color? Function(String rowId, String columnId, Object? value)?
+      cellBackgroundColorBuilder;
 
   /// Stable map for AI/generator use.
   Map<String, Object?> toTemplateMap() {
@@ -912,6 +922,82 @@ class _FxListBoxState extends State<FxListBox> {
     }
   }
 
+  double _getRowHeight(FxListBoxRow row, List<FxListBoxColumn> visibleColumns, double totalWidth) {
+    if (row.height != null) {
+      return row.height!;
+    }
+    double maxCellHeight = widget.rowHeight;
+    final defaultStyle = DefaultTextStyle.of(context).style;
+    final cellStyle = defaultStyle.merge(const TextStyle(fontWeight: FontWeight.normal));
+
+    for (final col in visibleColumns) {
+      if (col.lineWrap) {
+        final rawValue = row.cells[col.id];
+        if (rawValue != null && rawValue is! bool && !_isImplicitCheckbox(col, rawValue)) {
+          final text = rawValue.toString();
+          final colWidth = _getColumnWidth(col, totalWidth);
+          final textWidth = (colWidth - 16.0).clamp(0.0, double.infinity);
+          
+          final textPainter = TextPainter(
+            text: TextSpan(text: text, style: cellStyle),
+            textDirection: TextDirection.ltr,
+          );
+          textPainter.layout(maxWidth: textWidth);
+          final cellHeight = textPainter.height + 10.0;
+          if (cellHeight > maxCellHeight) {
+            maxCellHeight = cellHeight;
+          }
+        }
+      }
+    }
+    return maxCellHeight;
+  }
+
+  void _autoFitColumn(FxListBoxColumn column, double totalWidth) {
+    double maxNeededWidth = 0.0;
+    final defaultStyle = DefaultTextStyle.of(context).style;
+
+    final headerStyle = defaultStyle.merge(const TextStyle(fontWeight: FontWeight.w600));
+    final headerPainter = TextPainter(
+      text: TextSpan(text: column.caption, style: headerStyle),
+      textDirection: TextDirection.ltr,
+      maxLines: 1,
+    )..layout();
+    double headerWidth = headerPainter.width + 16.0;
+    if (column.sortable) {
+      headerWidth += 20.0;
+    }
+    maxNeededWidth = headerWidth;
+
+    final cellStyle = defaultStyle.merge(const TextStyle(fontWeight: FontWeight.normal));
+    for (final row in widget.rows) {
+      final rawValue = row.cells[column.id];
+      if (column.type is FxBooleanCellType || _isImplicitCheckbox(column, rawValue)) {
+        const double checkboxWidth = 40.0;
+        if (checkboxWidth > maxNeededWidth) {
+          maxNeededWidth = checkboxWidth;
+        }
+      } else {
+        final text = rawValue?.toString() ?? '';
+        final cellPainter = TextPainter(
+          text: TextSpan(text: text, style: cellStyle),
+          textDirection: TextDirection.ltr,
+          maxLines: 1,
+        )..layout();
+        final cellWidth = cellPainter.width + 16.0;
+        if (cellWidth > maxNeededWidth) {
+          maxNeededWidth = cellWidth;
+        }
+      }
+    }
+
+    final newWidth = (maxNeededWidth + 4.0).clamp(column.minWidth, 1000.0);
+    setState(() {
+      _columnWidths[column.id] = newWidth;
+    });
+    widget.onColumnResized?.call(column.id, newWidth);
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = FxTheme.of(context);
@@ -986,7 +1072,7 @@ class _FxListBoxState extends State<FxListBox> {
                         extent: table.FixedTableSpanExtent(
                           isHeader
                               ? widget.headerHeight
-                              : (row?.height ?? widget.rowHeight),
+                              : _getRowHeight(row!, visibleColumns, totalWidth),
                         ),
                         backgroundDecoration: table.TableSpanDecoration(
                           color: isHeader
@@ -1012,7 +1098,7 @@ class _FxListBoxState extends State<FxListBox> {
                         return table.TableViewCell(
                           child: _HeaderCell(
                             caption: column.caption,
-                            alignment: column.alignment,
+                            alignment: _getResolvedAlignment(column, widget.rows),
                             sortable: column.sortable,
                             sorted: sorted,
                             ascending: widget.sortAscending,
@@ -1035,6 +1121,9 @@ class _FxListBoxState extends State<FxListBox> {
                                 _columnWidths[column.id] = newWidth;
                               });
                               widget.onColumnResized?.call(column.id, newWidth);
+                            },
+                            onDoubleResize: () {
+                              _autoFitColumn(column, totalWidth);
                             },
                           ),
                         );
@@ -1138,17 +1227,22 @@ class _FxListBoxState extends State<FxListBox> {
                           );
                         }
                       } else {
-                        if (column.type is FxBooleanCellType) {
-                          final bool val = value == true;
+                        final isCheckbox = column.type is FxBooleanCellType || _isImplicitCheckbox(column, value);
+                        if (isCheckbox) {
+                          final bool val = (value == true || value?.toString().toLowerCase().trim() == 'true');
                           cellChild = Center(
                             child: Checkbox(
                               value: val,
                               onChanged: (row.enabled && column.editable)
                                   ? (newValue) {
+                                      Object? committedValue = newValue;
+                                      if (value is String) {
+                                        committedValue = newValue.toString();
+                                      }
                                       _commitCellEdit(
                                         row.id,
                                         column.id,
-                                        newValue,
+                                        committedValue,
                                       );
                                     }
                                   : null,
@@ -1165,12 +1259,49 @@ class _FxListBoxState extends State<FxListBox> {
                                 : null,
                             child: _CellText(
                               text: value?.toString() ?? '',
-                              alignment: column.alignment,
+                              alignment: _getResolvedAlignment(column, widget.rows),
                               enabled: row.enabled,
                               isSelected: isSelected,
+                              lineWrap: column.lineWrap,
                             ),
                           );
                         }
+                      }
+
+                      // Apply conditional background formatting
+                      final customBgColor = widget.cellBackgroundColorBuilder?.call(row.id, column.id, value);
+                      if (customBgColor != null) {
+                        cellChild = Container(
+                          color: isSelected
+                              ? Color.alphaBlend(customBgColor.withOpacity(0.4), theme.selectionBackground)
+                              : customBgColor,
+                          child: cellChild,
+                        );
+                      }
+
+                      // Apply percentage progress bar overlay
+                      final pct = _parsePercentage(value);
+                      if (pct != null) {
+                        cellChild = Stack(
+                          children: [
+                            cellChild,
+                            Positioned(
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              height: 5,
+                              child: Align(
+                                alignment: Alignment.bottomLeft,
+                                child: FractionallySizedBox(
+                                  widthFactor: pct / 100.0,
+                                  child: Container(
+                                    color: Theme.of(context).colorScheme.primary.withAlpha(180),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
                       }
 
                       final validationError =
@@ -1258,6 +1389,7 @@ class FxGridColumn {
     this.visible = true,
     this.sortable = false,
     this.type = const FxCellType.text(),
+    this.lineWrap = false,
   });
 
   /// Stable column id.
@@ -1287,6 +1419,9 @@ class FxGridColumn {
   /// Sizing and interaction type of the cells in this column.
   final FxCellType type;
 
+  /// Whether long text line wraps in cells of this column.
+  final bool lineWrap;
+
   /// Converts this column to JSON.
   Map<String, Object?> toJson() {
     return {
@@ -1299,6 +1434,7 @@ class FxGridColumn {
       'visible': visible,
       'sortable': sortable,
       'type': type.toJson(),
+      'lineWrap': lineWrap,
     };
   }
 }
@@ -1368,6 +1504,7 @@ class FxGrid extends StatefulWidget {
     this.onColumnResized,
     this.validationErrors,
     this.onCellEdited,
+    this.cellBackgroundColorBuilder,
   });
 
   /// Column descriptors.
@@ -1442,6 +1579,10 @@ class FxGrid extends StatefulWidget {
   /// Callback when a cell is successfully edited/committed.
   final void Function(String rowId, String columnId, Object? newValue)?
   onCellEdited;
+
+  /// Callback to build conditional background color for a cell.
+  final Color? Function(String rowId, String columnId, Object? value)?
+      cellBackgroundColorBuilder;
 
   /// Stable map for AI/generator use.
   Map<String, Object?> toTemplateMap() {
@@ -2098,6 +2239,83 @@ class _FxGridState extends State<FxGrid> {
     }
   }
 
+  double _getRowHeight(FxGridRow row, List<FxGridColumn> visibleColumns, double totalWidth) {
+    if (row.height != null) {
+      return row.height!;
+    }
+    double maxCellHeight = widget.rowHeight;
+    final defaultStyle = DefaultTextStyle.of(context).style;
+    final cellStyle = defaultStyle.merge(const TextStyle(fontWeight: FontWeight.normal));
+
+    for (final col in visibleColumns) {
+      if (col.lineWrap) {
+        final rawValue = row.cells[col.id];
+        if (rawValue != null && rawValue is! bool && !_isImplicitCheckbox(col, rawValue)) {
+          final text = rawValue.toString();
+          final colWidth = _getColumnWidth(col, totalWidth);
+          final textWidth = (colWidth - 16.0).clamp(0.0, double.infinity);
+          
+          final textPainter = TextPainter(
+            text: TextSpan(text: text, style: cellStyle),
+            textDirection: TextDirection.ltr,
+          );
+          textPainter.layout(maxWidth: textWidth);
+          final cellHeight = textPainter.height + 10.0;
+          if (cellHeight > maxCellHeight) {
+            maxCellHeight = cellHeight;
+          }
+        }
+      }
+    }
+    return maxCellHeight;
+  }
+
+  void _autoFitColumn(FxGridColumn column, double totalWidth) {
+    double maxNeededWidth = 0.0;
+    final defaultStyle = DefaultTextStyle.of(context).style;
+
+    final captionText = column.caption ?? column.id;
+    final headerStyle = defaultStyle.merge(const TextStyle(fontWeight: FontWeight.w600));
+    final headerPainter = TextPainter(
+      text: TextSpan(text: captionText, style: headerStyle),
+      textDirection: TextDirection.ltr,
+      maxLines: 1,
+    )..layout();
+    double headerWidth = headerPainter.width + 16.0;
+    if (column.sortable) {
+      headerWidth += 20.0;
+    }
+    maxNeededWidth = headerWidth;
+
+    final cellStyle = defaultStyle.merge(const TextStyle(fontWeight: FontWeight.normal));
+    for (final row in widget.rows) {
+      final rawValue = row.cells[column.id];
+      if (column.type is FxBooleanCellType || _isImplicitCheckbox(column, rawValue)) {
+        const double checkboxWidth = 40.0;
+        if (checkboxWidth > maxNeededWidth) {
+          maxNeededWidth = checkboxWidth;
+        }
+      } else {
+        final text = rawValue?.toString() ?? '';
+        final cellPainter = TextPainter(
+          text: TextSpan(text: text, style: cellStyle),
+          textDirection: TextDirection.ltr,
+          maxLines: 1,
+        )..layout();
+        final cellWidth = cellPainter.width + 16.0;
+        if (cellWidth > maxNeededWidth) {
+          maxNeededWidth = cellWidth;
+        }
+      }
+    }
+
+    final newWidth = (maxNeededWidth + 4.0).clamp(column.minWidth, 1000.0);
+    setState(() {
+      _columnWidths[column.id] = newWidth;
+    });
+    widget.onColumnResized?.call(column.id, newWidth);
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = FxTheme.of(context);
@@ -2172,7 +2390,7 @@ class _FxGridState extends State<FxGrid> {
                         extent: table.FixedTableSpanExtent(
                           isHeader
                               ? widget.headerHeight
-                              : (dataRow?.height ?? widget.rowHeight),
+                              : _getRowHeight(dataRow!, visibleColumns, totalWidth),
                         ),
                         backgroundDecoration: table.TableSpanDecoration(
                           color: isHeader
@@ -2194,7 +2412,7 @@ class _FxGridState extends State<FxGrid> {
                         return table.TableViewCell(
                           child: _HeaderCell(
                             caption: column.caption ?? column.id,
-                            alignment: column.alignment,
+                            alignment: _getResolvedAlignment(column, widget.rows),
                             sortable: column.sortable,
                             sorted: sorted,
                             ascending: widget.sortAscending,
@@ -2218,10 +2436,14 @@ class _FxGridState extends State<FxGrid> {
                               });
                               widget.onColumnResized?.call(column.id, newWidth);
                             },
+                            onDoubleResize: () {
+                              _autoFitColumn(column, totalWidth);
+                            },
                           ),
                         );
                       }
                       final row = widget.rows[vicinity.row - rowOffset];
+                      final value = row.cells[column.id];
                       final inRange =
                           widget.selectionMode == FxGridSelectionMode.range &&
                           widget.selectedRange != null &&
@@ -2238,11 +2460,9 @@ class _FxGridState extends State<FxGrid> {
                                 cell.columnId == column.id,
                           );
                       final hovered =
-                          row.enabled &&
                           _hoveredCell != null &&
                           _hoveredCell!.row == vicinity.row &&
                           _hoveredCell!.column == vicinity.column;
-                      final value = row.cells[column.id];
                       final isEditing =
                           _editingRowId == row.id &&
                           _editingColumnId == column.id;
@@ -2339,8 +2559,10 @@ class _FxGridState extends State<FxGrid> {
                           );
                         }
                       } else {
-                        if (column.type is FxBooleanCellType) {
-                          final bool val = value == true;
+                        final customBgColor = widget.cellBackgroundColorBuilder?.call(row.id, column.id, value);
+                        final isCheckbox = column.type is FxBooleanCellType || _isImplicitCheckbox(column, value);
+                        if (isCheckbox) {
+                          final bool val = (value == true || value?.toString().toLowerCase().trim() == 'true');
                           cellChild = GestureDetector(
                             behavior: HitTestBehavior.opaque,
                             onTap: row.enabled
@@ -2351,19 +2573,21 @@ class _FxGridState extends State<FxGrid> {
                                   ? theme.selectionBackground
                                   : hovered
                                   ? Theme.of(context).hoverColor
-                                  : Colors.transparent,
+                                  : (customBgColor ?? Colors.transparent),
                               child: Center(
                                 child: Checkbox(
                                   value: val,
                                   onChanged: (row.enabled && column.editable)
                                       ? (newValue) {
-                                          if (widget.onCellEdited != null) {
-                                            widget.onCellEdited!(
-                                              row.id,
-                                              column.id,
-                                              newValue,
-                                            );
+                                          Object? committedValue = newValue;
+                                          if (value is String) {
+                                            committedValue = newValue.toString();
                                           }
+                                          _commitCellEdit(
+                                            row.id,
+                                            column.id,
+                                            committedValue,
+                                          );
                                           _handleCellTap(row.id, column.id);
                                         }
                                       : null,
@@ -2385,12 +2609,13 @@ class _FxGridState extends State<FxGrid> {
                                   ? theme.selectionBackground
                                   : hovered
                                   ? Theme.of(context).hoverColor
-                                  : Colors.transparent,
+                                  : (customBgColor ?? Colors.transparent),
                               child: _CellText(
                                 text: value?.toString() ?? '',
-                                alignment: column.alignment,
+                                alignment: _getResolvedAlignment(column, widget.rows),
                                 enabled: row.enabled,
                                 isSelected: selected,
+                                lineWrap: column.lineWrap,
                               ),
                             ),
                           );
@@ -2426,6 +2651,33 @@ class _FxGridState extends State<FxGrid> {
                             ),
                           ),
                         );
+                      }
+
+                      // Apply percentage progress bar overlay (only if not editing)
+                      if (!isEditing) {
+                        final pct = _parsePercentage(value);
+                        if (pct != null) {
+                          cellChild = Stack(
+                            children: [
+                              cellChild,
+                              Positioned(
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                height: 5,
+                                child: Align(
+                                  alignment: Alignment.bottomLeft,
+                                  child: FractionallySizedBox(
+                                    widthFactor: pct / 100.0,
+                                    child: Container(
+                                      color: Theme.of(context).colorScheme.primary.withAlpha(180),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        }
                       }
 
                       if (row.enabled &&
@@ -2570,12 +2822,14 @@ class _CellText extends StatelessWidget {
     required this.alignment,
     this.enabled = true,
     this.isSelected = false,
+    this.lineWrap = false,
   });
 
   final String text;
   final FxCellAlignment alignment;
   final bool enabled;
   final bool isSelected;
+  final bool lineWrap;
 
   @override
   Widget build(BuildContext context) {
@@ -2604,14 +2858,14 @@ class _CellText extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
       child: Align(
         alignment: switch (alignment) {
-          FxCellAlignment.leading => Alignment.centerLeft,
-          FxCellAlignment.center => Alignment.center,
-          FxCellAlignment.trailing => Alignment.centerRight,
+          FxCellAlignment.leading => Alignment.topLeft,
+          FxCellAlignment.center => Alignment.topCenter,
+          FxCellAlignment.trailing => Alignment.topRight,
         },
         child: Text(
           text,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
+          maxLines: lineWrap ? null : 1,
+          overflow: lineWrap ? null : TextOverflow.ellipsis,
           textAlign: textAlign,
           style: TextStyle(fontWeight: FontWeight.normal, color: textColor),
         ),
@@ -2620,7 +2874,7 @@ class _CellText extends StatelessWidget {
   }
 }
 
-class _HeaderCell extends StatelessWidget {
+class _HeaderCell extends StatefulWidget {
   const _HeaderCell({
     required this.caption,
     required this.alignment,
@@ -2629,6 +2883,7 @@ class _HeaderCell extends StatelessWidget {
     required this.ascending,
     this.onSort,
     this.onResize,
+    this.onDoubleResize,
   });
 
   final String caption;
@@ -2638,14 +2893,22 @@ class _HeaderCell extends StatelessWidget {
   final bool ascending;
   final VoidCallback? onSort;
   final ValueChanged<double>? onResize;
+  final VoidCallback? onDoubleResize;
+
+  @override
+  State<_HeaderCell> createState() => _HeaderCellState();
+}
+
+class _HeaderCellState extends State<_HeaderCell> {
+  DateTime? _lastTapTime;
 
   @override
   Widget build(BuildContext context) {
     // Chevron sort indicator
     Widget? sortIndicator;
-    if (sortable && sorted) {
+    if (widget.sortable && widget.sorted) {
       sortIndicator = Icon(
-        ascending ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+        widget.ascending ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
         size: 16,
         color: Theme.of(context).colorScheme.onSurface,
       );
@@ -2653,14 +2916,14 @@ class _HeaderCell extends StatelessWidget {
 
     final content = GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: sortable ? onSort : null,
+      onTap: widget.sortable ? widget.onSort : null,
       child: MouseRegion(
-        cursor: sortable ? SystemMouseCursors.click : MouseCursor.defer,
+        cursor: widget.sortable ? SystemMouseCursors.click : MouseCursor.defer,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
           child: Row(
             mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: switch (alignment) {
+            mainAxisAlignment: switch (widget.alignment) {
               FxCellAlignment.leading => MainAxisAlignment.start,
               FxCellAlignment.center => MainAxisAlignment.center,
               FxCellAlignment.trailing => MainAxisAlignment.end,
@@ -2668,7 +2931,7 @@ class _HeaderCell extends StatelessWidget {
             children: [
               Flexible(
                 child: Text(
-                  caption,
+                  widget.caption,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontWeight: FontWeight.w600),
@@ -2684,15 +2947,15 @@ class _HeaderCell extends StatelessWidget {
       ),
     );
 
-    final sortAnnouncement = sorted
-        ? (ascending ? ', sorted ascending' : ', sorted descending')
+    final sortAnnouncement = widget.sorted
+        ? (widget.ascending ? ', sorted ascending' : ', sorted descending')
         : '';
     final labelText =
-        '$caption column header${sortable ? ", sortable" : ""}$sortAnnouncement';
+        '${widget.caption} column header${widget.sortable ? ", sortable" : ""}$sortAnnouncement';
 
-    final Widget childWidget = onResize == null
+    final Widget childWidget = widget.onResize == null
         ? Align(
-            alignment: switch (alignment) {
+            alignment: switch (widget.alignment) {
               FxCellAlignment.leading => Alignment.centerLeft,
               FxCellAlignment.center => Alignment.center,
               FxCellAlignment.trailing => Alignment.centerRight,
@@ -2703,7 +2966,7 @@ class _HeaderCell extends StatelessWidget {
             clipBehavior: Clip.none,
             children: [
               Align(
-                alignment: switch (alignment) {
+                alignment: switch (widget.alignment) {
                   FxCellAlignment.leading => Alignment.centerLeft,
                   FxCellAlignment.center => Alignment.center,
                   FxCellAlignment.trailing => Alignment.centerRight,
@@ -2717,11 +2980,23 @@ class _HeaderCell extends StatelessWidget {
                 width: 8,
                 child: MouseRegion(
                   cursor: SystemMouseCursors.resizeLeftRight,
-                  child: GestureDetector(
+                  child: Listener(
                     behavior: HitTestBehavior.opaque,
-                    onHorizontalDragUpdate: (details) {
-                      onResize?.call(details.primaryDelta ?? 0.0);
+                    onPointerDown: (event) {
+                      final now = DateTime.now();
+                      if (_lastTapTime != null &&
+                          now.difference(_lastTapTime!) <
+                              const Duration(milliseconds: 300)) {
+                        widget.onDoubleResize?.call();
+                      }
+                      _lastTapTime = now;
                     },
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onHorizontalDragUpdate: (details) {
+                        widget.onResize?.call(details.primaryDelta ?? 0.0);
+                      },
+                    ),
                   ),
                 ),
               ),
@@ -2730,7 +3005,7 @@ class _HeaderCell extends StatelessWidget {
 
     return Semantics(
       label: labelText,
-      button: sortable,
+      button: widget.sortable,
       enabled: true,
       child: childWidget,
     );
@@ -2782,4 +3057,49 @@ class _GridCellWrapperState extends State<_GridCellWrapper> {
   Widget build(BuildContext context) {
     return widget.child;
   }
+}
+
+bool _isNumericColumn(List<dynamic> rows, String columnId) {
+  if (rows.isEmpty) return false;
+  var hasValues = false;
+  for (final row in rows) {
+    final val = row.cells[columnId];
+    if (val != null && val.toString().trim().isNotEmpty) {
+      hasValues = true;
+      final str = val.toString().trim();
+      final cleanStr = str.endsWith('%') ? str.substring(0, str.length - 1).trim() : str;
+      if (num.tryParse(cleanStr) == null) {
+        return false;
+      }
+    }
+  }
+  return hasValues;
+}
+
+bool _isImplicitCheckbox(dynamic column, Object? value) {
+  if (value == null) return false;
+  final str = value.toString().trim().toLowerCase();
+  return str == 'true' || str == 'false';
+}
+
+double? _parsePercentage(Object? value) {
+  if (value == null) return null;
+  final str = value.toString().trim();
+  if (str.endsWith('%')) {
+    final numStr = str.substring(0, str.length - 1).trim();
+    final val = double.tryParse(numStr);
+    if (val != null) {
+      return val.clamp(0.0, 100.0);
+    }
+  }
+  return null;
+}
+
+FxCellAlignment _getResolvedAlignment(dynamic column, List<dynamic> rows) {
+  if (column.alignment == FxCellAlignment.leading) {
+    if (_isNumericColumn(rows, column.id)) {
+      return FxCellAlignment.trailing;
+    }
+  }
+  return column.alignment;
 }

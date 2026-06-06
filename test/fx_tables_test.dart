@@ -462,6 +462,7 @@ void main() {
         'visible': true,
         'sortable': false,
         'type': {'type': 'text'},
+        'lineWrap': false,
       });
 
       expect(row.toJson(), {
@@ -510,6 +511,7 @@ void main() {
         'visible': true,
         'sortable': false,
         'type': {'type': 'text'},
+        'lineWrap': false,
       });
 
       expect(row.toJson(), {
