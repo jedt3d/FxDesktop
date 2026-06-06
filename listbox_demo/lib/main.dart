@@ -13,15 +13,12 @@ class FxListBoxDemoApp extends StatelessWidget {
     return MaterialApp(
       title: 'FxListBox Interactive Spec Gallery',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: const Color(0xFF0F172A), // Slate 900
-        cardColor: const Color(0xFF1E293B), // Slate 800
-        colorScheme: const ColorScheme.dark(
-          primary: Color(0xFF38BDF8), // Sky 400
-          secondary: Color(0xFF818CF8), // Indigo 400
-          surface: Color(0xFF1E293B),
-          error: Color(0xFFF87171), // Red 400
-        ),
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xff2563eb)),
+        useMaterial3: true,
+        scaffoldBackgroundColor: const Color(0xfff6f7f9),
+        cardColor: Colors.white,
+        extensions: const [FxTheme()],
       ),
       home: const DemoGalleryPage(),
     );
@@ -165,7 +162,7 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
               _buildHeader(theme),
 
               // Divider
-              Container(height: 1, color: const Color(0xFF334155)), // Slate 700
+              Container(height: 1, color: const Color(0xffd9dde5)),
               // 2. Horizontal Main Layout
               Expanded(
                 child: Row(
@@ -175,12 +172,12 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
                     _buildLeftGuidePane(theme),
 
                     // Vertical Divider
-                    Container(width: 1, color: const Color(0xFF334155)),
+                    Container(width: 1, color: const Color(0xffd9dde5)),
 
                     // Right Pane: Active Interactive Sandbox Demo
                     Expanded(
                       child: Container(
-                        color: const Color(0xFF0F172A),
+                        color: const Color(0xfff6f7f9),
                         padding: const EdgeInsets.all(16),
                         child: FxPagePanel(
                           selectedIndex: _currentPageIndex,
@@ -201,7 +198,7 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
               ),
 
               // Divider
-              Container(height: 1, color: const Color(0xFF334155)),
+              Container(height: 1, color: const Color(0xffd9dde5)),
 
               // 3. Callback Logs Console & Undo Panel
               _buildBottomConsolePanel(theme),
@@ -214,7 +211,10 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
 
   Widget _buildHeader(ThemeData theme) {
     return Container(
-      color: const Color(0xFF1E293B), // Slate 800
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: Color(0xffd9dde5))),
+      ),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -237,7 +237,7 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
                     style: theme.textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                       letterSpacing: 0.5,
-                      color: Colors.white,
+                      color: const Color(0xFF1E293B),
                     ),
                   ),
                 ),
@@ -248,16 +248,16 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
                     vertical: 2,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
+                    color: theme.colorScheme.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
+                      color: theme.colorScheme.primary.withValues(alpha: 0.3),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     'v0.3.0 Ready',
                     style: TextStyle(
-                      color: Color(0xFF38BDF8),
+                      color: theme.colorScheme.primary,
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
                     ),
@@ -280,7 +280,7 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
                 'Page ${_currentPageIndex + 1} / $_totalPages',
                 style: theme.textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: const Color(0xFF94A3B8), // Slate 400
+                  color: const Color(0xFF475569), // Slate 600
                 ),
               ),
               const SizedBox(width: 12),
@@ -403,7 +403,7 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
     return SizedBox(
       width: 330,
       child: Container(
-        color: const Color(0xFF1E293B),
+        color: Colors.white,
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -428,7 +428,7 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
                     Text(
                       descriptions[_currentPageIndex],
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: const Color(0xFFCBD5E1), // Slate 300
+                        color: const Color(0xFF334155), // Slate 700
                         height: 1.4,
                       ),
                     ),
@@ -439,7 +439,7 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
                       'WHAT TO TRY / GUIDANCE:',
                       style: theme.textTheme.bodySmall?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFF94A3B8), // Slate 400
+                        color: const Color(0xFF64748B), // Slate 500
                         letterSpacing: 1.0,
                       ),
                     ),
@@ -463,7 +463,7 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
                               child: Text(
                                 step,
                                 style: theme.textTheme.bodySmall?.copyWith(
-                                  color: const Color(0xFFE2E8F0),
+                                  color: const Color(0xFF475569), // Slate 600
                                   height: 1.3,
                                 ),
                               ),
@@ -484,82 +484,85 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
 
   // --- BOTTOM CALLBACK LOG CONSOLE & UNDO PANEL ---
   Widget _buildBottomConsolePanel(ThemeData theme) {
-    return Container(
-      height: 150,
-      color: const Color(0xFF0F172A),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Console Logs Output
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              color: const Color(0xFF020617), // Slate 950
-              child: ListView.builder(
-                controller: _logScrollController,
-                itemCount: _logs.length,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 4),
-                    child: Text(
-                      _logs[index],
-                      style: const TextStyle(
-                        fontFamily: 'Courier',
-                        fontSize: 12,
-                        color: Color(0xFF10B981), // Emerald 500
+    return Theme(
+      data: ThemeData.dark(),
+      child: Container(
+        height: 150,
+        color: const Color(0xFF0F172A),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Console Logs Output
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                color: const Color(0xFF020617), // Slate 950
+                child: ListView.builder(
+                  controller: _logScrollController,
+                  itemCount: _logs.length,
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: Text(
+                        _logs[index],
+                        style: const TextStyle(
+                          fontFamily: 'Courier',
+                          fontSize: 12,
+                          color: Color(0xFF10B981), // Emerald 500
+                        ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
             ),
-          ),
 
-          // Undo/Redo & Utility Panel
-          Container(
-            width: 200,
-            color: const Color(0xFF1E293B),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  'UNDO HISTORY',
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF94A3B8),
+            // Undo/Redo & Utility Panel
+            Container(
+              width: 200,
+              color: const Color(0xFF1E293B),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'UNDO HISTORY',
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF94A3B8),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 6),
-                FxButton(
-                  label: 'Undo Action',
-                  onPressed: _undoController.canUndo
-                      ? () {
-                          setState(() {
-                            _undoController.undo();
-                          });
-                          _log('Undo operation performed.');
-                        }
-                      : null,
-                ),
-                const SizedBox(height: 6),
-                FxButton(
-                  label: 'Redo Action',
-                  onPressed: _undoController.canRedo
-                      ? () {
-                          setState(() {
-                            _undoController.redo();
-                          });
-                          _log('Redo operation performed.');
-                        }
-                      : null,
-                ),
-              ],
+                  const SizedBox(height: 6),
+                  FxButton(
+                    label: 'Undo Action',
+                    onPressed: _undoController.canUndo
+                        ? () {
+                            setState(() {
+                              _undoController.undo();
+                            });
+                            _log('Undo operation performed.');
+                          }
+                        : null,
+                  ),
+                  const SizedBox(height: 6),
+                  FxButton(
+                    label: 'Redo Action',
+                    onPressed: _undoController.canRedo
+                        ? () {
+                            setState(() {
+                              _undoController.redo();
+                            });
+                            _log('Redo operation performed.');
+                          }
+                        : null,
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -819,7 +822,7 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
             ),
             Text(
               'Widths: ID: 60 | Name: ${_col2Width.round()} | Bio: 35% | Joined: Remaining',
-              style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8)),
+              style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
             ),
           ],
         ),
