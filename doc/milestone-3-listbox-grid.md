@@ -413,3 +413,14 @@ Milestone 3 is complete when:
 - undo integration boundaries are documented and tested.
 - all `0.3.x` phase releases are merged to `main`, tagged, and published as
   GitHub Releases.
+
+## Refinements in v0.3.3
+
+### Capped Column Auto-Sizing & Line-Wrapping
+- **Double-click auto-fit**: Double-clicking the header resize border automatically adjusts the column width to fit the longest content.
+- **50% Total Width Cap**: If the fit-content width exceeds 50% of the total table width, the column is capped at 50% width and line wrapping is automatically enabled (`true`). Otherwise, line wrapping is disabled (`false`).
+- **Parent State Synchronization**: In `didUpdateWidget`, if the column descriptor's `lineWrap` property is modified by the parent widget, any local wrapping override is removed, syncing the layout state with the parent.
+
+### Undo/Redo Layout Integration
+- **Atomic Actions**: Auto-fitting changes both width and wrapping state in a single committed `FxUndoAction`.
+- **Manual Switches**: Switch toggles on Page 8 are integrated with `FxUndoController.commitValue` for undoable manual wrapping toggles.

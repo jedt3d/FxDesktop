@@ -124,7 +124,7 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
   Set<String> _selectedRowIdsPage7 = <String>{};
 
   // Page 8: Advanced Formatting & Excel-Style Features
-  bool _page8LineWrap = true;
+  bool _page8LineWrap = false;
   final List<Map<String, Object?>> _advancedData = [
     {
       'id': 'P01',
@@ -1440,10 +1440,17 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
                   value: _page8LineWrap,
                   activeThumbColor: const Color(0xFF38BDF8),
                   onChanged: (val) {
-                    setState(() {
-                      _page8LineWrap = val;
-                    });
-                    _log('Page 8 Line wrap set to: $val');
+                    _undoController.commitValue<bool>(
+                      'Toggle line wrapping',
+                      oldValue: _page8LineWrap,
+                      newValue: val,
+                      apply: (newVal) {
+                        setState(() {
+                          _page8LineWrap = newVal;
+                        });
+                        _log('Page 8 Line wrap set to: $newVal');
+                      },
+                    );
                   },
                 ),
                 const SizedBox(width: 16),

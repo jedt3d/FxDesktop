@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.3.3
+
+Version `0.3.3` refines the table layout behavior and integrates column resize and line-wrapping toggling into the Undo stack.
+
+### Added
+- **Capped Auto-Fit Column Resizing**: Double-clicking a header resize border automatically fits the longest content, capped at 50% of the total table width. If the content exceeds this threshold, the width is set to 50% and line wrapping is automatically enabled (`true`) for that column. Otherwise, line wrapping is disabled (`false`).
+- **Layout Undo Integration**: Both column width and wrapping changes from auto-fit double-clicks are recorded as atomic, reversible actions in the `FxUndoController` stack.
+- **Undoable Switch**: Manual line-wrapping toggling on Page 8 is integrated with `_undoController.commitValue` for seamless undo/redo.
+- **Documentation Polish**: Updated layout contract and component guides detailing capped column auto-fit and undo behaviors.
+
+### Changed
+- Page 8's default line wrapping for the Doctor Notes column is now disabled (`false`) by default.
+- State-based line wrapping overrides are now synced with parent configurations in `didUpdateWidget`, clearing dynamic overrides when parent properties change.
+
+## 0.3.2
+
+Version `0.3.2` implements advanced formatting, automatic resizing, line wrapping, and implicit types.
+
+### Added
+- **Excel-Style Column Auto-sizing**: Double-click a header resize border to automatically size to fit the column's content.
+- **Column Line Wrapping**: Added `lineWrap` to column descriptors with dynamic row height calculation.
+- **Implicit Rendering & Alignment**: 
+  - Case-insensitive "true"/"false" and boolean fields automatically render as interactive checkboxes.
+  - Numeric columns automatically align right (header and cells).
+  - Cells containing percentage strings (e.g., "75%") render bottom border progress bar overlays.
+- **Advanced Features Page**: Added Page 8 to the interactive spec gallery demo.
+
 ## 0.3.1
 
 Version `0.3.1` introduces the interactive `listbox_demo` spec gallery application for desktop platforms and polishes the scrollbar behavior in the table components.

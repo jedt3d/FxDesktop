@@ -83,6 +83,11 @@ FxDesktop provides two distinct table controls, matching Xojo's layout patterns:
 - **Approximate features**: alternating row colors, column sizing metrics (fixed, flexible, min/max).
 - **Deferred / Out-of-scope**: cell merging, formulas, pivot tables, and drawing custom canvas elements inside cells (although in Flutter this is easily done by providing custom cell builders).
 
+### Layout Refinements (Auto-Fit & Wrapping)
+- **Auto-Fit Capping**: Double-clicking header resize borders auto-fits content up to 50% of the table width. Exceeding 50% caps the width and sets the column's wrapping override to `true` (wrapped by default).
+- **State Overrides**: Wrapping overrides are stored in local state (`_columnLineWrapOverrides`). If the parent updates the column descriptors (e.g. toggles wrapping), local overrides are automatically cleared in `didUpdateWidget` to match the parent.
+- **Undo Integration**: Auto-fit changes (width and wrapping state) are recorded as a single committed `FxUndoAction`. Manual switch toggles can be committed via `_undoController.commitValue`.
+
 ## Release Workflow
 
 Normal CI validates every pull request. Publishing to pub.dev is tag-based only.

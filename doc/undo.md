@@ -42,8 +42,8 @@ undo.commitValue<String>(
 | `FxTabPanel` | selected tab index | tab selection |
 | `FxPagePanel` | selected page index | index change |
 | `FxCardContainer` | selected card index | index change |
-| `FxListBox` | selected row, future row edits | selection or edit commit |
-| `FxGrid` | selected cell/row, future cell edits | selection or edit commit |
+| `FxListBox` | selected row, cell edits, column auto-fit resizing & lineWrap overrides | selection, edit commit, or double-click auto-fit |
+| `FxGrid` | selected cell/row, cell edits, column auto-fit resizing & lineWrap overrides | selection, edit commit, or double-click auto-fit |
 | `FxFlexLayout` | future layout spec changes | layout property commit |
 | `FxGridLayout` | future grid spec changes | layout property commit |
 

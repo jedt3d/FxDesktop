@@ -466,11 +466,16 @@ class _FxListBoxState extends State<FxListBox> {
   late FocusNode _focusNode;
   int? _hoveredRowIndex;
   final Map<String, double> _columnWidths = {};
+  final Map<String, bool> _columnLineWrapOverrides = {};
   String? _editingRowId;
   String? _editingColumnId;
   TextEditingController? _editingController;
   late final ScrollController _verticalController;
   late final ScrollController _horizontalController;
+
+  bool _getColumnLineWrap(FxListBoxColumn column) {
+    return _columnLineWrapOverrides[column.id] ?? column.lineWrap;
+  }
 
   void _commitCellEdit(String rowId, String columnId, Object? newValue) {
     final row = widget.rows.firstWhere((r) => r.id == rowId);
@@ -677,6 +682,12 @@ class _FxListBoxState extends State<FxListBox> {
       (oldWidget.focusNode ?? _focusNode).removeListener(_onFocusChanged);
       _focusNode = widget.focusNode ?? FocusNode();
       _focusNode.addListener(_onFocusChanged);
+    }
+    for (final col in widget.columns) {
+      final oldCol = oldWidget.columns.firstWhere((c) => c.id == col.id, orElse: () => col);
+      if (oldCol.lineWrap != col.lineWrap) {
+        _columnLineWrapOverrides.remove(col.id);
+      }
     }
   }
 
@@ -931,7 +942,7 @@ class _FxListBoxState extends State<FxListBox> {
     final cellStyle = defaultStyle.merge(const TextStyle(fontWeight: FontWeight.normal));
 
     for (final col in visibleColumns) {
-      if (col.lineWrap) {
+      if (_getColumnLineWrap(col)) {
         final rawValue = row.cells[col.id];
         if (rawValue != null && rawValue is! bool && !_isImplicitCheckbox(col, rawValue)) {
           final text = rawValue.toString();
@@ -992,10 +1003,50 @@ class _FxListBoxState extends State<FxListBox> {
     }
 
     final newWidth = (maxNeededWidth + 4.0).clamp(column.minWidth, 1000.0);
-    setState(() {
-      _columnWidths[column.id] = newWidth;
-    });
-    widget.onColumnResized?.call(column.id, newWidth);
+    final capWidth = totalWidth * 0.5;
+
+    final double targetWidth;
+    final bool targetWrap;
+    if (newWidth > capWidth) {
+      targetWidth = capWidth.clamp(column.minWidth, 1000.0);
+      targetWrap = true;
+    } else {
+      targetWidth = newWidth;
+      targetWrap = false;
+    }
+
+    final oldWidth = _getColumnWidth(column, totalWidth);
+    final oldWrap = _getColumnLineWrap(column);
+
+    final undoController = FxUndoScope.maybeOf(context);
+    if (undoController != null) {
+      final label = column.caption.isNotEmpty ? column.caption : column.id;
+      undoController.commit(
+        FxUndoAction(
+          label: 'Auto-fit $label',
+          apply: () {
+            setState(() {
+              _columnWidths[column.id] = targetWidth;
+              _columnLineWrapOverrides[column.id] = targetWrap;
+            });
+            widget.onColumnResized?.call(column.id, targetWidth);
+          },
+          revert: () {
+            setState(() {
+              _columnWidths[column.id] = oldWidth;
+              _columnLineWrapOverrides[column.id] = oldWrap;
+            });
+            widget.onColumnResized?.call(column.id, oldWidth);
+          },
+        ),
+      );
+    } else {
+      setState(() {
+        _columnWidths[column.id] = targetWidth;
+        _columnLineWrapOverrides[column.id] = targetWrap;
+      });
+      widget.onColumnResized?.call(column.id, targetWidth);
+    }
   }
 
   @override
@@ -1262,7 +1313,7 @@ class _FxListBoxState extends State<FxListBox> {
                               alignment: _getResolvedAlignment(column, widget.rows),
                               enabled: row.enabled,
                               isSelected: isSelected,
-                              lineWrap: column.lineWrap,
+                              lineWrap: _getColumnLineWrap(column),
                             ),
                           );
                         }
@@ -1606,11 +1657,16 @@ class _FxGridState extends State<FxGrid> {
   late FocusNode _focusNode;
   table.TableVicinity? _hoveredCell;
   final Map<String, double> _columnWidths = {};
+  final Map<String, bool> _columnLineWrapOverrides = {};
   String? _editingRowId;
   String? _editingColumnId;
   TextEditingController? _editingController;
   late final ScrollController _verticalController;
   late final ScrollController _horizontalController;
+
+  bool _getColumnLineWrap(FxGridColumn column) {
+    return _columnLineWrapOverrides[column.id] ?? column.lineWrap;
+  }
 
   final Map<({String rowId, String columnId}), BuildContext> _cellContexts = {};
   ({String rowId, String columnId})? _dragStartCell;
@@ -1952,6 +2008,12 @@ class _FxGridState extends State<FxGrid> {
       _focusNode = widget.focusNode ?? FocusNode();
       _focusNode.addListener(_onFocusChanged);
     }
+    for (final col in widget.columns) {
+      final oldCol = oldWidget.columns.firstWhere((c) => c.id == col.id, orElse: () => col);
+      if (oldCol.lineWrap != col.lineWrap) {
+        _columnLineWrapOverrides.remove(col.id);
+      }
+    }
   }
 
   @override
@@ -2248,7 +2310,7 @@ class _FxGridState extends State<FxGrid> {
     final cellStyle = defaultStyle.merge(const TextStyle(fontWeight: FontWeight.normal));
 
     for (final col in visibleColumns) {
-      if (col.lineWrap) {
+      if (_getColumnLineWrap(col)) {
         final rawValue = row.cells[col.id];
         if (rawValue != null && rawValue is! bool && !_isImplicitCheckbox(col, rawValue)) {
           final text = rawValue.toString();
@@ -2310,10 +2372,49 @@ class _FxGridState extends State<FxGrid> {
     }
 
     final newWidth = (maxNeededWidth + 4.0).clamp(column.minWidth, 1000.0);
-    setState(() {
-      _columnWidths[column.id] = newWidth;
-    });
-    widget.onColumnResized?.call(column.id, newWidth);
+    final capWidth = totalWidth * 0.5;
+
+    final double targetWidth;
+    final bool targetWrap;
+    if (newWidth > capWidth) {
+      targetWidth = capWidth.clamp(column.minWidth, 1000.0);
+      targetWrap = true;
+    } else {
+      targetWidth = newWidth;
+      targetWrap = false;
+    }
+
+    final oldWidth = _getColumnWidth(column, totalWidth);
+    final oldWrap = _getColumnLineWrap(column);
+
+    final undoController = FxUndoScope.maybeOf(context);
+    if (undoController != null) {
+      undoController.commit(
+        FxUndoAction(
+          label: 'Auto-fit $captionText',
+          apply: () {
+            setState(() {
+              _columnWidths[column.id] = targetWidth;
+              _columnLineWrapOverrides[column.id] = targetWrap;
+            });
+            widget.onColumnResized?.call(column.id, targetWidth);
+          },
+          revert: () {
+            setState(() {
+              _columnWidths[column.id] = oldWidth;
+              _columnLineWrapOverrides[column.id] = oldWrap;
+            });
+            widget.onColumnResized?.call(column.id, oldWidth);
+          },
+        ),
+      );
+    } else {
+      setState(() {
+        _columnWidths[column.id] = targetWidth;
+        _columnLineWrapOverrides[column.id] = targetWrap;
+      });
+      widget.onColumnResized?.call(column.id, targetWidth);
+    }
   }
 
   @override
@@ -2615,7 +2716,7 @@ class _FxGridState extends State<FxGrid> {
                                 alignment: _getResolvedAlignment(column, widget.rows),
                                 enabled: row.enabled,
                                 isSelected: selected,
-                                lineWrap: column.lineWrap,
+                                lineWrap: _getColumnLineWrap(column),
                               ),
                             ),
                           );

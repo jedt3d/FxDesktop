@@ -103,8 +103,8 @@ class OrderPanel extends StatelessWidget {
 `FxGridLayout` is a CSS Grid-like layout manager. `FxGrid` is a data/cell grid
 control comparable to Xojo `DesktopGrid`.
 
-Milestone 3 introduces deep `FxListBox` and `FxGrid` controls in release `v0.3.0`. This includes selection models, keyboard navigation/traversal, sorting, column sizing/visibility policies, editable cell types (text, number, boolean, options) with validation, clipboard operations (TSV copy/paste), undo/redo integration, performance virtualization (up to 10k+ rows and 100+ columns), and rich accessibility support via `Semantics`.
-See [Milestone 3: ListBox And Grid Depth](https://github.com/jedt3d/FxDesktop/blob/main/doc/milestone-3-listbox-grid.md).
+Milestone 3 introduces deep `FxListBox` and `FxGrid` controls (refined in `v0.3.3`). This includes selection models, keyboard navigation/traversal, sorting, column sizing/visibility policies, capped auto-fit resizing (header double-click caps at 50% width and toggles line wrapping), editable cell types (text, number, boolean, options) with validation, clipboard operations (TSV copy/paste), layout undo/redo integration (undoing auto-fit and toggles), performance virtualization (up to 10k+ rows and 100+ columns), and rich accessibility support via `Semantics`.
+See [Milestone 3: ListBox And Grid Depth](doc/milestone-3-listbox-grid.md).
 
 ## Text Input Constraints
 

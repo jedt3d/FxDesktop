@@ -1791,6 +1791,109 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.text('Bob'), findsOneWidget);
       });
+
+      testWidgets('FxListBox auto-fit column resize respects 50% width cap, auto-wraps, and supports undo/redo', (
+        tester,
+      ) async {
+        final undoController = FxUndoController();
+        double columnWidth = 100.0;
+        bool? pageLineWrap = false;
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Center(
+                child: SizedBox(
+                  width: 400, // 50% is 200
+                  height: 300,
+                  child: FxUndoScope(
+                    controller: undoController,
+                    child: StatefulBuilder(
+                      builder: (context, setState) {
+                        return FxListBox(
+                          columns: [
+                            FxListBoxColumn(
+                              id: 'name',
+                              caption: 'Name',
+                              width: const FxColumnWidth.fixed(100),
+                            ),
+                            FxListBoxColumn(
+                              id: 'notes',
+                              caption: 'Notes',
+                              width: FxColumnWidth.fixed(columnWidth),
+                              lineWrap: pageLineWrap ?? false,
+                            ),
+                          ],
+                          rows: const [
+                            FxListBoxRow(
+                              id: 'r1',
+                              cells: {
+                                'name': 'Alice',
+                                'notes': 'This is a very very very very long notes content that should exceed 200 pixels',
+                              },
+                            ),
+                          ],
+                          onColumnResized: (colId, width) {
+                            setState(() {
+                              columnWidth = width;
+                            });
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+
+        // Find the Notes header cell using runtimeType string match to avoid private class import issues
+        final headerCellFinder = find.ancestor(
+          of: find.text('Notes'),
+          matching: find.byElementPredicate((element) => element.widget.runtimeType.toString() == '_HeaderCell'),
+        );
+        expect(headerCellFinder, findsOneWidget);
+
+        // Tap the right edge of the Notes header (right border)
+        final notesRect = tester.getRect(headerCellFinder);
+        final rightEdge = Offset(notesRect.right - 2, notesRect.center.dy);
+
+        await tester.tapAt(rightEdge);
+        await tester.pump(const Duration(milliseconds: 50));
+        await tester.tapAt(rightEdge);
+        await tester.pumpAndSettle();
+
+        // The content is very long, so auto-fit should cap the width at 50% of 400 = 200
+        // and also set the column's wrapping override to true.
+        expect(columnWidth, equals(200.0));
+        
+        // Find text widget to verify wrapping
+        final textWidget = tester.widget<Text>(find.textContaining('This is a very very'));
+        expect(textWidget.maxLines, isNull);
+
+        // Verify Undo stack has the action
+        expect(undoController.canUndo, isTrue);
+        expect(undoController.undoLabel, 'Auto-fit Notes');
+
+        // Undo the auto-fit
+        undoController.undo();
+        await tester.pumpAndSettle();
+
+        // Verify it reverted to original width and wrap state
+        expect(columnWidth, equals(100.0));
+        final textWidgetUndone = tester.widget<Text>(find.textContaining('This is a very very'));
+        expect(textWidgetUndone.maxLines, equals(1));
+
+        // Redo the auto-fit
+        undoController.redo();
+        await tester.pumpAndSettle();
+
+        // Verify it reapplied
+        expect(columnWidth, equals(200.0));
+        final textWidgetRedone = tester.widget<Text>(find.textContaining('This is a very very'));
+        expect(textWidgetRedone.maxLines, isNull);
+      });
     },
   );
 }
