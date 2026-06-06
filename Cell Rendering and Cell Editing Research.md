@@ -2,7 +2,7 @@
 
 This document presents a comprehensive research study and architectural proposal for **Cell Rendering** and **Cell Editing** systems within the `FxListBox` and `FxGrid` components of the `FxDesktop` package. 
 
-We analyze existing paradigms in modern JavaScript UI frameworks, .NET WinForms, and Delphi VCL to design a high-performance, developer-friendly, and generator-compatible architecture tailored for Flutter.
+We analyze existing paradigms in classic desktop GUI platforms—Java Swing, .NET WinForms, and Delphi VCL—to design a high-performance, developer-friendly, and generator-compatible architecture tailored for Flutter.
 
 ---
 
@@ -21,25 +21,25 @@ Our proposed architecture introduces:
 
 ## 2. Analysis of Existing Platforms
 
-To design the ideal system for Flutter, we analyze the historical and modern approaches taken by three major GUI platforms.
+To design the ideal system for Flutter, we analyze the historical and modern approaches taken by three major desktop GUI platforms.
 
-### 2.1 JavaScript UI Grids (ag-Grid, Handsontable, DevExtreme)
+### 2.1 Java Swing (JTable)
 
-Modern enterprise JS grids are the gold standard for web-based BI and desktop-in-browser applications.
+Java Swing represents a highly decoupled MVC (Model-View-Controller) architecture, separating row/column data storage from cell display and interaction.
 
-*   **Architectural Model**: Component Delegation.
-    *   **Cell Renderer**: A persistent component representing the cell. It receives a `params` object containing the cell value, row data, grid API, and node status. It is reactively rebuilt when cell data updates.
-    *   **Cell Editor**: A transient component instantiated only when editing begins (e.g., double-click, keyboard edit trigger) and destroyed upon commit or cancel. Editors communicate results back to the grid via a strict interface (typically implementing `getValue()`).
-*   **Popup Mechanics**: JS grids use absolute CSS positioning and portal/body appending to render complex editors (like date pickers or dropdowns) outside the grid's viewport, avoiding overflow clipping.
-*   **Pros**: Complete separation of concerns, easy to plug in custom framework components, highly flexible.
-*   **Cons**: Large memory overhead if thousands of complex cell components are mounted simultaneously (solved in ag-Grid via aggressive DOM virtualization).
+*   **Architectural Model**: Delegate rendering and editing.
+    *   **Cell Renderer (`TableCellRenderer`)**: Instead of allocating a separate UI component (like a label or checkbox) for every single cell—which would be extremely heavy—Swing uses the **Flyweight ("rubber stamp") pattern**. A single instance of a component (e.g., `DefaultTableCellRenderer` extending `JLabel`) is reused. For each cell, the grid calls `getTableCellRendererComponent()`, configures its text/color, and paints its graphical representation onto the cell's coordinates on the screen canvas.
+    *   **Cell Editor (`TableCellEditor`)**: Unlike the renderer, which is just painted, editing requires actual interactive components. When a cell enters edit mode, the `JTable` obtains a component from the editor delegate (e.g., `JTextField` or `JComboBox`), places it at the exact bounds of the cell, and requests keyboard focus. Once editing is committed or cancelled, the editor component is removed from the component hierarchy, and the value is pushed to the `TableModel`.
+*   **Popup Mechanics**: Swing uses heavyweight or lightweight popup windows (`JPopupMenu`, `JWindow`) that can extend beyond the bounds of the parent window or frame if necessary, bypassing clipping regions.
+*   **Pros**: Extremely memory-efficient; allows any standard Swing component (`JComponent`) to act as a renderer or editor.
+*   **Cons**: The flyweight painting model makes cell interactions (like clicking or hover changes) complex to implement inside the renderer since it is not a live component. Overriding delegates requires verbose boilerplate.
 
 ### 2.2 .NET WinForms (DataGridView)
 
-WinForms represents the classic desktop design system, built on heavy OS handles (`HWND`).
+WinForms represents the classic desktop design system, built on heavy OS window handles (`HWND`).
 
 *   **Architectural Model**: Hosted Control Pattern.
-    *   Since allocating a separate WinForms control (`TextBox`, `ComboBox`) for every single table cell would exhaust Windows system resources and degrade scroll performance, the `DataGridViewCell` is a lightweight object that only draws itself using GDI+ painting.
+    *   Similar to Swing, allocating a separate WinForms control for every cell would exhaust Windows system resources and degrade scroll performance. Therefore, the `DataGridViewCell` is a lightweight object that only draws itself using GDI+ painting APIs.
     *   When editing begins, the grid dynamically **hosts** a single, persistent editing control (e.g., `DataGridViewTextBoxEditingControl` which implements `IDataGridViewEditingControl`).
     *   This hosted control is placed as a child of the grid, resized to match the cell boundaries, focused, and populated with the cell's initial value. Upon commit, the value is written back to the cell model, and the hosted control is hidden.
 *   **Pros**: Extremely high performance, low memory footprint, and reliable OS-level focus management.
@@ -60,19 +60,19 @@ Delphi is renowned for its rapid application development (RAD) database grids, w
 
 ## 3. Comparison of Architectural Paradigms
 
-| Feature | JS Grid (Component Delegation) | .NET WinForms (Hosted Control) | Delphi VCL (In-place Canvas Edit) | FxDesktop (Proposed Builder & Overlay) |
+| Feature | Java Swing (Delegate Rendering / Editors) | .NET WinForms (Hosted Control) | Delphi VCL (In-place Canvas Edit) | FxDesktop (Proposed Builder & Overlay) |
 | :--- | :--- | :--- | :--- | :--- |
-| **Rendering Tech** | HTML DOM Elements | GDI+ Canvas Painting | GDI Canvas Painting | Flutter Widget Tree & Canvas |
-| **Cell Creation** | Virtualized Component lifecycle | Lightweight cell class | Structural columns & drawing | Virtualized reactive Widgets |
-| **Editor Allocation** | Created/destroyed on demand | Single reused control per grid | Single internal control | Dynamically swapped widget / Overlay |
-| **Popup Support** | Body portal absolute positioning | Hosted drop-down windows | Ellipsis button dialogs | Flutter `Overlay` & `ComposedComponent` |
-| **Parity Rating** | Flex: 10/10, Speed: 7/10 | Flex: 6/10, Speed: 9/10 | Flex: 5/10, Speed: 9/10 | Flex: 9/10, Speed: 9/10 |
+| **Rendering Tech** | Graphics2D Rubber-Stamping (AWT/Swing) | GDI+ Canvas Painting | GDI Canvas Painting | Flutter Widget Tree & Canvas |
+| **Cell Creation** | Reused stamp component per column type | Lightweight cell class (draws self) | Structural columns & canvas drawing | Virtualized reactive Widgets |
+| **Editor Allocation** | Single instance per editor type per column | Single reused control per grid | Single internal control (`TInplaceEdit`) | Dynamically swapped widget / Overlay |
+| **Popup Support** | Heavyweight/Lightweight Popups (`JPopupMenu`) | Hosted drop-down windows | Ellipsis button modal dialogs | Flutter `Overlay` & `ComposedComponent` |
+| **Parity Rating** | Flex: 8/10, Speed: 8/10 | Flex: 6/10, Speed: 9/10 | Flex: 5/10, Speed: 9/10 | Flex: 9/10, Speed: 9/10 |
 
 ---
 
 ## 4. Proposed Architecture for FxDesktop
 
-We propose a **declarative builder pattern** for cell rendering and a **dynamically hosted portal pattern** for cell editing. This combines the flexibility of modern JS component structures with the performance and encapsulation of native desktop frameworks.
+We propose a **declarative builder pattern** for cell rendering and a **dynamically hosted portal pattern** for cell editing. This combines the flexibility of Swing's delegate components with the performance and encapsulation of native desktop frameworks.
 
 ```
 +-------------------------------------------------------------+
@@ -150,14 +150,14 @@ To allow generators to design grids without writing Dart code, columns can defin
 
 ## 5. Feature Copy List
 
-We recommend copying the following battle-tested features from existing platforms to compile our future roadmap.
+We recommend copying the following battle-tested features from classic desktop platforms to compile our future roadmap.
 
 ### 5.1 Cell Renderers (View Options)
 
 1.  **Formatters (WinForms / Delphi)**: Support format strings like `C` (Currency), `P` (Percentage), `N2` (Number with 2 decimal places), and date format masks.
-2.  **Sparkline Charts (JS Grids)**: Draw micro line-charts, bar-charts, or area trend indicators inside cells directly from list values (e.g. `[12, 5, 23, 18, 9]`).
-3.  **Visual Badges & Status Pills (Modern JS)**: Render text wrapped in styled status pills (e.g. red pill for "Critical", green pill for "Healthy") based on value maps.
-4.  **Conditional Background Blenders (Delphi/VCL)**: Ability to color cells based on custom data evaluations, dynamically blended with selection/hover overlays.
+2.  **Sparkline Charts (Swing / WinForms Custom Painting)**: Draw micro line-charts, bar-charts, or area trend indicators inside cells directly from list values (e.g. `[12, 5, 23, 18, 9]`).
+3.  **Visual Badges & Status Pills (Modern Desktop UI)**: Render text wrapped in styled status pills (e.g. red pill for "Critical", green pill for "Healthy") based on value maps.
+4.  **Conditional Background Blenders (Delphi/VCL & Swing)**: Ability to color cells based on custom data evaluations, dynamically blended with selection/hover overlays.
 
 ### 5.2 Cell Editors (Input Options)
 

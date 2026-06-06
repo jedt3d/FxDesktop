@@ -264,6 +264,7 @@ class FxListBoxColumn {
     this.sortable = false,
     this.type = const FxCellType.text(),
     this.lineWrap = false,
+    this.supportStyledText = false,
   });
 
   /// Stable column id.
@@ -296,6 +297,9 @@ class FxListBoxColumn {
   /// Whether long text line wraps in cells of this column.
   final bool lineWrap;
 
+  /// Whether the cell text supports rich styled tags (**bold**, *italic*, ~underline~).
+  final bool supportStyledText;
+
   /// Converts this column to JSON.
   Map<String, Object?> toJson() {
     return {
@@ -309,6 +313,7 @@ class FxListBoxColumn {
       'sortable': sortable,
       'type': type.toJson(),
       'lineWrap': lineWrap,
+      'supportStyledText': supportStyledText,
     };
   }
 }
@@ -373,6 +378,8 @@ class FxListBox extends StatefulWidget {
     this.validationErrors,
     this.onCellEdited,
     this.cellBackgroundColorBuilder,
+    this.allowRowReordering = false,
+    this.onRowReordered,
   });
 
   /// Column descriptors.
@@ -443,11 +450,18 @@ class FxListBox extends StatefulWidget {
   final Color? Function(String rowId, String columnId, Object? value)?
       cellBackgroundColorBuilder;
 
+  /// Whether manual drag-and-drop row reordering is allowed.
+  final bool allowRowReordering;
+
+  /// Callback triggered when a row is reordered.
+  final void Function(int oldIndex, int newIndex)? onRowReordered;
+
   /// Stable map for AI/generator use.
   Map<String, Object?> toTemplateMap() {
     return {
       'component': 'FxListBox',
       'xojo_desktop_class': 'DesktopListBox',
+      'allowRowReordering': allowRowReordering,
       'xojo_web_class': 'WebListBox',
       'selectionMode': selectionMode.name,
       'state': state.name,
@@ -472,6 +486,9 @@ class _FxListBoxState extends State<FxListBox> {
   TextEditingController? _editingController;
   late final ScrollController _verticalController;
   late final ScrollController _horizontalController;
+  String? _activeColumnId;
+  int? _draggedOverRowIndex;
+  bool _isDragAbove = true;
 
   bool _getColumnLineWrap(FxListBoxColumn column) {
     return _columnLineWrapOverrides[column.id] ?? column.lineWrap;
@@ -950,7 +967,11 @@ class _FxListBoxState extends State<FxListBox> {
           final textWidth = (colWidth - 16.0).clamp(0.0, double.infinity);
           
           final textPainter = TextPainter(
-            text: TextSpan(text: text, style: cellStyle),
+            text: TextSpan(
+              children: col.supportStyledText
+                  ? _parseStyledText(text, cellStyle)
+                  : [TextSpan(text: text, style: cellStyle)],
+            ),
             textDirection: TextDirection.ltr,
           );
           textPainter.layout(maxWidth: textWidth);
@@ -1060,6 +1081,24 @@ class _FxListBoxState extends State<FxListBox> {
 
     final isFocused = _focusNode.hasFocus;
     final visibleColumns = widget.columns.where((c) => c.visible).toList();
+    if (widget.allowRowReordering) {
+      visibleColumns.insert(
+        0,
+        const FxListBoxColumn(
+          id: '__reorder_handle__',
+          caption: '',
+          width: FxColumnWidth.fixed(30),
+          minWidth: 30,
+          visible: true,
+          editable: false,
+        ),
+      );
+    }
+
+    final activeRowId = widget.selectedRowIds.isEmpty ? null : widget.selectedRowIds.last;
+    final activeRowIndex = activeRowId == null ? -1 : widget.rows.indexWhere((r) => r.id == activeRowId);
+    final activeColId = _activeColumnId ?? (activeRowId != null && visibleColumns.isNotEmpty ? (widget.allowRowReordering && visibleColumns.length > 1 ? visibleColumns[1].id : visibleColumns.first.id) : null);
+    final activeColIndex = activeColId == null ? -1 : visibleColumns.indexWhere((c) => c.id == activeColId);
 
     return Focus(
       focusNode: _focusNode,
@@ -1105,11 +1144,14 @@ class _FxListBoxState extends State<FxListBox> {
                     ),
                     columnBuilder: (index) {
                       final column = visibleColumns[index];
+                      final isActive = activeColIndex != -1 && index == activeColIndex;
                       return table.TableSpan(
                         extent: _getColumnExtent(column, totalWidth),
                         foregroundDecoration: _borderDecoration(
-                          theme,
-                          widget.showGridLines,
+                          theme: theme,
+                          showGridLines: widget.showGridLines,
+                          isActive: isActive,
+                          isColumn: true,
                         ),
                       );
                     },
@@ -1119,6 +1161,8 @@ class _FxListBoxState extends State<FxListBox> {
                       final isSelected =
                           row != null && widget.selectedRowIds.contains(row.id);
                       final isHovered = index == _hoveredRowIndex;
+                      final isActive = !isHeader && activeRowIndex != -1 && (index - 1) == activeRowIndex;
+                      final isDragTarget = widget.allowRowReordering && _draggedOverRowIndex == (index - 1);
                       return table.TableSpan(
                         extent: table.FixedTableSpanExtent(
                           isHeader
@@ -1137,8 +1181,12 @@ class _FxListBoxState extends State<FxListBox> {
                               : Theme.of(context).colorScheme.surface,
                         ),
                         foregroundDecoration: _borderDecoration(
-                          theme,
-                          widget.showGridLines,
+                          theme: theme,
+                          showGridLines: widget.showGridLines,
+                          isActive: isActive,
+                          isColumn: false,
+                          isDragTarget: isDragTarget,
+                          isDragAbove: _isDragAbove,
                         ),
                       );
                     },
@@ -1150,16 +1198,16 @@ class _FxListBoxState extends State<FxListBox> {
                           child: _HeaderCell(
                             caption: column.caption,
                             alignment: _getResolvedAlignment(column, widget.rows),
-                            sortable: column.sortable,
+                            sortable: column.sortable && column.id != '__reorder_handle__',
                             sorted: sorted,
                             ascending: widget.sortAscending,
-                            onSort: () {
+                            onSort: column.id == '__reorder_handle__' ? null : () {
                               widget.onSortChanged?.call(
                                 column.id,
                                 sorted ? !widget.sortAscending : true,
                               );
                             },
-                            onResize: (delta) {
+                            onResize: column.id == '__reorder_handle__' ? null : (delta) {
                               final currentWidth = _getColumnWidth(
                                 column,
                                 totalWidth,
@@ -1173,7 +1221,7 @@ class _FxListBoxState extends State<FxListBox> {
                               });
                               widget.onColumnResized?.call(column.id, newWidth);
                             },
-                            onDoubleResize: () {
+                            onDoubleResize: column.id == '__reorder_handle__' ? null : () {
                               _autoFitColumn(column, totalWidth);
                             },
                           ),
@@ -1188,7 +1236,35 @@ class _FxListBoxState extends State<FxListBox> {
 
                       Widget cellChild;
 
-                      if (isEditing) {
+                      if (column.id == '__reorder_handle__') {
+                        cellChild = Center(
+                          child: Draggable<int>(
+                            data: vicinity.row - 1,
+                            feedback: Material(
+                              elevation: 4,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: theme.selectionBackground.withValues(alpha: 0.9),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  'Moving Row ${vicinity.row}',
+                                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ),
+                            childWhenDragging: const Opacity(
+                              opacity: 0.3,
+                              child: Icon(Icons.drag_handle, color: Colors.grey, size: 18),
+                            ),
+                            child: const MouseRegion(
+                              cursor: SystemMouseCursors.grab,
+                              child: Icon(Icons.drag_handle, color: Colors.grey, size: 18),
+                            ),
+                          ),
+                        );
+                      } else if (isEditing) {
                         if (column.type is FxChoiceCellType) {
                           final options =
                               (column.type as FxChoiceCellType).options;
@@ -1303,10 +1379,20 @@ class _FxListBoxState extends State<FxListBox> {
                           cellChild = GestureDetector(
                             behavior: HitTestBehavior.opaque,
                             onTap: row.enabled
-                                ? () => _handleRowTap(row.id)
+                                ? () {
+                                    setState(() {
+                                      _activeColumnId = column.id;
+                                    });
+                                    _handleRowTap(row.id);
+                                  }
                                 : null,
                             onDoubleTap: (row.enabled && column.editable)
-                                ? () => _startEditing(row.id, column.id, value)
+                                ? () {
+                                    setState(() {
+                                      _activeColumnId = column.id;
+                                    });
+                                    _startEditing(row.id, column.id, value);
+                                  }
                                 : null,
                             child: _CellText(
                               text: value?.toString() ?? '',
@@ -1314,6 +1400,7 @@ class _FxListBoxState extends State<FxListBox> {
                               enabled: row.enabled,
                               isSelected: isSelected,
                               lineWrap: _getColumnLineWrap(column),
+                              supportStyledText: column.supportStyledText,
                             ),
                           );
                         }
@@ -1324,7 +1411,7 @@ class _FxListBoxState extends State<FxListBox> {
                       if (customBgColor != null) {
                         cellChild = Container(
                           color: isSelected
-                              ? Color.alphaBlend(customBgColor.withOpacity(0.4), theme.selectionBackground)
+                              ? Color.alphaBlend(customBgColor.withValues(alpha: 0.4), theme.selectionBackground)
                               : customBgColor,
                           child: cellChild,
                         );
@@ -1352,6 +1439,44 @@ class _FxListBoxState extends State<FxListBox> {
                               ),
                             ),
                           ],
+                        );
+                      }
+
+                      if (widget.allowRowReordering && vicinity.row > 0) {
+                        final childToDrag = cellChild;
+                        cellChild = DragTarget<int>(
+                          onWillAcceptWithDetails: (details) {
+                            return details.data != (vicinity.row - 1);
+                          },
+                          onAcceptWithDetails: (details) {
+                            final draggedIndex = details.data;
+                            setState(() {
+                              _draggedOverRowIndex = null;
+                            });
+                            widget.onRowReordered?.call(draggedIndex, vicinity.row - 1);
+                          },
+                          onMove: (details) {
+                            final targetIndex = vicinity.row - 1;
+                            final RenderBox? renderBox = context.findRenderObject() as RenderBox?;
+                            if (renderBox != null) {
+                              final localPosition = renderBox.globalToLocal(details.offset);
+                              final isAbove = localPosition.dy < (renderBox.size.height / 2);
+                              if (_draggedOverRowIndex != targetIndex || _isDragAbove != isAbove) {
+                                setState(() {
+                                  _draggedOverRowIndex = targetIndex;
+                                  _isDragAbove = isAbove;
+                                });
+                              }
+                            }
+                          },
+                          onLeave: (data) {
+                            setState(() {
+                              _draggedOverRowIndex = null;
+                            });
+                          },
+                          builder: (context, candidateData, rejectedData) {
+                            return childToDrag;
+                          },
                         );
                       }
 
@@ -1441,6 +1566,7 @@ class FxGridColumn {
     this.sortable = false,
     this.type = const FxCellType.text(),
     this.lineWrap = false,
+    this.supportStyledText = false,
   });
 
   /// Stable column id.
@@ -1473,6 +1599,9 @@ class FxGridColumn {
   /// Whether long text line wraps in cells of this column.
   final bool lineWrap;
 
+  /// Whether the cell text supports rich styled tags (**bold**, *italic*, ~underline~).
+  final bool supportStyledText;
+
   /// Converts this column to JSON.
   Map<String, Object?> toJson() {
     return {
@@ -1486,6 +1615,7 @@ class FxGridColumn {
       'sortable': sortable,
       'type': type.toJson(),
       'lineWrap': lineWrap,
+      'supportStyledText': supportStyledText,
     };
   }
 }
@@ -1556,6 +1686,8 @@ class FxGrid extends StatefulWidget {
     this.validationErrors,
     this.onCellEdited,
     this.cellBackgroundColorBuilder,
+    this.allowRowReordering = false,
+    this.onRowReordered,
   });
 
   /// Column descriptors.
@@ -1635,6 +1767,12 @@ class FxGrid extends StatefulWidget {
   final Color? Function(String rowId, String columnId, Object? value)?
       cellBackgroundColorBuilder;
 
+  /// Whether manual drag-and-drop row reordering is allowed.
+  final bool allowRowReordering;
+
+  /// Callback triggered when a row is reordered.
+  final void Function(int oldIndex, int newIndex)? onRowReordered;
+
   /// Stable map for AI/generator use.
   Map<String, Object?> toTemplateMap() {
     return {
@@ -1644,6 +1782,7 @@ class FxGrid extends StatefulWidget {
       'state': state.name,
       'sortedColumnId': sortedColumnId,
       'sortAscending': sortAscending,
+      'allowRowReordering': allowRowReordering,
       'columns': [for (final column in columns) column.toJson()],
       'rows': [for (final row in rows) row.toJson()],
     };
@@ -1663,6 +1802,9 @@ class _FxGridState extends State<FxGrid> {
   TextEditingController? _editingController;
   late final ScrollController _verticalController;
   late final ScrollController _horizontalController;
+  String? _activeColumnId;
+  int? _draggedOverRowIndex;
+  bool _isDragAbove = true;
 
   bool _getColumnLineWrap(FxGridColumn column) {
     return _columnLineWrapOverrides[column.id] ?? column.lineWrap;
@@ -2033,6 +2175,9 @@ class _FxGridState extends State<FxGrid> {
   }
 
   void _handleCellTap(String rowId, String columnId) {
+    setState(() {
+      _activeColumnId = columnId;
+    });
     if (widget.onCellsSelected == null ||
         widget.selectionMode == FxGridSelectionMode.none) {
       return;
@@ -2182,6 +2327,10 @@ class _FxGridState extends State<FxGrid> {
     final targetRow = widget.rows[nextRow];
     final targetCol = visibleColumns[nextCol];
 
+    setState(() {
+      _activeColumnId = targetCol.id;
+    });
+
     final isShiftPressed = HardwareKeyboard.instance.isShiftPressed;
 
     if (widget.selectionMode == FxGridSelectionMode.cell) {
@@ -2318,7 +2467,11 @@ class _FxGridState extends State<FxGrid> {
           final textWidth = (colWidth - 16.0).clamp(0.0, double.infinity);
           
           final textPainter = TextPainter(
-            text: TextSpan(text: text, style: cellStyle),
+            text: TextSpan(
+              children: col.supportStyledText
+                  ? _parseStyledText(text, cellStyle)
+                  : [TextSpan(text: text, style: cellStyle)],
+            ),
             textDirection: TextDirection.ltr,
           );
           textPainter.layout(maxWidth: textWidth);
@@ -2429,6 +2582,28 @@ class _FxGridState extends State<FxGrid> {
     final rowOffset = widget.showHeaders ? 1 : 0;
     final isFocused = _focusNode.hasFocus;
     final visibleColumns = widget.columns.where((c) => c.visible).toList();
+    if (widget.allowRowReordering) {
+      visibleColumns.insert(
+        0,
+        const FxGridColumn(
+          id: '__reorder_handle__',
+          caption: '',
+          width: FxColumnWidth.fixed(30),
+          minWidth: 30,
+          visible: true,
+          editable: false,
+        ),
+      );
+    }
+
+    final activeCell = widget.selectedCells.isEmpty ? null : widget.selectedCells.last;
+    final activeRowIndex = activeCell == null
+        ? -1
+        : widget.rows.indexWhere((r) => r.id == activeCell.rowId);
+    final activeColId = _activeColumnId ?? activeCell?.columnId;
+    final activeColIndex = activeColId == null
+        ? -1
+        : visibleColumns.indexWhere((c) => c.id == activeColId);
 
     return Focus(
       focusNode: _focusNode,
@@ -2474,11 +2649,14 @@ class _FxGridState extends State<FxGrid> {
                     ),
                     columnBuilder: (index) {
                       final column = visibleColumns[index];
+                      final isActive = activeColIndex != -1 && index == activeColIndex;
                       return table.TableSpan(
                         extent: _getColumnExtent(column, totalWidth),
                         foregroundDecoration: _borderDecoration(
-                          theme,
-                          widget.showGridLines,
+                          theme: theme,
+                          showGridLines: widget.showGridLines,
+                          isActive: isActive,
+                          isColumn: true,
                         ),
                       );
                     },
@@ -2487,6 +2665,8 @@ class _FxGridState extends State<FxGrid> {
                       final dataRow = isHeader
                           ? null
                           : widget.rows[index - rowOffset];
+                      final isActive = !isHeader && activeRowIndex != -1 && (index - rowOffset) == activeRowIndex;
+                      final isDragTarget = widget.allowRowReordering && _draggedOverRowIndex == (index - rowOffset);
                       return table.TableSpan(
                         extent: table.FixedTableSpanExtent(
                           isHeader
@@ -2501,8 +2681,12 @@ class _FxGridState extends State<FxGrid> {
                               : Theme.of(context).colorScheme.surface,
                         ),
                         foregroundDecoration: _borderDecoration(
-                          theme,
-                          widget.showGridLines,
+                          theme: theme,
+                          showGridLines: widget.showGridLines,
+                          isActive: isActive,
+                          isColumn: false,
+                          isDragTarget: isDragTarget,
+                          isDragAbove: _isDragAbove,
                         ),
                       );
                     },
@@ -2514,16 +2698,16 @@ class _FxGridState extends State<FxGrid> {
                           child: _HeaderCell(
                             caption: column.caption ?? column.id,
                             alignment: _getResolvedAlignment(column, widget.rows),
-                            sortable: column.sortable,
+                            sortable: column.sortable && column.id != '__reorder_handle__',
                             sorted: sorted,
                             ascending: widget.sortAscending,
-                            onSort: () {
+                            onSort: column.id == '__reorder_handle__' ? null : () {
                               widget.onSortChanged?.call(
                                 column.id,
                                 sorted ? !widget.sortAscending : true,
                               );
                             },
-                            onResize: (delta) {
+                            onResize: column.id == '__reorder_handle__' ? null : (delta) {
                               final currentWidth = _getColumnWidth(
                                 column,
                                 totalWidth,
@@ -2537,13 +2721,15 @@ class _FxGridState extends State<FxGrid> {
                               });
                               widget.onColumnResized?.call(column.id, newWidth);
                             },
-                            onDoubleResize: () {
+                            onDoubleResize: column.id == '__reorder_handle__' ? null : () {
                               _autoFitColumn(column, totalWidth);
                             },
                           ),
                         );
                       }
                       final row = widget.rows[vicinity.row - rowOffset];
+                      final isDataRow = widget.showHeaders ? vicinity.row > 0 : vicinity.row >= 0;
+                      final dataRowIndex = vicinity.row - rowOffset;
                       final value = row.cells[column.id];
                       final inRange =
                           widget.selectionMode == FxGridSelectionMode.range &&
@@ -2570,7 +2756,35 @@ class _FxGridState extends State<FxGrid> {
 
                       Widget cellChild;
 
-                      if (isEditing) {
+                      if (column.id == '__reorder_handle__') {
+                        cellChild = Center(
+                          child: Draggable<int>(
+                            data: vicinity.row - rowOffset,
+                            feedback: Material(
+                              elevation: 4,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: theme.selectionBackground.withValues(alpha: 0.9),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  'Moving Row ${vicinity.row - rowOffset + 1}',
+                                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ),
+                            childWhenDragging: const Opacity(
+                              opacity: 0.3,
+                              child: Icon(Icons.drag_handle, color: Colors.grey, size: 18),
+                            ),
+                            child: const MouseRegion(
+                              cursor: SystemMouseCursors.grab,
+                              child: Icon(Icons.drag_handle, color: Colors.grey, size: 18),
+                            ),
+                          ),
+                        );
+                      } else if (isEditing) {
                         if (column.type is FxChoiceCellType) {
                           final options =
                               (column.type as FxChoiceCellType).options;
@@ -2717,10 +2931,48 @@ class _FxGridState extends State<FxGrid> {
                                 enabled: row.enabled,
                                 isSelected: selected,
                                 lineWrap: _getColumnLineWrap(column),
+                                supportStyledText: column.supportStyledText,
                               ),
                             ),
                           );
                         }
+                      }
+
+                      if (widget.allowRowReordering && isDataRow) {
+                        final childToDrag = cellChild;
+                        cellChild = DragTarget<int>(
+                          onWillAcceptWithDetails: (details) {
+                            return details.data != dataRowIndex;
+                          },
+                          onAcceptWithDetails: (details) {
+                            final draggedIndex = details.data;
+                            setState(() {
+                              _draggedOverRowIndex = null;
+                            });
+                            widget.onRowReordered?.call(draggedIndex, dataRowIndex);
+                          },
+                          onMove: (details) {
+                            final RenderBox? renderBox = context.findRenderObject() as RenderBox?;
+                            if (renderBox != null) {
+                              final localPosition = renderBox.globalToLocal(details.offset);
+                              final isAbove = localPosition.dy < (renderBox.size.height / 2);
+                              if (_draggedOverRowIndex != dataRowIndex || _isDragAbove != isAbove) {
+                                setState(() {
+                                  _draggedOverRowIndex = dataRowIndex;
+                                  _isDragAbove = isAbove;
+                                });
+                              }
+                            }
+                          },
+                          onLeave: (data) {
+                            setState(() {
+                              _draggedOverRowIndex = null;
+                            });
+                          },
+                          builder: (context, candidateData, rejectedData) {
+                            return childToDrag;
+                          },
+                        );
                       }
 
                       final validationError =
@@ -2885,18 +3137,51 @@ class _FxGridState extends State<FxGrid> {
   }
 }
 
-table.TableSpanDecoration? _borderDecoration(
-  FxTheme theme,
-  bool showGridLines,
-) {
-  if (!showGridLines) {
-    return null;
+table.TableSpanDecoration? _borderDecoration({
+  required FxTheme theme,
+  required bool showGridLines,
+  required bool isActive,
+  required bool isColumn,
+  bool isDragTarget = false,
+  bool isDragAbove = true,
+}) {
+  final defaultColor = theme.gridLineColor;
+  final darkerColor = HSLColor.fromColor(defaultColor)
+      .withLightness((HSLColor.fromColor(defaultColor).lightness * 0.5).clamp(0.0, 1.0))
+      .toColor();
+
+  BorderSide? leadingBorder;
+  BorderSide? trailingBorder;
+
+  if (showGridLines) {
+    trailingBorder = BorderSide(color: defaultColor);
   }
-  return table.TableSpanDecoration(
-    border: table.TableSpanBorder(
-      trailing: BorderSide(color: theme.gridLineColor),
-    ),
-  );
+
+  if (isActive) {
+    leadingBorder = BorderSide(color: darkerColor, width: 1.5);
+    trailingBorder = BorderSide(color: darkerColor, width: 1.5);
+  }
+
+  if (isDragTarget) {
+    final highlightColor = theme.selectionBackground;
+    final highlightBorder = BorderSide(color: highlightColor, width: 2.5);
+    if (isDragAbove) {
+      leadingBorder = highlightBorder;
+    } else {
+      trailingBorder = highlightBorder;
+    }
+  }
+
+  if (leadingBorder != null || trailingBorder != null) {
+    return table.TableSpanDecoration(
+      border: table.TableSpanBorder(
+        leading: leadingBorder ?? BorderSide.none,
+        trailing: trailingBorder ?? BorderSide.none,
+      ),
+    );
+  }
+
+  return null;
 }
 
 void _validateColumns(List<FxListBoxColumn> columns) {
@@ -2924,6 +3209,7 @@ class _CellText extends StatelessWidget {
     this.enabled = true,
     this.isSelected = false,
     this.lineWrap = false,
+    this.supportStyledText = false,
   });
 
   final String text;
@@ -2931,6 +3217,7 @@ class _CellText extends StatelessWidget {
   final bool enabled;
   final bool isSelected;
   final bool lineWrap;
+  final bool supportStyledText;
 
   @override
   Widget build(BuildContext context) {
@@ -2955,6 +3242,28 @@ class _CellText extends StatelessWidget {
       textColor = Theme.of(context).colorScheme.onSurface;
     }
 
+    final baseStyle = TextStyle(fontWeight: FontWeight.normal, color: textColor);
+
+    final Widget childWidget;
+    if (supportStyledText) {
+      childWidget = Text.rich(
+        TextSpan(
+          children: _parseStyledText(text, baseStyle),
+        ),
+        maxLines: lineWrap ? null : 1,
+        overflow: lineWrap ? null : TextOverflow.ellipsis,
+        textAlign: textAlign,
+      );
+    } else {
+      childWidget = Text(
+        text,
+        maxLines: lineWrap ? null : 1,
+        overflow: lineWrap ? null : TextOverflow.ellipsis,
+        textAlign: textAlign,
+        style: baseStyle,
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
       child: Align(
@@ -2963,16 +3272,92 @@ class _CellText extends StatelessWidget {
           FxCellAlignment.center => Alignment.topCenter,
           FxCellAlignment.trailing => Alignment.topRight,
         },
-        child: Text(
-          text,
-          maxLines: lineWrap ? null : 1,
-          overflow: lineWrap ? null : TextOverflow.ellipsis,
-          textAlign: textAlign,
-          style: TextStyle(fontWeight: FontWeight.normal, color: textColor),
-        ),
+        child: childWidget,
       ),
     );
   }
+}
+
+List<InlineSpan> _parseStyledText(String text, TextStyle baseStyle) {
+  if (!text.contains('<b>') &&
+      !text.contains('<i>') &&
+      !text.contains('<u>') &&
+      !text.contains('</b>') &&
+      !text.contains('</i>') &&
+      !text.contains('</u>') &&
+      !text.contains('**') &&
+      !text.contains('*') &&
+      !text.contains('~')) {
+    return [TextSpan(text: text, style: baseStyle)];
+  }
+
+  final List<InlineSpan> spans = [];
+  int index = 0;
+
+  bool isBold = false;
+  bool isItalic = false;
+  bool isUnderline = false;
+
+  TextStyle currentStyle() {
+    var style = baseStyle;
+    if (isBold) {
+      style = style.copyWith(fontWeight: FontWeight.bold);
+    }
+    if (isItalic) {
+      style = style.copyWith(fontStyle: FontStyle.italic);
+    }
+    if (isUnderline) {
+      style = style.copyWith(decoration: TextDecoration.underline);
+    }
+    return style;
+  }
+
+  while (index < text.length) {
+    if (text.startsWith('<b>', index)) {
+      isBold = true;
+      index += 3;
+    } else if (text.startsWith('</b>', index)) {
+      isBold = false;
+      index += 4;
+    } else if (text.startsWith('<i>', index)) {
+      isItalic = true;
+      index += 3;
+    } else if (text.startsWith('</i>', index)) {
+      isItalic = false;
+      index += 4;
+    } else if (text.startsWith('<u>', index)) {
+      isUnderline = true;
+      index += 3;
+    } else if (text.startsWith('</u>', index)) {
+      isUnderline = false;
+      index += 4;
+    } else if (text.startsWith('**', index)) {
+      isBold = !isBold;
+      index += 2;
+    } else if (text.startsWith('*', index)) {
+      isItalic = !isItalic;
+      index += 1;
+    } else if (text.startsWith('~', index)) {
+      isUnderline = !isUnderline;
+      index += 1;
+    } else {
+      int nextTagIndex = text.length;
+      final candidates = ['<b>', '</b>', '<i>', '</i>', '<u>', '</u>', '**', '*', '~'];
+      for (final candidate in candidates) {
+        final pos = text.indexOf(candidate, index);
+        if (pos != -1 && pos < nextTagIndex) {
+          nextTagIndex = pos;
+        }
+      }
+      final chunk = text.substring(index, nextTagIndex);
+      if (chunk.isNotEmpty) {
+        spans.add(TextSpan(text: chunk, style: currentStyle()));
+      }
+      index = nextTagIndex;
+    }
+  }
+
+  return spans.isEmpty ? [TextSpan(text: text, style: baseStyle)] : spans;
 }
 
 class _HeaderCell extends StatefulWidget {

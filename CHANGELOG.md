@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.4
+
+Version `0.3.4` introduces advanced choice controls, grid interactions, visual guidance enhancements, and inline text formatting.
+
+### Added
+- **Range Slider (`FxSlider.range`)**: Implemented a dual-value range slider allowing users to control minimum and maximum values concurrently.
+- **Drag-and-Drop Row Reordering**: Added support for manual row reordering via virtual grab handles on the left side of `FxListBox` and `FxGrid` rows, including visual insertion indicators and an `onRowReordered` callback.
+- **Active Cell Crosshairs**: Enhanced selection feedback by dynamically drawing 50% darker border lines around the active cell's corresponding row (top/bottom) and column (left/right).
+- **Inline Rich Styled Text**: Support for inline markup (`<b>`, `<i>`, `<u>`, `**`, `*`, `~`) inside cells when `supportStyledText` is enabled on columns.
+- **Interactive Demo Extensions**: Page 8 updated with row reordering and rich styled doctor notes. Added Page 9 to showcase the dual-handle range slider and selection crosshairs.
+
 ## 0.3.3
 
 Version `0.3.3` refines the table layout behavior and integrates column resize and line-wrapping toggling into the Undo stack.

@@ -463,6 +463,7 @@ void main() {
         'sortable': false,
         'type': {'type': 'text'},
         'lineWrap': false,
+        'supportStyledText': false,
       });
 
       expect(row.toJson(), {
@@ -512,6 +513,7 @@ void main() {
         'sortable': false,
         'type': {'type': 'text'},
         'lineWrap': false,
+        'supportStyledText': false,
       });
 
       expect(row.toJson(), {
@@ -1893,6 +1895,81 @@ void main() {
         expect(columnWidth, equals(200.0));
         final textWidgetRedone = tester.widget<Text>(find.textContaining('This is a very very'));
         expect(textWidgetRedone.maxLines, isNull);
+      });
+
+      group('v0.3.4 Features (Styled Text, Crosshairs, Reordering)', () {
+        testWidgets('renders Text.rich when supportStyledText is true', (tester) async {
+          await tester.pumpWidget(
+            MaterialApp(
+              home: Scaffold(
+                body: FxListBox(
+                  columns: const [
+                    FxListBoxColumn(
+                      id: 'notes',
+                      caption: 'Notes',
+                      supportStyledText: true,
+                    ),
+                  ],
+                  rows: const [
+                    FxListBoxRow(
+                      id: 'r1',
+                      cells: {'notes': '<b>Urgent:</b> Sugar *abnormal* ~check~'},
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+
+          final richTextFinder = find.byType(RichText);
+          expect(richTextFinder, findsWidgets);
+        });
+
+        testWidgets('FxGrid calculates selection crosshair borders', (tester) async {
+          await tester.pumpWidget(
+            MaterialApp(
+              home: Scaffold(
+                body: FxGrid(
+                  columns: const [
+                    FxGridColumn(id: 'c1', caption: 'Col 1'),
+                    FxGridColumn(id: 'c2', caption: 'Col 2'),
+                  ],
+                  rows: const [
+                    FxGridRow(id: 'r1', cells: {'c1': 'A1', 'c2': 'B1'}),
+                    FxGridRow(id: 'r2', cells: {'c1': 'A2', 'c2': 'B2'}),
+                  ],
+                  selectedCells: const {(rowId: 'r1', columnId: 'c2')},
+                ),
+              ),
+            ),
+          );
+
+          // Grid renders active borders
+          expect(find.text('B1'), findsOneWidget);
+        });
+
+        testWidgets('FxListBox renders drag handle column when allowRowReordering is true', (tester) async {
+          await tester.pumpWidget(
+            MaterialApp(
+              home: Scaffold(
+                body: FxListBox(
+                  allowRowReordering: true,
+                  onRowReordered: (oldIdx, newIdx) {},
+                  columns: const [
+                    FxListBoxColumn(id: 'c1', caption: 'Col 1'),
+                  ],
+                  rows: const [
+                    FxListBoxRow(id: 'r1', cells: {'c1': 'Row 1'}),
+                    FxListBoxRow(id: 'r2', cells: {'c1': 'Row 2'}),
+                  ],
+                ),
+              ),
+            ),
+          );
+
+          // Verify reorder handle exists
+          expect(find.byIcon(Icons.drag_handle), findsNWidgets(2));
+        });
       });
     },
   );

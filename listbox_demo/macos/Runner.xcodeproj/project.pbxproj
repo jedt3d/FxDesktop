@@ -307,7 +307,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "echo \"$PRODUCT_NAME.app\" > \"$PROJECT_DIR\"/Flutter/ephemeral/.app_filename && \"$FLUTTER_ROOT\"/packages/flutter_tools/bin/macos_assemble.sh embed\n";
+			shellScript = "mkdir -p \"$PROJECT_DIR\"/Flutter/bin && echo '#!/bin/sh' > \"$PROJECT_DIR\"/Flutter/bin/codesign && echo 'for arg in \"$@\"; do' >> \"$PROJECT_DIR\"/Flutter/bin/codesign && echo '  if [ -e \"$arg\" ]; then xattr -cr \"$arg\" 2>/dev/null; fi' >> \"$PROJECT_DIR\"/Flutter/bin/codesign && echo 'done' >> \"$PROJECT_DIR\"/Flutter/bin/codesign && echo 'exec /usr/bin/codesign \"$@\"' >> \"$PROJECT_DIR\"/Flutter/bin/codesign && chmod +x \"$PROJECT_DIR\"/Flutter/bin/codesign && export PATH=\"$PROJECT_DIR\"/Flutter/bin:$PATH && echo \"$PRODUCT_NAME.app\" > \"$PROJECT_DIR\"/Flutter/ephemeral/.app_filename && \"$FLUTTER_ROOT\"/packages/flutter_tools/bin/macos_assemble.sh embed && xattr -cr \"$BUILT_PRODUCTS_DIR/$PRODUCT_NAME.app\"\n";
 		};
 		33CC111E2044C6BF0003C045 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;

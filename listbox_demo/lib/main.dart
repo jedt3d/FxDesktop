@@ -34,7 +34,7 @@ class DemoGalleryPage extends StatefulWidget {
 
 class _DemoGalleryPageState extends State<DemoGalleryPage> {
   int _currentPageIndex = 0;
-  static const int _totalPages = 8;
+  static const int _totalPages = 9;
 
   // Event Log Console
   final List<String> _logs = ['Welcome to the FxListBox Demo Console.'];
@@ -133,7 +133,7 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
       'status': 'true',
       'score': 12500,
       'progress': '75%',
-      'notes': 'Everything looks optimal. Patient is responding well to dietary adjustments.',
+      'notes': '<b>Urgent:</b> Sugar *optimal* ~check again~. Responding well.',
     },
     {
       'id': 'P02',
@@ -142,7 +142,7 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
       'status': 'false',
       'score': 9800,
       'progress': '30%',
-      'notes': 'Blood sugar levels are high. Requires immediate attention and insulin dose regulation.',
+      'notes': '<b>Urgent:</b> Sugar *abnormal*. Regulation needed.',
     },
     {
       'id': 'P03',
@@ -151,7 +151,7 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
       'status': 'true',
       'score': 15620,
       'progress': '100%',
-      'notes': 'Hypoglycemia warning. Recommend glucose intake and monitoring every 15 minutes.',
+      'notes': 'Hypoglycemia warning. Glucose intake required ~immediately~.',
     },
     {
       'id': 'P04',
@@ -160,10 +160,21 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
       'status': 'true',
       'score': 22400,
       'progress': '55%',
-      'notes': 'Stable condition. Active physical exercises maintained regularly.',
+      'notes': 'Stable condition. Active physical exercises **maintained regularly**.',
     },
   ];
   final Map<String, double> _page8ColumnWidths = {};
+
+  // Page 9: Range Slider & Grid Selection Crosshairs
+  RangeValues _sliderRange = const RangeValues(20, 80);
+  Set<({String rowId, String columnId})> _selectedGridCellsPage9 = {
+    (rowId: 'row-1', columnId: 'col-2')
+  };
+  final List<Map<String, Object?>> _gridDataPage9 = [
+    {'id': 'row-1', 'col-1': 'Cell A1', 'col-2': 'Cell B1', 'col-3': 'Cell C1'},
+    {'id': 'row-2', 'col-1': 'Cell A2', 'col-2': 'Cell B2', 'col-3': 'Cell C2'},
+    {'id': 'row-3', 'col-1': 'Cell A3', 'col-2': 'Cell B3', 'col-3': 'Cell C3'},
+  ];
 
   @override
   void initState() {
@@ -232,6 +243,7 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
                             _buildPage6TableStates(),
                             _buildPage7Virtualization(),
                             _buildPage8AdvancedFeatures(),
+                            _buildPage9RangeSliderAndCrosshairs(),
                           ],
                         ),
                       ),
@@ -349,6 +361,7 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
       'Table States & Placeholders',
       'Large-Data Virtualization',
       'Excel-Style Advanced Features',
+      'Range Slider & Crosshair Highlight',
     ];
 
     final descriptions = [
@@ -398,6 +411,11 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
           '• Implicit Checkboxes: case-insensitive "true"/"false" strings automatically render as interactive checkboxes.\n'
           '• Progress Bar Overlay: cells with percentage strings (e.g., "75%") draw a visual bottom-border progress chart.\n'
           '• Conditional Formatting: blood sugar values highlight red when abnormal (< 70 or > 100).',
+
+      'Showcases advanced control features and cell crosshair highlight visualization:\n\n'
+          '• Range Slider: select a minimum and maximum bounds range in a single component.\n'
+          '• Selection Crosshair: selecting a cell highlights the correlated row (top/bottom) and column (left/right) with 50% darker border lines.\n'
+          '• Row Reordering: drag the grab handles on the left side of rows to rearrange them manually. Row indices update instantly.',
     ];
 
     final guidanceSteps = [
@@ -452,6 +470,13 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
         'Notice case-insensitive "true"/"false" render as interactive checkboxes.',
         'Look at the bottom progress bar chart on the "Progress" column cells.',
         'Notice abnormal Blood Sugar cells are conditionally highlighted in red.',
+      ],
+      [
+        'Locate the Range Slider at the top. Drag either thumb to select min/max values.',
+        'Locate the Grid below. Click cells or use keyboard arrows to move cell selection.',
+        'Observe how the selected cell\'s row and column borders are redrawn 50% darker.',
+        'Navigate to Page 8 to try Drag-and-Drop Row Reordering using the left grab handles.',
+        'Notice that the notes on Page 8 support styled text (bold, italic, underline).',
       ],
     ];
 
@@ -1367,6 +1392,7 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
             ? FxColumnWidth.fixed(_page8ColumnWidths['notes']!)
             : const FxColumnWidth.remaining(),
         lineWrap: _page8LineWrap,
+        supportStyledText: true,
       ),
     ];
 
@@ -1398,6 +1424,28 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
             columns: columns,
             rows: rows,
             rowHeight: 28,
+            allowRowReordering: true,
+            onRowReordered: (oldIndex, newIndex) {
+              _undoController.commit(
+                FxUndoAction(
+                  label: 'Reorder Patient Rows',
+                  apply: () {
+                    setState(() {
+                      final item = _advancedData.removeAt(oldIndex);
+                      _advancedData.insert(newIndex, item);
+                    });
+                    _log('Page 8 Reordered rows: $oldIndex -> $newIndex');
+                  },
+                  revert: () {
+                    setState(() {
+                      final item = _advancedData.removeAt(newIndex);
+                      _advancedData.insert(oldIndex, item);
+                    });
+                    _log('Page 8 Revert reordered rows: $newIndex -> $oldIndex');
+                  },
+                ),
+              );
+            },
             onColumnResized: (columnId, newWidth) {
               setState(() {
                 _page8ColumnWidths[columnId] = newWidth;
@@ -1470,6 +1518,111 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
               style: TextStyle(fontSize: 12, color: Color(0xFF64748B), fontStyle: FontStyle.italic),
             ),
           ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPage9RangeSliderAndCrosshairs() {
+    final columns = [
+      const FxGridColumn(
+        id: 'col-1',
+        caption: 'Column A',
+        width: FxColumnWidth.fixed(100),
+      ),
+      const FxGridColumn(
+        id: 'col-2',
+        caption: 'Column B',
+        width: FxColumnWidth.fixed(100),
+      ),
+      const FxGridColumn(
+        id: 'col-3',
+        caption: 'Column C',
+        width: FxColumnWidth.fixed(100),
+      ),
+    ];
+
+    final rows = _gridDataPage9.map((data) {
+      return FxGridRow(
+        id: data['id'] as String,
+        cells: {
+          'col-1': data['col-1'],
+          'col-2': data['col-2'],
+          'col-3': data['col-3'],
+        },
+      );
+    }).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Text(
+          'Range Slider & Grid Selection Crosshairs',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+        // FxSlider.range demo
+        Card(
+          elevation: 0,
+          color: Colors.white,
+          shape: RoundedRectangleBorder(
+            side: const BorderSide(color: Color(0xffd9dde5)),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Range Slider (FxSlider.range)',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                ),
+                const SizedBox(height: 8),
+                FxSlider.range(
+                  rangeValue: _sliderRange,
+                  min: 0,
+                  max: 100,
+                  divisions: 20,
+                  valueLabel: '${_sliderRange.start.round()} - ${_sliderRange.end.round()}',
+                  onRangeChanged: (val) {
+                    setState(() {
+                      _sliderRange = val;
+                    });
+                    _log('Range Slider changed: ${val.start.round()} - ${val.end.round()}');
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        // Grid selection crosshair demo
+        const Text(
+          'Grid Selection Crosshair Highlight (Darkened by 50%)',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+        ),
+        const SizedBox(height: 8),
+        Expanded(
+          child: FxGrid(
+            columns: columns,
+            rows: rows,
+            selectedCells: _selectedGridCellsPage9,
+            onCellsSelected: (cells) {
+              setState(() {
+                _selectedGridCellsPage9 = cells;
+              });
+              if (cells.isNotEmpty) {
+                final cell = cells.last;
+                _log('Selected Grid Cell: Row: ${cell.rowId}, Col: ${cell.columnId}');
+              }
+            },
+          ),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Try: Click or use arrow keys to navigate the grid cells. The selected cell\'s row and column borders are redrawn 50% darker.',
+          style: TextStyle(fontSize: 12, color: Color(0xFF64748B), fontStyle: FontStyle.italic),
         ),
       ],
     );

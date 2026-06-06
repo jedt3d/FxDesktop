@@ -424,3 +424,21 @@ Milestone 3 is complete when:
 ### Undo/Redo Layout Integration
 - **Atomic Actions**: Auto-fitting changes both width and wrapping state in a single committed `FxUndoAction`.
 - **Manual Switches**: Switch toggles on Page 8 are integrated with `FxUndoController.commitValue` for undoable manual wrapping toggles.
+
+## Refinements in v0.3.4
+
+### Range Slider (`FxSlider.range`)
+- **Dual-Value Selection**: A range slider constructor that allows users to adjust both start (minimum) and end (maximum) values on a single track.
+- **Parity with Desktop Slider Ranges**: Implements double thumb indicators with bounds checking and optional divisions.
+
+### Drag-and-Drop Row Reordering
+- **Virtual Grab Handles**: Renders a dedicated drag-handle column at index 0 when `allowRowReordering` is true.
+- **Insertion Indicator**: Draws dynamic top/bottom row borders when dragging over target rows to indicate where the row will be dropped.
+- **Reorder Callbacks**: Triggers the `onRowReordered` callback allowing developers to update their data models.
+
+### Selection Crosshairs
+- **Darker Target Borders**: Highlights the row and column boundaries corresponding to the active/selected cell by painting their borders 50% darker than the default grid line color, improving readability in dense layouts.
+
+### Inline Rich Styled Text Cells
+- **Styled Cell Formatting**: Renders formatted text blocks inline within cells when `supportStyledText` is true.
+- **Supported Tags**: Markdown (`**` for bold, `*` for italic, `~` for underline) and HTML (`<b>`, `<i>`, `<u>`) styles are parsed efficiently in `O(N)` time and rendered using rich text span hierarchies.
