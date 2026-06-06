@@ -1797,7 +1797,7 @@ void main() {
       ) async {
         final undoController = FxUndoController();
         double columnWidth = 100.0;
-        bool? pageLineWrap = false;
+        bool pageLineWrap = false;
 
         await tester.pumpWidget(
           MaterialApp(
@@ -1821,7 +1821,7 @@ void main() {
                               id: 'notes',
                               caption: 'Notes',
                               width: FxColumnWidth.fixed(columnWidth),
-                              lineWrap: pageLineWrap ?? false,
+                              lineWrap: pageLineWrap,
                             ),
                           ],
                           rows: const [
