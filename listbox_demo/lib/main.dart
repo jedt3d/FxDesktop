@@ -167,6 +167,7 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
 
   // Page 9: Range Slider & Grid Selection Crosshairs
   RangeValues _sliderRange = const RangeValues(20, 80);
+  RangeValues? _sliderDragStartRange;
   Set<({String rowId, String columnId})> _selectedGridCellsPage9 = {
     (rowId: 'row-1', columnId: 'col-2')
   };
@@ -1590,6 +1591,23 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
                       _sliderRange = val;
                     });
                     _log('Range Slider changed: ${val.start.round()} - ${val.end.round()}');
+                  },
+                  onChangeStartRange: (val) {
+                    _sliderDragStartRange = val;
+                  },
+                  onChangeEndRange: (val) {
+                    final startVal = _sliderDragStartRange ?? const RangeValues(20, 80);
+                    _undoController.commitValue<RangeValues>(
+                      'Range Slider',
+                      oldValue: startVal,
+                      newValue: val,
+                      apply: (newRange) {
+                        setState(() {
+                          _sliderRange = newRange;
+                        });
+                        _log('Undo/Redo Range Slider: ${newRange.start.round()} - ${newRange.end.round()}');
+                      },
+                    );
                   },
                 ),
               ],
