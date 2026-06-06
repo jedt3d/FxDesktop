@@ -1,12 +1,29 @@
 # Changelog
 
-## Unreleased
+## 0.3.0
+
+Version `0.3.0` completes Milestone 3, delivering high-performance, deep implementations of the row-oriented `FxListBox` (matching Xojo `DesktopListBox`) and cell-oriented `FxGrid` (matching Xojo `DesktopGrid`) controls. 
+
+This release provides comprehensive desktop-grade functionality for dense business data views and layout editors, while establishing visual validation, stress-testing harnesses, undo integration, and full accessibility semantics.
 
 ### Added
 
-- Added the Milestone 3 planning spec for `FxListBox` and `FxGrid` depth,
-  including phase boundaries, acceptance criteria, screenshot targets, testing
-  strategy, sub-agent roles, and open design questions.
+- **High-Performance Virtualization**: Virtualized two-dimensional scrolling, supporting datasets at scale (tested up to 10,000+ rows and 100+ columns) with high frame-rate stability and minimal memory overhead.
+- **Selection Models**:
+  - `FxListBoxSelectionMode` support for `none`, `single`, and `multiple` selections.
+  - `FxGridSelectionMode` support for `none`, `cell`, `row`, and rectangular `range` selection.
+- **Keyboard Navigation & Traversal**: Desktop-style Arrow keys traversal, Shift+Arrow range selection expansion, Home/End, PageUp/PageDown, and tab focus management.
+- **Column Sorting & Width Policies**: Interactive column headers with visual sort indicators, custom sort descriptors, and flexible column width policies (fixed, min/max bounds, or proportional weights).
+- **In-Cell Editing & Validation**: Typed editor widgets (text, numeric, checkbox selection, popup choices) with validation error visual badges, commit/cancel lifecycle hooks, and read-only cell/row overrides.
+- **Clipboard Operations**: TSV-format copy/paste integration. Users can copy cell/range/row selections to the clipboard and paste TSV tables directly into editable grids with cell-by-cell validation.
+- **Undo/Redo History**: Direct integration with `FxUndoController` to group grid cell edits, bulk pastes, or sort updates into single undo/redo semantic actions.
+- **Accessibility & Semantics**: Complete `Semantics` coverage announcing column captions, sorting statuses, cell coordinates, current selection state, cell values, and validation errors for screen readers.
+- **Developer Guide & Spec**: Added [milestone-3-listbox-grid.md](doc/milestone-3-listbox-grid.md) and comparison guides under [developer-guide.md](doc/developer-guide.md).
+
+### Changed
+
+- Updated the vertical demo harness in `example/lib/main.dart` with functional samples for custom grid range selection, interactive column resizing, cell editing, bulk clipboard copy/pasting, and sorting.
+- Configured visual regression golden testing using `test/visual_golden_test.dart` to assert correct layout and focus-ring states on buttons, checkboxes, disclosures, and progress controls.
 
 ## 0.2.6
 

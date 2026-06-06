@@ -21,7 +21,7 @@ multi-size desktop workflows.
 
 ```yaml
 dependencies:
-  fx_desktop: ^0.2.6
+  fx_desktop: ^0.3.0
 ```
 
 ## Quick Start
@@ -103,18 +103,8 @@ class OrderPanel extends StatelessWidget {
 `FxGridLayout` is a CSS Grid-like layout manager. `FxGrid` is a data/cell grid
 control comparable to Xojo `DesktopGrid`.
 
-Milestone 2 extends Xojo Desktop control parity in phase releases. `v0.2.6`
-polishes mixed decorated input rows with optional supporting-text reservation
-for text fields, text areas, date/time pickers, popup menus, and combo boxes.
-Earlier `v0.2.5` text input work added constraints, required indicators,
-character counts, forbidden input, phone-style pattern masks, and commit-time
-fixed decimal display formatting.
-See [Milestone 2: Xojo Desktop Control Parity](https://github.com/jedt3d/FxDesktop/blob/main/doc/milestone-2-control-parity.md).
-
-Milestone 3 focuses on deeper `FxListBox` and `FxGrid` behavior: selection,
-keyboard navigation, sorting, column sizing, editing, validation, clipboard,
-large-data checks, and generator metadata. See
-[Milestone 3: ListBox And Grid Depth](https://github.com/jedt3d/FxDesktop/blob/main/doc/milestone-3-listbox-grid.md).
+Milestone 3 introduces deep `FxListBox` and `FxGrid` controls in release `v0.3.0`. This includes selection models, keyboard navigation/traversal, sorting, column sizing/visibility policies, editable cell types (text, number, boolean, options) with validation, clipboard operations (TSV copy/paste), undo/redo integration, performance virtualization (up to 10k+ rows and 100+ columns), and rich accessibility support via `Semantics`.
+See [Milestone 3: ListBox And Grid Depth](https://github.com/jedt3d/FxDesktop/blob/main/doc/milestone-3-listbox-grid.md).
 
 ## Text Input Constraints
 
