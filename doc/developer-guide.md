@@ -83,6 +83,17 @@ FxDesktop provides two distinct table controls, matching Xojo's layout patterns:
 - **Approximate features**: alternating row colors, column sizing metrics (fixed, flexible, min/max).
 - **Deferred / Out-of-scope**: cell merging, formulas, pivot tables, and drawing custom canvas elements inside cells (although in Flutter this is easily done by providing custom cell builders).
 
+### Layout Refinements (Auto-Fit & Wrapping)
+- **Auto-Fit Capping**: Double-clicking header resize borders auto-fits content up to 50% of the table width. Exceeding 50% caps the width and sets the column's wrapping override to `true` (wrapped by default).
+- **State Overrides**: Wrapping overrides are stored in local state (`_columnLineWrapOverrides`). If the parent updates the column descriptors (e.g. toggles wrapping), local overrides are automatically cleared in `didUpdateWidget` to match the parent.
+- **Undo Integration**: Auto-fit changes (width and wrapping state) are recorded as a single committed `FxUndoAction`. Manual switch toggles can be committed via `_undoController.commitValue`.
+
+### Interaction and Visual Parity (v0.3.4)
+- **Range Slider (`FxSlider.range`)**: Dual-handle slider constructor for choosing minimum and maximum range limits in one control.
+- **Drag-and-Drop Row Reordering**: Reorder rows manually in `FxListBox` and `FxGrid` using virtual grab handles. Emits `onRowReordered` callback and draws custom visual drop indicators.
+- **Selection Crosshairs (Darker Active Borders)**: Emphasizes the active cell's location by rendering 50% darker border lines for the active row's top/bottom borders and active column's left/right borders.
+- **Inline Rich Styled Text**: Render styled text in cell values using Markdown-like (`**` bold, `*` italic, `~` underline) or HTML-like (`<b>`, `<i>`, `<u>`) tags when `supportStyledText` is enabled on columns.
+
 ## Release Workflow
 
 Normal CI validates every pull request. Publishing to pub.dev is tag-based only.

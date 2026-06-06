@@ -35,15 +35,15 @@ undo.commitValue<String>(
 | `FxTextField` | committed single-line text | blur or submit |
 | `FxTextArea` | committed multiline text | blur or editing completion |
 | `FxDateTimePicker` | selected date/time/datetime or clear | picker confirm or clear |
-| `FxSlider` | numeric value | `onChangeEnd` |
+| `FxSlider` | numeric value or range value | `onChangeEnd` or `onChangeEndRange` |
 | `FxColorPicker` | selected color | picker confirm |
 | `FxSegmentedButton` | selected segment | `onChanged` |
 | `FxDisclosureTriangle` | expanded or collapsed | toggle |
 | `FxTabPanel` | selected tab index | tab selection |
 | `FxPagePanel` | selected page index | index change |
 | `FxCardContainer` | selected card index | index change |
-| `FxListBox` | selected row, future row edits | selection or edit commit |
-| `FxGrid` | selected cell/row, future cell edits | selection or edit commit |
+| `FxListBox` | selected row, cell edits, column auto-fit resizing & lineWrap overrides, and row reordering | selection, edit commit, double-click auto-fit, or row reorder |
+| `FxGrid` | selected cell/row, cell edits, column auto-fit resizing & lineWrap overrides, and row reordering | selection, edit commit, double-click auto-fit, or row reorder |
 | `FxFlexLayout` | future layout spec changes | layout property commit |
 | `FxGridLayout` | future grid spec changes | layout property commit |
 

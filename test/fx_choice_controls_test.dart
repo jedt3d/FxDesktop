@@ -186,5 +186,50 @@ void main() {
       final slider = tester.widget<Slider>(find.byType(Slider));
       expect(slider.onChanged, isNull);
     });
+
+    testWidgets('supports FxSlider.range and calls callbacks', (tester) async {
+      RangeValues? changed;
+      RangeValues? changeStart;
+      RangeValues? changeEnd;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SizedBox(
+              width: 320,
+              child: FxSlider.range(
+                rangeValue: const RangeValues(20, 80),
+                min: 0,
+                max: 100,
+                divisions: 10,
+                valueLabel: '20-80',
+                onRangeChanged: (val) => changed = val,
+                onChangeStartRange: (val) => changeStart = val,
+                onChangeEndRange: (val) => changeEnd = val,
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final rangeSlider = tester.widget<RangeSlider>(find.byType(RangeSlider));
+      expect(rangeSlider.values.start, 20);
+      expect(rangeSlider.values.end, 80);
+      expect(rangeSlider.min, 0);
+      expect(rangeSlider.max, 100);
+      expect(rangeSlider.divisions, 10);
+      expect(find.text('20-80'), findsOneWidget);
+
+      rangeSlider.onChanged?.call(const RangeValues(30, 70));
+      rangeSlider.onChangeStart?.call(const RangeValues(20, 80));
+      rangeSlider.onChangeEnd?.call(const RangeValues(30, 70));
+
+      expect(changed?.start, 30);
+      expect(changed?.end, 70);
+      expect(changeStart?.start, 20);
+      expect(changeStart?.end, 80);
+      expect(changeEnd?.start, 30);
+      expect(changeEnd?.end, 70);
+    });
   });
 }

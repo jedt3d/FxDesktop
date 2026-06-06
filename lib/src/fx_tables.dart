@@ -263,6 +263,8 @@ class FxListBoxColumn {
     this.visible = true,
     this.sortable = false,
     this.type = const FxCellType.text(),
+    this.lineWrap = false,
+    this.supportStyledText = false,
   });
 
   /// Stable column id.
@@ -292,6 +294,12 @@ class FxListBoxColumn {
   /// Sizing and interaction type of the cells in this column.
   final FxCellType type;
 
+  /// Whether long text line wraps in cells of this column.
+  final bool lineWrap;
+
+  /// Whether the cell text supports rich styled tags (**bold**, *italic*, ~underline~).
+  final bool supportStyledText;
+
   /// Converts this column to JSON.
   Map<String, Object?> toJson() {
     return {
@@ -304,6 +312,8 @@ class FxListBoxColumn {
       'visible': visible,
       'sortable': sortable,
       'type': type.toJson(),
+      'lineWrap': lineWrap,
+      'supportStyledText': supportStyledText,
     };
   }
 }
@@ -367,6 +377,9 @@ class FxListBox extends StatefulWidget {
     this.onColumnResized,
     this.validationErrors,
     this.onCellEdited,
+    this.cellBackgroundColorBuilder,
+    this.allowRowReordering = false,
+    this.onRowReordered,
   });
 
   /// Column descriptors.
@@ -433,11 +446,22 @@ class FxListBox extends StatefulWidget {
   final void Function(String rowId, String columnId, Object? newValue)?
   onCellEdited;
 
+  /// Callback to build conditional background color for a cell.
+  final Color? Function(String rowId, String columnId, Object? value)?
+      cellBackgroundColorBuilder;
+
+  /// Whether manual drag-and-drop row reordering is allowed.
+  final bool allowRowReordering;
+
+  /// Callback triggered when a row is reordered.
+  final void Function(int oldIndex, int newIndex)? onRowReordered;
+
   /// Stable map for AI/generator use.
   Map<String, Object?> toTemplateMap() {
     return {
       'component': 'FxListBox',
       'xojo_desktop_class': 'DesktopListBox',
+      'allowRowReordering': allowRowReordering,
       'xojo_web_class': 'WebListBox',
       'selectionMode': selectionMode.name,
       'state': state.name,
@@ -456,9 +480,19 @@ class _FxListBoxState extends State<FxListBox> {
   late FocusNode _focusNode;
   int? _hoveredRowIndex;
   final Map<String, double> _columnWidths = {};
+  final Map<String, bool> _columnLineWrapOverrides = {};
   String? _editingRowId;
   String? _editingColumnId;
   TextEditingController? _editingController;
+  late final ScrollController _verticalController;
+  late final ScrollController _horizontalController;
+  String? _activeColumnId;
+  int? _draggedOverRowIndex;
+  bool _isDragAbove = true;
+
+  bool _getColumnLineWrap(FxListBoxColumn column) {
+    return _columnLineWrapOverrides[column.id] ?? column.lineWrap;
+  }
 
   void _commitCellEdit(String rowId, String columnId, Object? newValue) {
     final row = widget.rows.firstWhere((r) => r.id == rowId);
@@ -654,6 +688,8 @@ class _FxListBoxState extends State<FxListBox> {
     super.initState();
     _focusNode = widget.focusNode ?? FocusNode();
     _focusNode.addListener(_onFocusChanged);
+    _verticalController = ScrollController();
+    _horizontalController = ScrollController();
   }
 
   @override
@@ -664,6 +700,12 @@ class _FxListBoxState extends State<FxListBox> {
       _focusNode = widget.focusNode ?? FocusNode();
       _focusNode.addListener(_onFocusChanged);
     }
+    for (final col in widget.columns) {
+      final oldCol = oldWidget.columns.firstWhere((c) => c.id == col.id, orElse: () => col);
+      if (oldCol.lineWrap != col.lineWrap) {
+        _columnLineWrapOverrides.remove(col.id);
+      }
+    }
   }
 
   @override
@@ -673,6 +715,8 @@ class _FxListBoxState extends State<FxListBox> {
       _focusNode.dispose();
     }
     _editingController?.dispose();
+    _verticalController.dispose();
+    _horizontalController.dispose();
     super.dispose();
   }
 
@@ -906,6 +950,126 @@ class _FxListBoxState extends State<FxListBox> {
     }
   }
 
+  double _getRowHeight(FxListBoxRow row, List<FxListBoxColumn> visibleColumns, double totalWidth) {
+    if (row.height != null) {
+      return row.height!;
+    }
+    double maxCellHeight = widget.rowHeight;
+    final defaultStyle = DefaultTextStyle.of(context).style;
+    final cellStyle = defaultStyle.merge(const TextStyle(fontWeight: FontWeight.normal));
+
+    for (final col in visibleColumns) {
+      if (_getColumnLineWrap(col)) {
+        final rawValue = row.cells[col.id];
+        if (rawValue != null && rawValue is! bool && !_isImplicitCheckbox(col, rawValue)) {
+          final text = rawValue.toString();
+          final colWidth = _getColumnWidth(col, totalWidth);
+          final textWidth = (colWidth - 16.0).clamp(0.0, double.infinity);
+          
+          final textPainter = TextPainter(
+            text: TextSpan(
+              children: col.supportStyledText
+                  ? _parseStyledText(text, cellStyle)
+                  : [TextSpan(text: text, style: cellStyle)],
+            ),
+            textDirection: TextDirection.ltr,
+          );
+          textPainter.layout(maxWidth: textWidth);
+          final cellHeight = textPainter.height + 10.0;
+          if (cellHeight > maxCellHeight) {
+            maxCellHeight = cellHeight;
+          }
+        }
+      }
+    }
+    return maxCellHeight;
+  }
+
+  void _autoFitColumn(FxListBoxColumn column, double totalWidth) {
+    double maxNeededWidth = 0.0;
+    final defaultStyle = DefaultTextStyle.of(context).style;
+
+    final headerStyle = defaultStyle.merge(const TextStyle(fontWeight: FontWeight.w600));
+    final headerPainter = TextPainter(
+      text: TextSpan(text: column.caption, style: headerStyle),
+      textDirection: TextDirection.ltr,
+      maxLines: 1,
+    )..layout();
+    double headerWidth = headerPainter.width + 16.0;
+    if (column.sortable) {
+      headerWidth += 20.0;
+    }
+    maxNeededWidth = headerWidth;
+
+    final cellStyle = defaultStyle.merge(const TextStyle(fontWeight: FontWeight.normal));
+    for (final row in widget.rows) {
+      final rawValue = row.cells[column.id];
+      if (column.type is FxBooleanCellType || _isImplicitCheckbox(column, rawValue)) {
+        const double checkboxWidth = 40.0;
+        if (checkboxWidth > maxNeededWidth) {
+          maxNeededWidth = checkboxWidth;
+        }
+      } else {
+        final text = rawValue?.toString() ?? '';
+        final cellPainter = TextPainter(
+          text: TextSpan(text: text, style: cellStyle),
+          textDirection: TextDirection.ltr,
+          maxLines: 1,
+        )..layout();
+        final cellWidth = cellPainter.width + 16.0;
+        if (cellWidth > maxNeededWidth) {
+          maxNeededWidth = cellWidth;
+        }
+      }
+    }
+
+    final newWidth = (maxNeededWidth + 4.0).clamp(column.minWidth, 1000.0);
+    final capWidth = totalWidth * 0.5;
+
+    final double targetWidth;
+    final bool targetWrap;
+    if (newWidth > capWidth) {
+      targetWidth = capWidth.clamp(column.minWidth, 1000.0);
+      targetWrap = true;
+    } else {
+      targetWidth = newWidth;
+      targetWrap = false;
+    }
+
+    final oldWidth = _getColumnWidth(column, totalWidth);
+    final oldWrap = _getColumnLineWrap(column);
+
+    final undoController = FxUndoScope.maybeOf(context);
+    if (undoController != null) {
+      final label = column.caption.isNotEmpty ? column.caption : column.id;
+      undoController.commit(
+        FxUndoAction(
+          label: 'Auto-fit $label',
+          apply: () {
+            setState(() {
+              _columnWidths[column.id] = targetWidth;
+              _columnLineWrapOverrides[column.id] = targetWrap;
+            });
+            widget.onColumnResized?.call(column.id, targetWidth);
+          },
+          revert: () {
+            setState(() {
+              _columnWidths[column.id] = oldWidth;
+              _columnLineWrapOverrides[column.id] = oldWrap;
+            });
+            widget.onColumnResized?.call(column.id, oldWidth);
+          },
+        ),
+      );
+    } else {
+      setState(() {
+        _columnWidths[column.id] = targetWidth;
+        _columnLineWrapOverrides[column.id] = targetWrap;
+      });
+      widget.onColumnResized?.call(column.id, targetWidth);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = FxTheme.of(context);
@@ -917,6 +1081,24 @@ class _FxListBoxState extends State<FxListBox> {
 
     final isFocused = _focusNode.hasFocus;
     final visibleColumns = widget.columns.where((c) => c.visible).toList();
+    if (widget.allowRowReordering) {
+      visibleColumns.insert(
+        0,
+        const FxListBoxColumn(
+          id: '__reorder_handle__',
+          caption: '',
+          width: FxColumnWidth.fixed(30),
+          minWidth: 30,
+          visible: true,
+          editable: false,
+        ),
+      );
+    }
+
+    final activeRowId = widget.selectedRowIds.isEmpty ? null : widget.selectedRowIds.last;
+    final activeRowIndex = activeRowId == null ? -1 : widget.rows.indexWhere((r) => r.id == activeRowId);
+    final activeColId = _activeColumnId ?? (activeRowId != null && visibleColumns.isNotEmpty ? (widget.allowRowReordering && visibleColumns.length > 1 ? visibleColumns[1].id : visibleColumns.first.id) : null);
+    final activeColIndex = activeColId == null ? -1 : visibleColumns.indexWhere((c) => c.id == activeColId);
 
     return Focus(
       focusNode: _focusNode,
@@ -936,265 +1118,431 @@ class _FxListBoxState extends State<FxListBox> {
             ),
             child: SizedBox(
               height: widget.height,
-              child: table.TableView.builder(
-                pinnedRowCount: 1,
-                columnCount: visibleColumns.length,
-                rowCount: widget.rows.length + 1,
-                columnBuilder: (index) {
-                  final column = visibleColumns[index];
-                  return table.TableSpan(
-                    extent: _getColumnExtent(column, totalWidth),
-                    foregroundDecoration: _borderDecoration(
-                      theme,
-                      widget.showGridLines,
+              child: Scrollbar(
+                controller: _verticalController,
+                interactive: true,
+                thumbVisibility: true,
+                notificationPredicate: (notification) =>
+                    notification.depth == 0 &&
+                    notification.metrics.axis == Axis.vertical,
+                child: Scrollbar(
+                  controller: _horizontalController,
+                  interactive: true,
+                  thumbVisibility: true,
+                  notificationPredicate: (notification) =>
+                      notification.depth == 0 &&
+                      notification.metrics.axis == Axis.horizontal,
+                  child: table.TableView.builder(
+                    pinnedRowCount: 1,
+                    columnCount: visibleColumns.length,
+                    rowCount: widget.rows.length + 1,
+                    verticalDetails: ScrollableDetails.vertical(
+                      controller: _verticalController,
                     ),
-                  );
-                },
-                rowBuilder: (index) {
-                  final isHeader = index == 0;
-                  final row = isHeader ? null : widget.rows[index - 1];
-                  final isSelected =
-                      row != null && widget.selectedRowIds.contains(row.id);
-                  final isHovered = index == _hoveredRowIndex;
-                  return table.TableSpan(
-                    extent: table.FixedTableSpanExtent(
-                      isHeader
-                          ? widget.headerHeight
-                          : (row?.height ?? widget.rowHeight),
+                    horizontalDetails: ScrollableDetails.horizontal(
+                      controller: _horizontalController,
                     ),
-                    backgroundDecoration: table.TableSpanDecoration(
-                      color: isHeader
-                          ? theme.headerBackground
-                          : isSelected
-                          ? theme.selectionBackground
-                          : isHovered
-                          ? Theme.of(context).hoverColor
-                          : index.isEven
-                          ? theme.alternatingRowBackground
-                          : Theme.of(context).colorScheme.surface,
-                    ),
-                    foregroundDecoration: _borderDecoration(
-                      theme,
-                      widget.showGridLines,
-                    ),
-                  );
-                },
-                cellBuilder: (context, vicinity) {
-                  final column = visibleColumns[vicinity.column];
-                  if (vicinity.row == 0) {
-                    final sorted = column.id == widget.sortedColumnId;
-                    return table.TableViewCell(
-                      child: _HeaderCell(
-                        caption: column.caption,
-                        alignment: column.alignment,
-                        sortable: column.sortable,
-                        sorted: sorted,
-                        ascending: widget.sortAscending,
-                        onSort: () {
-                          widget.onSortChanged?.call(
-                            column.id,
-                            sorted ? !widget.sortAscending : true,
-                          );
-                        },
-                        onResize: (delta) {
-                          final currentWidth = _getColumnWidth(
-                            column,
-                            totalWidth,
-                          );
-                          final newWidth = (currentWidth + delta).clamp(
-                            column.minWidth,
-                            1000.0,
-                          );
-                          setState(() {
-                            _columnWidths[column.id] = newWidth;
-                          });
-                          widget.onColumnResized?.call(column.id, newWidth);
-                        },
-                      ),
-                    );
-                  }
-                  final row = widget.rows[vicinity.row - 1];
-                  final value = row.cells[column.id];
-                  final isSelected = widget.selectedRowIds.contains(row.id);
-                  final isEditing =
-                      _editingRowId == row.id && _editingColumnId == column.id;
-
-                  Widget cellChild;
-
-                  if (isEditing) {
-                    if (column.type is FxChoiceCellType) {
-                      final options = (column.type as FxChoiceCellType).options;
-                      cellChild = Container(
-                        color: Theme.of(context).colorScheme.surface,
-                        alignment: Alignment.centerLeft,
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            value: options.contains(value?.toString())
-                                ? value.toString()
-                                : null,
-                            isDense: true,
-                            autofocus: true,
-                            items: [
-                              for (final opt in options)
-                                DropdownMenuItem(
-                                  value: opt,
-                                  child: Text(
-                                    opt,
-                                    style: const TextStyle(fontSize: 13),
-                                  ),
-                                ),
-                            ],
-                            onChanged: (newValue) {
-                              _commitEdit(row.id, column.id, newValue ?? '');
-                            },
-                          ),
+                    columnBuilder: (index) {
+                      final column = visibleColumns[index];
+                      final isActive = activeColIndex != -1 && index == activeColIndex;
+                      return table.TableSpan(
+                        extent: _getColumnExtent(column, totalWidth),
+                        foregroundDecoration: _borderDecoration(
+                          theme: theme,
+                          showGridLines: widget.showGridLines,
+                          isActive: isActive,
+                          isColumn: true,
                         ),
                       );
-                    } else {
-                      cellChild = Container(
-                        color: Theme.of(context).colorScheme.surface,
-                        alignment: Alignment.centerLeft,
-                        child: Focus(
-                          onFocusChange: (hasFocus) {
-                            if (!hasFocus &&
-                                _editingRowId == row.id &&
-                                _editingColumnId == column.id) {
-                              _commitEdit(
-                                row.id,
+                    },
+                    rowBuilder: (index) {
+                      final isHeader = index == 0;
+                      final row = isHeader ? null : widget.rows[index - 1];
+                      final isSelected =
+                          row != null && widget.selectedRowIds.contains(row.id);
+                      final isHovered = index == _hoveredRowIndex;
+                      final isActive = !isHeader && activeRowIndex != -1 && (index - 1) == activeRowIndex;
+                      final isDragTarget = widget.allowRowReordering && _draggedOverRowIndex == (index - 1);
+                      return table.TableSpan(
+                        extent: table.FixedTableSpanExtent(
+                          isHeader
+                              ? widget.headerHeight
+                              : _getRowHeight(row!, visibleColumns, totalWidth),
+                        ),
+                        backgroundDecoration: table.TableSpanDecoration(
+                          color: isHeader
+                              ? theme.headerBackground
+                              : isSelected
+                              ? theme.selectionBackground
+                              : isHovered
+                              ? Theme.of(context).hoverColor
+                              : index.isEven
+                              ? theme.alternatingRowBackground
+                              : Theme.of(context).colorScheme.surface,
+                        ),
+                        foregroundDecoration: _borderDecoration(
+                          theme: theme,
+                          showGridLines: widget.showGridLines,
+                          isActive: isActive,
+                          isColumn: false,
+                          isDragTarget: isDragTarget,
+                          isDragAbove: _isDragAbove,
+                        ),
+                      );
+                    },
+                    cellBuilder: (context, vicinity) {
+                      final column = visibleColumns[vicinity.column];
+                      if (vicinity.row == 0) {
+                        final sorted = column.id == widget.sortedColumnId;
+                        return table.TableViewCell(
+                          child: _HeaderCell(
+                            caption: column.caption,
+                            alignment: _getResolvedAlignment(column, widget.rows),
+                            sortable: column.sortable && column.id != '__reorder_handle__',
+                            sorted: sorted,
+                            ascending: widget.sortAscending,
+                            onSort: column.id == '__reorder_handle__' ? null : () {
+                              widget.onSortChanged?.call(
                                 column.id,
-                                _editingController!.text,
+                                sorted ? !widget.sortAscending : true,
                               );
-                            }
-                          },
-                          onKeyEvent: (node, event) {
-                            if (event is KeyDownEvent) {
-                              if (event.logicalKey ==
-                                  LogicalKeyboardKey.escape) {
-                                _cancelEdit();
-                                return KeyEventResult.handled;
-                              }
-                              if (event.logicalKey == LogicalKeyboardKey.tab) {
-                                _commitAndMoveToNext(
-                                  row.id,
-                                  column.id,
-                                  _editingController!.text,
-                                );
-                                return KeyEventResult.handled;
-                              }
-                            }
-                            return KeyEventResult.ignored;
-                          },
-                          child: TextField(
-                            controller: _editingController,
-                            autofocus: true,
-                            style: const TextStyle(fontSize: 13),
-                            decoration: const InputDecoration(
-                              contentPadding: EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 6,
-                              ),
-                              border: InputBorder.none,
-                              isDense: true,
-                            ),
-                            onSubmitted: (newValue) {
-                              _commitEdit(row.id, column.id, newValue);
+                            },
+                            onResize: column.id == '__reorder_handle__' ? null : (delta) {
+                              final currentWidth = _getColumnWidth(
+                                column,
+                                totalWidth,
+                              );
+                              final newWidth = (currentWidth + delta).clamp(
+                                column.minWidth,
+                                1000.0,
+                              );
+                              setState(() {
+                                _columnWidths[column.id] = newWidth;
+                              });
+                              widget.onColumnResized?.call(column.id, newWidth);
+                            },
+                            onDoubleResize: column.id == '__reorder_handle__' ? null : () {
+                              _autoFitColumn(column, totalWidth);
                             },
                           ),
-                        ),
-                      );
-                    }
-                  } else {
-                    if (column.type is FxBooleanCellType) {
-                      final bool val = value == true;
-                      cellChild = Center(
-                        child: Checkbox(
-                          value: val,
-                          onChanged: (row.enabled && column.editable)
-                              ? (newValue) {
-                                  _commitCellEdit(row.id, column.id, newValue);
-                                }
-                              : null,
-                        ),
-                      );
-                    } else {
-                      cellChild = GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: row.enabled ? () => _handleRowTap(row.id) : null,
-                        onDoubleTap: (row.enabled && column.editable)
-                            ? () => _startEditing(row.id, column.id, value)
-                            : null,
-                        child: _CellText(
-                          text: value?.toString() ?? '',
-                          alignment: column.alignment,
-                          enabled: row.enabled,
-                          isSelected: isSelected,
-                        ),
-                      );
-                    }
-                  }
+                        );
+                      }
+                      final row = widget.rows[vicinity.row - 1];
+                      final value = row.cells[column.id];
+                      final isSelected = widget.selectedRowIds.contains(row.id);
+                      final isEditing =
+                          _editingRowId == row.id &&
+                          _editingColumnId == column.id;
 
-                  final validationError =
-                      widget.validationErrors?[row.id]?[column.id];
-                  if (validationError != null) {
-                    cellChild = Tooltip(
-                      message: validationError,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: Theme.of(context).colorScheme.error,
-                            width: 1.5,
+                      Widget cellChild;
+
+                      if (column.id == '__reorder_handle__') {
+                        cellChild = Center(
+                          child: Draggable<int>(
+                            data: vicinity.row - 1,
+                            feedback: Material(
+                              elevation: 4,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: theme.selectionBackground.withValues(alpha: 0.9),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  'Moving Row ${vicinity.row}',
+                                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ),
+                            childWhenDragging: const Opacity(
+                              opacity: 0.3,
+                              child: Icon(Icons.drag_handle, color: Colors.grey, size: 18),
+                            ),
+                            child: const MouseRegion(
+                              cursor: SystemMouseCursors.grab,
+                              child: Icon(Icons.drag_handle, color: Colors.grey, size: 18),
+                            ),
                           ),
-                        ),
-                        child: Stack(
-                          clipBehavior: Clip.none,
+                        );
+                      } else if (isEditing) {
+                        if (column.type is FxChoiceCellType) {
+                          final options =
+                              (column.type as FxChoiceCellType).options;
+                          cellChild = Container(
+                            color: Theme.of(context).colorScheme.surface,
+                            alignment: Alignment.centerLeft,
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<String>(
+                                value: options.contains(value?.toString())
+                                    ? value.toString()
+                                    : null,
+                                isDense: true,
+                                autofocus: true,
+                                items: [
+                                  for (final opt in options)
+                                    DropdownMenuItem(
+                                      value: opt,
+                                      child: Text(
+                                        opt,
+                                        style: const TextStyle(fontSize: 13),
+                                      ),
+                                    ),
+                                ],
+                                onChanged: (newValue) {
+                                  _commitEdit(
+                                    row.id,
+                                    column.id,
+                                    newValue ?? '',
+                                  );
+                                },
+                              ),
+                            ),
+                          );
+                        } else {
+                          cellChild = Container(
+                            color: Theme.of(context).colorScheme.surface,
+                            alignment: Alignment.centerLeft,
+                            child: Focus(
+                              onFocusChange: (hasFocus) {
+                                if (!hasFocus &&
+                                    _editingRowId == row.id &&
+                                    _editingColumnId == column.id) {
+                                  _commitEdit(
+                                    row.id,
+                                    column.id,
+                                    _editingController!.text,
+                                  );
+                                }
+                              },
+                              onKeyEvent: (node, event) {
+                                if (event is KeyDownEvent) {
+                                  if (event.logicalKey ==
+                                      LogicalKeyboardKey.escape) {
+                                    _cancelEdit();
+                                    return KeyEventResult.handled;
+                                  }
+                                  if (event.logicalKey ==
+                                      LogicalKeyboardKey.tab) {
+                                    _commitAndMoveToNext(
+                                      row.id,
+                                      column.id,
+                                      _editingController!.text,
+                                    );
+                                    return KeyEventResult.handled;
+                                  }
+                                }
+                                return KeyEventResult.ignored;
+                              },
+                              child: TextField(
+                                controller: _editingController,
+                                autofocus: true,
+                                style: const TextStyle(fontSize: 13),
+                                decoration: const InputDecoration(
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 6,
+                                  ),
+                                  border: InputBorder.none,
+                                  isDense: true,
+                                ),
+                                onSubmitted: (newValue) {
+                                  _commitEdit(row.id, column.id, newValue);
+                                },
+                              ),
+                            ),
+                          );
+                        }
+                      } else {
+                        final isCheckbox = column.type is FxBooleanCellType || _isImplicitCheckbox(column, value);
+                        if (isCheckbox) {
+                          final bool val = (value == true || value?.toString().toLowerCase().trim() == 'true');
+                          cellChild = Center(
+                            child: Checkbox(
+                              value: val,
+                              onChanged: (row.enabled && column.editable)
+                                  ? (newValue) {
+                                      Object? committedValue = newValue;
+                                      if (value is String) {
+                                        committedValue = newValue.toString();
+                                      }
+                                      _commitCellEdit(
+                                        row.id,
+                                        column.id,
+                                        committedValue,
+                                      );
+                                    }
+                                  : null,
+                            ),
+                          );
+                        } else {
+                          cellChild = GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: row.enabled
+                                ? () {
+                                    setState(() {
+                                      _activeColumnId = column.id;
+                                    });
+                                    _handleRowTap(row.id);
+                                  }
+                                : null,
+                            onDoubleTap: (row.enabled && column.editable)
+                                ? () {
+                                    setState(() {
+                                      _activeColumnId = column.id;
+                                    });
+                                    _startEditing(row.id, column.id, value);
+                                  }
+                                : null,
+                            child: _CellText(
+                              text: value?.toString() ?? '',
+                              alignment: _getResolvedAlignment(column, widget.rows),
+                              enabled: row.enabled,
+                              isSelected: isSelected,
+                              lineWrap: _getColumnLineWrap(column),
+                              supportStyledText: column.supportStyledText,
+                            ),
+                          );
+                        }
+                      }
+
+                      // Apply conditional background formatting
+                      final customBgColor = widget.cellBackgroundColorBuilder?.call(row.id, column.id, value);
+                      if (customBgColor != null) {
+                        cellChild = Container(
+                          color: isSelected
+                              ? Color.alphaBlend(customBgColor.withValues(alpha: 0.4), theme.selectionBackground)
+                              : customBgColor,
+                          child: cellChild,
+                        );
+                      }
+
+                      // Apply percentage progress bar overlay
+                      final pct = _parsePercentage(value);
+                      if (pct != null) {
+                        cellChild = Stack(
                           children: [
                             cellChild,
                             Positioned(
-                              right: 2,
-                              top: 2,
-                              child: Icon(
-                                Icons.error_outline,
-                                color: Theme.of(context).colorScheme.error,
-                                size: 14,
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              height: 5,
+                              child: Align(
+                                alignment: Alignment.bottomLeft,
+                                child: FractionallySizedBox(
+                                  widthFactor: pct / 100.0,
+                                  child: Container(
+                                    color: Theme.of(context).colorScheme.primary.withAlpha(180),
+                                  ),
+                                ),
                               ),
                             ),
                           ],
+                        );
+                      }
+
+                      if (widget.allowRowReordering && vicinity.row > 0) {
+                        final childToDrag = cellChild;
+                        cellChild = DragTarget<int>(
+                          onWillAcceptWithDetails: (details) {
+                            return details.data != (vicinity.row - 1);
+                          },
+                          onAcceptWithDetails: (details) {
+                            final draggedIndex = details.data;
+                            setState(() {
+                              _draggedOverRowIndex = null;
+                            });
+                            widget.onRowReordered?.call(draggedIndex, vicinity.row - 1);
+                          },
+                          onMove: (details) {
+                            final targetIndex = vicinity.row - 1;
+                            final RenderBox? renderBox = context.findRenderObject() as RenderBox?;
+                            if (renderBox != null) {
+                              final localPosition = renderBox.globalToLocal(details.offset);
+                              final isAbove = localPosition.dy < (renderBox.size.height / 2);
+                              if (_draggedOverRowIndex != targetIndex || _isDragAbove != isAbove) {
+                                setState(() {
+                                  _draggedOverRowIndex = targetIndex;
+                                  _isDragAbove = isAbove;
+                                });
+                              }
+                            }
+                          },
+                          onLeave: (data) {
+                            setState(() {
+                              _draggedOverRowIndex = null;
+                            });
+                          },
+                          builder: (context, candidateData, rejectedData) {
+                            return childToDrag;
+                          },
+                        );
+                      }
+
+                      final validationError =
+                          widget.validationErrors?[row.id]?[column.id];
+                      if (validationError != null) {
+                        cellChild = Tooltip(
+                          message: validationError,
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: Theme.of(context).colorScheme.error,
+                                width: 1.5,
+                              ),
+                            ),
+                            child: Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                cellChild,
+                                Positioned(
+                                  right: 2,
+                                  top: 2,
+                                  child: Icon(
+                                    Icons.error_outline,
+                                    color: Theme.of(context).colorScheme.error,
+                                    size: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
+
+                      final cellVal = row.cells[column.id];
+                      final String valueText;
+                      if (column.type is FxBooleanCellType) {
+                        valueText = (cellVal == true) ? 'checked' : 'unchecked';
+                      } else {
+                        valueText = cellVal?.toString() ?? '';
+                      }
+
+                      final cellSemantics = Semantics(
+                        selected: isSelected,
+                        enabled: row.enabled,
+                        label:
+                            'Row ${vicinity.row}, Column ${column.caption}: $valueText',
+                        child: MouseRegion(
+                          onEnter: (_) {
+                            if (row.enabled) {
+                              setState(() => _hoveredRowIndex = vicinity.row);
+                            }
+                          },
+                          onExit: (_) {
+                            if (row.enabled) {
+                              setState(() => _hoveredRowIndex = null);
+                            }
+                          },
+                          child: cellChild,
                         ),
-                      ),
-                    );
-                  }
+                      );
 
-                  final cellVal = row.cells[column.id];
-                  final String valueText;
-                  if (column.type is FxBooleanCellType) {
-                    valueText = (cellVal == true) ? 'checked' : 'unchecked';
-                  } else {
-                    valueText = cellVal?.toString() ?? '';
-                  }
-
-                  final cellSemantics = Semantics(
-                    selected: isSelected,
-                    enabled: row.enabled,
-                    label:
-                        'Row ${vicinity.row}, Column ${column.caption}: $valueText',
-                    child: MouseRegion(
-                      onEnter: (_) {
-                        if (row.enabled) {
-                          setState(() => _hoveredRowIndex = vicinity.row);
-                        }
-                      },
-                      onExit: (_) {
-                        if (row.enabled) {
-                          setState(() => _hoveredRowIndex = null);
-                        }
-                      },
-                      child: cellChild,
-                    ),
-                  );
-
-                  return table.TableViewCell(child: cellSemantics);
-                },
+                      return table.TableViewCell(child: cellSemantics);
+                    },
+                  ),
+                ),
               ),
             ),
           );
@@ -1217,6 +1565,8 @@ class FxGridColumn {
     this.visible = true,
     this.sortable = false,
     this.type = const FxCellType.text(),
+    this.lineWrap = false,
+    this.supportStyledText = false,
   });
 
   /// Stable column id.
@@ -1246,6 +1596,12 @@ class FxGridColumn {
   /// Sizing and interaction type of the cells in this column.
   final FxCellType type;
 
+  /// Whether long text line wraps in cells of this column.
+  final bool lineWrap;
+
+  /// Whether the cell text supports rich styled tags (**bold**, *italic*, ~underline~).
+  final bool supportStyledText;
+
   /// Converts this column to JSON.
   Map<String, Object?> toJson() {
     return {
@@ -1258,6 +1614,8 @@ class FxGridColumn {
       'visible': visible,
       'sortable': sortable,
       'type': type.toJson(),
+      'lineWrap': lineWrap,
+      'supportStyledText': supportStyledText,
     };
   }
 }
@@ -1327,6 +1685,9 @@ class FxGrid extends StatefulWidget {
     this.onColumnResized,
     this.validationErrors,
     this.onCellEdited,
+    this.cellBackgroundColorBuilder,
+    this.allowRowReordering = false,
+    this.onRowReordered,
   });
 
   /// Column descriptors.
@@ -1402,6 +1763,16 @@ class FxGrid extends StatefulWidget {
   final void Function(String rowId, String columnId, Object? newValue)?
   onCellEdited;
 
+  /// Callback to build conditional background color for a cell.
+  final Color? Function(String rowId, String columnId, Object? value)?
+      cellBackgroundColorBuilder;
+
+  /// Whether manual drag-and-drop row reordering is allowed.
+  final bool allowRowReordering;
+
+  /// Callback triggered when a row is reordered.
+  final void Function(int oldIndex, int newIndex)? onRowReordered;
+
   /// Stable map for AI/generator use.
   Map<String, Object?> toTemplateMap() {
     return {
@@ -1411,6 +1782,7 @@ class FxGrid extends StatefulWidget {
       'state': state.name,
       'sortedColumnId': sortedColumnId,
       'sortAscending': sortAscending,
+      'allowRowReordering': allowRowReordering,
       'columns': [for (final column in columns) column.toJson()],
       'rows': [for (final row in rows) row.toJson()],
     };
@@ -1424,9 +1796,19 @@ class _FxGridState extends State<FxGrid> {
   late FocusNode _focusNode;
   table.TableVicinity? _hoveredCell;
   final Map<String, double> _columnWidths = {};
+  final Map<String, bool> _columnLineWrapOverrides = {};
   String? _editingRowId;
   String? _editingColumnId;
   TextEditingController? _editingController;
+  late final ScrollController _verticalController;
+  late final ScrollController _horizontalController;
+  String? _activeColumnId;
+  int? _draggedOverRowIndex;
+  bool _isDragAbove = true;
+
+  bool _getColumnLineWrap(FxGridColumn column) {
+    return _columnLineWrapOverrides[column.id] ?? column.lineWrap;
+  }
 
   final Map<({String rowId, String columnId}), BuildContext> _cellContexts = {};
   ({String rowId, String columnId})? _dragStartCell;
@@ -1756,6 +2138,8 @@ class _FxGridState extends State<FxGrid> {
     super.initState();
     _focusNode = widget.focusNode ?? FocusNode();
     _focusNode.addListener(_onFocusChanged);
+    _verticalController = ScrollController();
+    _horizontalController = ScrollController();
   }
 
   @override
@@ -1766,6 +2150,12 @@ class _FxGridState extends State<FxGrid> {
       _focusNode = widget.focusNode ?? FocusNode();
       _focusNode.addListener(_onFocusChanged);
     }
+    for (final col in widget.columns) {
+      final oldCol = oldWidget.columns.firstWhere((c) => c.id == col.id, orElse: () => col);
+      if (oldCol.lineWrap != col.lineWrap) {
+        _columnLineWrapOverrides.remove(col.id);
+      }
+    }
   }
 
   @override
@@ -1775,6 +2165,8 @@ class _FxGridState extends State<FxGrid> {
       _focusNode.dispose();
     }
     _editingController?.dispose();
+    _verticalController.dispose();
+    _horizontalController.dispose();
     super.dispose();
   }
 
@@ -1783,6 +2175,9 @@ class _FxGridState extends State<FxGrid> {
   }
 
   void _handleCellTap(String rowId, String columnId) {
+    setState(() {
+      _activeColumnId = columnId;
+    });
     if (widget.onCellsSelected == null ||
         widget.selectionMode == FxGridSelectionMode.none) {
       return;
@@ -1932,6 +2327,10 @@ class _FxGridState extends State<FxGrid> {
     final targetRow = widget.rows[nextRow];
     final targetCol = visibleColumns[nextCol];
 
+    setState(() {
+      _activeColumnId = targetCol.id;
+    });
+
     final isShiftPressed = HardwareKeyboard.instance.isShiftPressed;
 
     if (widget.selectionMode == FxGridSelectionMode.cell) {
@@ -2051,6 +2450,126 @@ class _FxGridState extends State<FxGrid> {
     }
   }
 
+  double _getRowHeight(FxGridRow row, List<FxGridColumn> visibleColumns, double totalWidth) {
+    if (row.height != null) {
+      return row.height!;
+    }
+    double maxCellHeight = widget.rowHeight;
+    final defaultStyle = DefaultTextStyle.of(context).style;
+    final cellStyle = defaultStyle.merge(const TextStyle(fontWeight: FontWeight.normal));
+
+    for (final col in visibleColumns) {
+      if (_getColumnLineWrap(col)) {
+        final rawValue = row.cells[col.id];
+        if (rawValue != null && rawValue is! bool && !_isImplicitCheckbox(col, rawValue)) {
+          final text = rawValue.toString();
+          final colWidth = _getColumnWidth(col, totalWidth);
+          final textWidth = (colWidth - 16.0).clamp(0.0, double.infinity);
+          
+          final textPainter = TextPainter(
+            text: TextSpan(
+              children: col.supportStyledText
+                  ? _parseStyledText(text, cellStyle)
+                  : [TextSpan(text: text, style: cellStyle)],
+            ),
+            textDirection: TextDirection.ltr,
+          );
+          textPainter.layout(maxWidth: textWidth);
+          final cellHeight = textPainter.height + 10.0;
+          if (cellHeight > maxCellHeight) {
+            maxCellHeight = cellHeight;
+          }
+        }
+      }
+    }
+    return maxCellHeight;
+  }
+
+  void _autoFitColumn(FxGridColumn column, double totalWidth) {
+    double maxNeededWidth = 0.0;
+    final defaultStyle = DefaultTextStyle.of(context).style;
+
+    final captionText = column.caption ?? column.id;
+    final headerStyle = defaultStyle.merge(const TextStyle(fontWeight: FontWeight.w600));
+    final headerPainter = TextPainter(
+      text: TextSpan(text: captionText, style: headerStyle),
+      textDirection: TextDirection.ltr,
+      maxLines: 1,
+    )..layout();
+    double headerWidth = headerPainter.width + 16.0;
+    if (column.sortable) {
+      headerWidth += 20.0;
+    }
+    maxNeededWidth = headerWidth;
+
+    final cellStyle = defaultStyle.merge(const TextStyle(fontWeight: FontWeight.normal));
+    for (final row in widget.rows) {
+      final rawValue = row.cells[column.id];
+      if (column.type is FxBooleanCellType || _isImplicitCheckbox(column, rawValue)) {
+        const double checkboxWidth = 40.0;
+        if (checkboxWidth > maxNeededWidth) {
+          maxNeededWidth = checkboxWidth;
+        }
+      } else {
+        final text = rawValue?.toString() ?? '';
+        final cellPainter = TextPainter(
+          text: TextSpan(text: text, style: cellStyle),
+          textDirection: TextDirection.ltr,
+          maxLines: 1,
+        )..layout();
+        final cellWidth = cellPainter.width + 16.0;
+        if (cellWidth > maxNeededWidth) {
+          maxNeededWidth = cellWidth;
+        }
+      }
+    }
+
+    final newWidth = (maxNeededWidth + 4.0).clamp(column.minWidth, 1000.0);
+    final capWidth = totalWidth * 0.5;
+
+    final double targetWidth;
+    final bool targetWrap;
+    if (newWidth > capWidth) {
+      targetWidth = capWidth.clamp(column.minWidth, 1000.0);
+      targetWrap = true;
+    } else {
+      targetWidth = newWidth;
+      targetWrap = false;
+    }
+
+    final oldWidth = _getColumnWidth(column, totalWidth);
+    final oldWrap = _getColumnLineWrap(column);
+
+    final undoController = FxUndoScope.maybeOf(context);
+    if (undoController != null) {
+      undoController.commit(
+        FxUndoAction(
+          label: 'Auto-fit $captionText',
+          apply: () {
+            setState(() {
+              _columnWidths[column.id] = targetWidth;
+              _columnLineWrapOverrides[column.id] = targetWrap;
+            });
+            widget.onColumnResized?.call(column.id, targetWidth);
+          },
+          revert: () {
+            setState(() {
+              _columnWidths[column.id] = oldWidth;
+              _columnLineWrapOverrides[column.id] = oldWrap;
+            });
+            widget.onColumnResized?.call(column.id, oldWidth);
+          },
+        ),
+      );
+    } else {
+      setState(() {
+        _columnWidths[column.id] = targetWidth;
+        _columnLineWrapOverrides[column.id] = targetWrap;
+      });
+      widget.onColumnResized?.call(column.id, targetWidth);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = FxTheme.of(context);
@@ -2063,6 +2582,28 @@ class _FxGridState extends State<FxGrid> {
     final rowOffset = widget.showHeaders ? 1 : 0;
     final isFocused = _focusNode.hasFocus;
     final visibleColumns = widget.columns.where((c) => c.visible).toList();
+    if (widget.allowRowReordering) {
+      visibleColumns.insert(
+        0,
+        const FxGridColumn(
+          id: '__reorder_handle__',
+          caption: '',
+          width: FxColumnWidth.fixed(30),
+          minWidth: 30,
+          visible: true,
+          editable: false,
+        ),
+      );
+    }
+
+    final activeCell = widget.selectedCells.isEmpty ? null : widget.selectedCells.last;
+    final activeRowIndex = activeCell == null
+        ? -1
+        : widget.rows.indexWhere((r) => r.id == activeCell.rowId);
+    final activeColId = _activeColumnId ?? activeCell?.columnId;
+    final activeColIndex = activeColId == null
+        ? -1
+        : visibleColumns.indexWhere((c) => c.id == activeColId);
 
     return Focus(
       focusNode: _focusNode,
@@ -2082,362 +2623,511 @@ class _FxGridState extends State<FxGrid> {
             ),
             child: SizedBox(
               height: widget.height,
-              child: table.TableView.builder(
-                pinnedRowCount: widget.showHeaders ? 1 : 0,
-                columnCount: visibleColumns.length,
-                rowCount: widget.rows.length + rowOffset,
-                columnBuilder: (index) {
-                  final column = visibleColumns[index];
-                  return table.TableSpan(
-                    extent: _getColumnExtent(column, totalWidth),
-                    foregroundDecoration: _borderDecoration(
-                      theme,
-                      widget.showGridLines,
+              child: Scrollbar(
+                controller: _verticalController,
+                interactive: true,
+                thumbVisibility: true,
+                notificationPredicate: (notification) =>
+                    notification.depth == 0 &&
+                    notification.metrics.axis == Axis.vertical,
+                child: Scrollbar(
+                  controller: _horizontalController,
+                  interactive: true,
+                  thumbVisibility: true,
+                  notificationPredicate: (notification) =>
+                      notification.depth == 0 &&
+                      notification.metrics.axis == Axis.horizontal,
+                  child: table.TableView.builder(
+                    pinnedRowCount: widget.showHeaders ? 1 : 0,
+                    columnCount: visibleColumns.length,
+                    rowCount: widget.rows.length + rowOffset,
+                    verticalDetails: ScrollableDetails.vertical(
+                      controller: _verticalController,
                     ),
-                  );
-                },
-                rowBuilder: (index) {
-                  final isHeader = widget.showHeaders && index == 0;
-                  final dataRow = isHeader
-                      ? null
-                      : widget.rows[index - rowOffset];
-                  return table.TableSpan(
-                    extent: table.FixedTableSpanExtent(
-                      isHeader
-                          ? widget.headerHeight
-                          : (dataRow?.height ?? widget.rowHeight),
+                    horizontalDetails: ScrollableDetails.horizontal(
+                      controller: _horizontalController,
                     ),
-                    backgroundDecoration: table.TableSpanDecoration(
-                      color: isHeader
-                          ? theme.headerBackground
-                          : index.isEven
-                          ? theme.alternatingRowBackground
-                          : Theme.of(context).colorScheme.surface,
-                    ),
-                    foregroundDecoration: _borderDecoration(
-                      theme,
-                      widget.showGridLines,
-                    ),
-                  );
-                },
-                cellBuilder: (context, vicinity) {
-                  final column = visibleColumns[vicinity.column];
-                  if (widget.showHeaders && vicinity.row == 0) {
-                    final sorted = column.id == widget.sortedColumnId;
-                    return table.TableViewCell(
-                      child: _HeaderCell(
-                        caption: column.caption ?? column.id,
-                        alignment: column.alignment,
-                        sortable: column.sortable,
-                        sorted: sorted,
-                        ascending: widget.sortAscending,
-                        onSort: () {
-                          widget.onSortChanged?.call(
-                            column.id,
-                            sorted ? !widget.sortAscending : true,
-                          );
-                        },
-                        onResize: (delta) {
-                          final currentWidth = _getColumnWidth(
-                            column,
-                            totalWidth,
-                          );
-                          final newWidth = (currentWidth + delta).clamp(
-                            column.minWidth,
-                            1000.0,
-                          );
-                          setState(() {
-                            _columnWidths[column.id] = newWidth;
-                          });
-                          widget.onColumnResized?.call(column.id, newWidth);
-                        },
-                      ),
-                    );
-                  }
-                  final row = widget.rows[vicinity.row - rowOffset];
-                  final inRange =
-                      widget.selectionMode == FxGridSelectionMode.range &&
-                      widget.selectedRange != null &&
-                      _isCellInRange(row.id, column.id, widget.selectedRange!);
-                  final selected =
-                      inRange ||
-                      widget.selectedCells.any(
-                        (cell) =>
-                            cell.rowId == row.id && cell.columnId == column.id,
-                      );
-                  final hovered =
-                      row.enabled &&
-                      _hoveredCell != null &&
-                      _hoveredCell!.row == vicinity.row &&
-                      _hoveredCell!.column == vicinity.column;
-                  final value = row.cells[column.id];
-                  final isEditing =
-                      _editingRowId == row.id && _editingColumnId == column.id;
-
-                  Widget cellChild;
-
-                  if (isEditing) {
-                    if (column.type is FxChoiceCellType) {
-                      final options = (column.type as FxChoiceCellType).options;
-                      cellChild = Container(
-                        color: Theme.of(context).colorScheme.surface,
-                        alignment: Alignment.centerLeft,
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            value: options.contains(value?.toString())
-                                ? value.toString()
-                                : null,
-                            isDense: true,
-                            autofocus: true,
-                            items: [
-                              for (final opt in options)
-                                DropdownMenuItem(
-                                  value: opt,
-                                  child: Text(
-                                    opt,
-                                    style: const TextStyle(fontSize: 13),
-                                  ),
-                                ),
-                            ],
-                            onChanged: (newValue) {
-                              _commitEdit(row.id, column.id, newValue ?? '');
-                            },
-                          ),
+                    columnBuilder: (index) {
+                      final column = visibleColumns[index];
+                      final isActive = activeColIndex != -1 && index == activeColIndex;
+                      return table.TableSpan(
+                        extent: _getColumnExtent(column, totalWidth),
+                        foregroundDecoration: _borderDecoration(
+                          theme: theme,
+                          showGridLines: widget.showGridLines,
+                          isActive: isActive,
+                          isColumn: true,
                         ),
                       );
-                    } else {
-                      cellChild = Container(
-                        color: Theme.of(context).colorScheme.surface,
-                        alignment: Alignment.centerLeft,
-                        child: Focus(
-                          onFocusChange: (hasFocus) {
-                            if (!hasFocus &&
-                                _editingRowId == row.id &&
-                                _editingColumnId == column.id) {
-                              _commitEdit(
-                                row.id,
+                    },
+                    rowBuilder: (index) {
+                      final isHeader = widget.showHeaders && index == 0;
+                      final dataRow = isHeader
+                          ? null
+                          : widget.rows[index - rowOffset];
+                      final isActive = !isHeader && activeRowIndex != -1 && (index - rowOffset) == activeRowIndex;
+                      final isDragTarget = widget.allowRowReordering && _draggedOverRowIndex == (index - rowOffset);
+                      return table.TableSpan(
+                        extent: table.FixedTableSpanExtent(
+                          isHeader
+                              ? widget.headerHeight
+                              : _getRowHeight(dataRow!, visibleColumns, totalWidth),
+                        ),
+                        backgroundDecoration: table.TableSpanDecoration(
+                          color: isHeader
+                              ? theme.headerBackground
+                              : index.isEven
+                              ? theme.alternatingRowBackground
+                              : Theme.of(context).colorScheme.surface,
+                        ),
+                        foregroundDecoration: _borderDecoration(
+                          theme: theme,
+                          showGridLines: widget.showGridLines,
+                          isActive: isActive,
+                          isColumn: false,
+                          isDragTarget: isDragTarget,
+                          isDragAbove: _isDragAbove,
+                        ),
+                      );
+                    },
+                    cellBuilder: (context, vicinity) {
+                      final column = visibleColumns[vicinity.column];
+                      if (widget.showHeaders && vicinity.row == 0) {
+                        final sorted = column.id == widget.sortedColumnId;
+                        return table.TableViewCell(
+                          child: _HeaderCell(
+                            caption: column.caption ?? column.id,
+                            alignment: _getResolvedAlignment(column, widget.rows),
+                            sortable: column.sortable && column.id != '__reorder_handle__',
+                            sorted: sorted,
+                            ascending: widget.sortAscending,
+                            onSort: column.id == '__reorder_handle__' ? null : () {
+                              widget.onSortChanged?.call(
                                 column.id,
-                                _editingController!.text,
+                                sorted ? !widget.sortAscending : true,
+                              );
+                            },
+                            onResize: column.id == '__reorder_handle__' ? null : (delta) {
+                              final currentWidth = _getColumnWidth(
+                                column,
+                                totalWidth,
+                              );
+                              final newWidth = (currentWidth + delta).clamp(
+                                column.minWidth,
+                                1000.0,
+                              );
+                              setState(() {
+                                _columnWidths[column.id] = newWidth;
+                              });
+                              widget.onColumnResized?.call(column.id, newWidth);
+                            },
+                            onDoubleResize: column.id == '__reorder_handle__' ? null : () {
+                              _autoFitColumn(column, totalWidth);
+                            },
+                          ),
+                        );
+                      }
+                      final row = widget.rows[vicinity.row - rowOffset];
+                      final isDataRow = widget.showHeaders ? vicinity.row > 0 : vicinity.row >= 0;
+                      final dataRowIndex = vicinity.row - rowOffset;
+                      final value = row.cells[column.id];
+                      final inRange =
+                          widget.selectionMode == FxGridSelectionMode.range &&
+                          widget.selectedRange != null &&
+                          _isCellInRange(
+                            row.id,
+                            column.id,
+                            widget.selectedRange!,
+                          );
+                      final selected =
+                          inRange ||
+                          widget.selectedCells.any(
+                            (cell) =>
+                                cell.rowId == row.id &&
+                                cell.columnId == column.id,
+                          );
+                      final hovered =
+                          _hoveredCell != null &&
+                          _hoveredCell!.row == vicinity.row &&
+                          _hoveredCell!.column == vicinity.column;
+                      final isEditing =
+                          _editingRowId == row.id &&
+                          _editingColumnId == column.id;
+
+                      Widget cellChild;
+
+                      if (column.id == '__reorder_handle__') {
+                        cellChild = Center(
+                          child: Draggable<int>(
+                            data: vicinity.row - rowOffset,
+                            feedback: Material(
+                              elevation: 4,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: theme.selectionBackground.withValues(alpha: 0.9),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  'Moving Row ${vicinity.row - rowOffset + 1}',
+                                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ),
+                            childWhenDragging: const Opacity(
+                              opacity: 0.3,
+                              child: Icon(Icons.drag_handle, color: Colors.grey, size: 18),
+                            ),
+                            child: const MouseRegion(
+                              cursor: SystemMouseCursors.grab,
+                              child: Icon(Icons.drag_handle, color: Colors.grey, size: 18),
+                            ),
+                          ),
+                        );
+                      } else if (isEditing) {
+                        if (column.type is FxChoiceCellType) {
+                          final options =
+                              (column.type as FxChoiceCellType).options;
+                          cellChild = Container(
+                            color: Theme.of(context).colorScheme.surface,
+                            alignment: Alignment.centerLeft,
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<String>(
+                                value: options.contains(value?.toString())
+                                    ? value.toString()
+                                    : null,
+                                isDense: true,
+                                autofocus: true,
+                                items: [
+                                  for (final opt in options)
+                                    DropdownMenuItem(
+                                      value: opt,
+                                      child: Text(
+                                        opt,
+                                        style: const TextStyle(fontSize: 13),
+                                      ),
+                                    ),
+                                ],
+                                onChanged: (newValue) {
+                                  _commitEdit(
+                                    row.id,
+                                    column.id,
+                                    newValue ?? '',
+                                  );
+                                },
+                              ),
+                            ),
+                          );
+                        } else {
+                          cellChild = Container(
+                            color: Theme.of(context).colorScheme.surface,
+                            alignment: Alignment.centerLeft,
+                            child: Focus(
+                              onFocusChange: (hasFocus) {
+                                if (!hasFocus &&
+                                    _editingRowId == row.id &&
+                                    _editingColumnId == column.id) {
+                                  _commitEdit(
+                                    row.id,
+                                    column.id,
+                                    _editingController!.text,
+                                  );
+                                }
+                              },
+                              onKeyEvent: (node, event) {
+                                if (event is KeyDownEvent) {
+                                  if (event.logicalKey ==
+                                      LogicalKeyboardKey.escape) {
+                                    _cancelEdit();
+                                    return KeyEventResult.handled;
+                                  }
+                                  if (event.logicalKey ==
+                                      LogicalKeyboardKey.tab) {
+                                    _commitAndMoveToNext(
+                                      row.id,
+                                      column.id,
+                                      _editingController!.text,
+                                    );
+                                    return KeyEventResult.handled;
+                                  }
+                                }
+                                return KeyEventResult.ignored;
+                              },
+                              child: TextField(
+                                controller: _editingController,
+                                autofocus: true,
+                                style: const TextStyle(fontSize: 13),
+                                decoration: const InputDecoration(
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 6,
+                                  ),
+                                  border: InputBorder.none,
+                                  isDense: true,
+                                ),
+                                onSubmitted: (newValue) {
+                                  _commitEdit(row.id, column.id, newValue);
+                                },
+                              ),
+                            ),
+                          );
+                        }
+                      } else {
+                        final customBgColor = widget.cellBackgroundColorBuilder?.call(row.id, column.id, value);
+                        final isCheckbox = column.type is FxBooleanCellType || _isImplicitCheckbox(column, value);
+                        if (isCheckbox) {
+                          final bool val = (value == true || value?.toString().toLowerCase().trim() == 'true');
+                          cellChild = GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: row.enabled
+                                ? () => _handleCellTap(row.id, column.id)
+                                : null,
+                            child: ColoredBox(
+                              color: selected
+                                  ? theme.selectionBackground
+                                  : hovered
+                                  ? Theme.of(context).hoverColor
+                                  : (customBgColor ?? Colors.transparent),
+                              child: Center(
+                                child: Checkbox(
+                                  value: val,
+                                  onChanged: (row.enabled && column.editable)
+                                      ? (newValue) {
+                                          Object? committedValue = newValue;
+                                          if (value is String) {
+                                            committedValue = newValue.toString();
+                                          }
+                                          _commitCellEdit(
+                                            row.id,
+                                            column.id,
+                                            committedValue,
+                                          );
+                                          _handleCellTap(row.id, column.id);
+                                        }
+                                      : null,
+                                ),
+                              ),
+                            ),
+                          );
+                        } else {
+                          cellChild = GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: row.enabled
+                                ? () => _handleCellTap(row.id, column.id)
+                                : null,
+                            onDoubleTap: (row.enabled && column.editable)
+                                ? () => _startEditing(row.id, column.id, value)
+                                : null,
+                            child: ColoredBox(
+                              color: selected
+                                  ? theme.selectionBackground
+                                  : hovered
+                                  ? Theme.of(context).hoverColor
+                                  : (customBgColor ?? Colors.transparent),
+                              child: _CellText(
+                                text: value?.toString() ?? '',
+                                alignment: _getResolvedAlignment(column, widget.rows),
+                                enabled: row.enabled,
+                                isSelected: selected,
+                                lineWrap: _getColumnLineWrap(column),
+                                supportStyledText: column.supportStyledText,
+                              ),
+                            ),
+                          );
+                        }
+                      }
+
+                      if (widget.allowRowReordering && isDataRow) {
+                        final childToDrag = cellChild;
+                        cellChild = DragTarget<int>(
+                          onWillAcceptWithDetails: (details) {
+                            return details.data != dataRowIndex;
+                          },
+                          onAcceptWithDetails: (details) {
+                            final draggedIndex = details.data;
+                            setState(() {
+                              _draggedOverRowIndex = null;
+                            });
+                            widget.onRowReordered?.call(draggedIndex, dataRowIndex);
+                          },
+                          onMove: (details) {
+                            final RenderBox? renderBox = context.findRenderObject() as RenderBox?;
+                            if (renderBox != null) {
+                              final localPosition = renderBox.globalToLocal(details.offset);
+                              final isAbove = localPosition.dy < (renderBox.size.height / 2);
+                              if (_draggedOverRowIndex != dataRowIndex || _isDragAbove != isAbove) {
+                                setState(() {
+                                  _draggedOverRowIndex = dataRowIndex;
+                                  _isDragAbove = isAbove;
+                                });
+                              }
+                            }
+                          },
+                          onLeave: (data) {
+                            setState(() {
+                              _draggedOverRowIndex = null;
+                            });
+                          },
+                          builder: (context, candidateData, rejectedData) {
+                            return childToDrag;
+                          },
+                        );
+                      }
+
+                      final validationError =
+                          widget.validationErrors?[row.id]?[column.id];
+                      if (validationError != null) {
+                        cellChild = Tooltip(
+                          message: validationError,
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: Theme.of(context).colorScheme.error,
+                                width: 1.5,
+                              ),
+                            ),
+                            child: Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                cellChild,
+                                Positioned(
+                                  right: 2,
+                                  top: 2,
+                                  child: Icon(
+                                    Icons.error_outline,
+                                    color: Theme.of(context).colorScheme.error,
+                                    size: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
+
+                      // Apply percentage progress bar overlay (only if not editing)
+                      if (!isEditing) {
+                        final pct = _parsePercentage(value);
+                        if (pct != null) {
+                          cellChild = Stack(
+                            children: [
+                              cellChild,
+                              Positioned(
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                height: 5,
+                                child: Align(
+                                  alignment: Alignment.bottomLeft,
+                                  child: FractionallySizedBox(
+                                    widthFactor: pct / 100.0,
+                                    child: Container(
+                                      color: Theme.of(context).colorScheme.primary.withAlpha(180),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        }
+                      }
+
+                      if (row.enabled &&
+                          widget.selectionMode == FxGridSelectionMode.range) {
+                        cellChild = Listener(
+                          behavior: HitTestBehavior.opaque,
+                          onPointerDown: (event) {
+                            _dragStartCell = (
+                              rowId: row.id,
+                              columnId: column.id,
+                            );
+                            _lastDragEndCell = _dragStartCell;
+                            _keyboardRangeAnchor = _dragStartCell;
+                            widget.onCellsSelected?.call({_dragStartCell!});
+                            widget.onRangeSelected?.call(
+                              FxGridCellRange(
+                                startRowId: _dragStartCell!.rowId,
+                                startColumnId: _dragStartCell!.columnId,
+                                endRowId: _dragStartCell!.rowId,
+                                endColumnId: _dragStartCell!.columnId,
+                              ),
+                            );
+                          },
+                          onPointerMove: (event) {
+                            if (_dragStartCell == null) return;
+                            final cell = _findCellUnderPosition(event.position);
+                            if (cell != null && cell != _lastDragEndCell) {
+                              _lastDragEndCell = cell;
+                              final rangeCells = _calculateRangeSelection(
+                                _dragStartCell!,
+                                cell,
+                              );
+                              widget.onCellsSelected?.call(rangeCells);
+                              widget.onRangeSelected?.call(
+                                FxGridCellRange(
+                                  startRowId: _dragStartCell!.rowId,
+                                  startColumnId: _dragStartCell!.columnId,
+                                  endRowId: cell.rowId,
+                                  endColumnId: cell.columnId,
+                                ),
                               );
                             }
                           },
-                          onKeyEvent: (node, event) {
-                            if (event is KeyDownEvent) {
-                              if (event.logicalKey ==
-                                  LogicalKeyboardKey.escape) {
-                                _cancelEdit();
-                                return KeyEventResult.handled;
-                              }
-                              if (event.logicalKey == LogicalKeyboardKey.tab) {
-                                _commitAndMoveToNext(
-                                  row.id,
-                                  column.id,
-                                  _editingController!.text,
-                                );
-                                return KeyEventResult.handled;
-                              }
-                            }
-                            return KeyEventResult.ignored;
+                          onPointerUp: (event) {
+                            _dragStartCell = null;
+                            _lastDragEndCell = null;
                           },
-                          child: TextField(
-                            controller: _editingController,
-                            autofocus: true,
-                            style: const TextStyle(fontSize: 13),
-                            decoration: const InputDecoration(
-                              contentPadding: EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 6,
-                              ),
-                              border: InputBorder.none,
-                              isDense: true,
-                            ),
-                            onSubmitted: (newValue) {
-                              _commitEdit(row.id, column.id, newValue);
-                            },
-                          ),
-                        ),
-                      );
-                    }
-                  } else {
-                    if (column.type is FxBooleanCellType) {
-                      final bool val = value == true;
-                      cellChild = GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: row.enabled
-                            ? () => _handleCellTap(row.id, column.id)
-                            : null,
-                        child: ColoredBox(
-                          color: selected
-                              ? theme.selectionBackground
-                              : hovered
-                              ? Theme.of(context).hoverColor
-                              : Colors.transparent,
-                          child: Center(
-                            child: Checkbox(
-                              value: val,
-                              onChanged: (row.enabled && column.editable)
-                                  ? (newValue) {
-                                      if (widget.onCellEdited != null) {
-                                        widget.onCellEdited!(
-                                          row.id,
-                                          column.id,
-                                          newValue,
-                                        );
-                                      }
-                                      _handleCellTap(row.id, column.id);
-                                    }
-                                  : null,
-                            ),
-                          ),
-                        ),
-                      );
-                    } else {
-                      cellChild = GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: row.enabled
-                            ? () => _handleCellTap(row.id, column.id)
-                            : null,
-                        onDoubleTap: (row.enabled && column.editable)
-                            ? () => _startEditing(row.id, column.id, value)
-                            : null,
-                        child: ColoredBox(
-                          color: selected
-                              ? theme.selectionBackground
-                              : hovered
-                              ? Theme.of(context).hoverColor
-                              : Colors.transparent,
-                          child: _CellText(
-                            text: value?.toString() ?? '',
-                            alignment: column.alignment,
-                            enabled: row.enabled,
-                            isSelected: selected,
-                          ),
-                        ),
-                      );
-                    }
-                  }
-
-                  final validationError =
-                      widget.validationErrors?[row.id]?[column.id];
-                  if (validationError != null) {
-                    cellChild = Tooltip(
-                      message: validationError,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: Theme.of(context).colorScheme.error,
-                            width: 1.5,
-                          ),
-                        ),
-                        child: Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            cellChild,
-                            Positioned(
-                              right: 2,
-                              top: 2,
-                              child: Icon(
-                                Icons.error_outline,
-                                color: Theme.of(context).colorScheme.error,
-                                size: 14,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }
-
-                  if (row.enabled &&
-                      widget.selectionMode == FxGridSelectionMode.range) {
-                    cellChild = Listener(
-                      behavior: HitTestBehavior.opaque,
-                      onPointerDown: (event) {
-                        _dragStartCell = (rowId: row.id, columnId: column.id);
-                        _lastDragEndCell = _dragStartCell;
-                        _keyboardRangeAnchor = _dragStartCell;
-                        widget.onCellsSelected?.call({_dragStartCell!});
-                        widget.onRangeSelected?.call(
-                          FxGridCellRange(
-                            startRowId: _dragStartCell!.rowId,
-                            startColumnId: _dragStartCell!.columnId,
-                            endRowId: _dragStartCell!.rowId,
-                            endColumnId: _dragStartCell!.columnId,
-                          ),
+                          child: cellChild,
                         );
-                      },
-                      onPointerMove: (event) {
-                        if (_dragStartCell == null) return;
-                        final cell = _findCellUnderPosition(event.position);
-                        if (cell != null && cell != _lastDragEndCell) {
-                          _lastDragEndCell = cell;
-                          final rangeCells = _calculateRangeSelection(
-                            _dragStartCell!,
-                            cell,
-                          );
-                          widget.onCellsSelected?.call(rangeCells);
-                          widget.onRangeSelected?.call(
-                            FxGridCellRange(
-                              startRowId: _dragStartCell!.rowId,
-                              startColumnId: _dragStartCell!.columnId,
-                              endRowId: cell.rowId,
-                              endColumnId: cell.columnId,
-                            ),
-                          );
-                        }
-                      },
-                      onPointerUp: (event) {
-                        _dragStartCell = null;
-                        _lastDragEndCell = null;
-                      },
-                      child: cellChild,
-                    );
-                  }
+                      }
 
-                  final cellWrapper = _GridCellWrapper(
-                    rowId: row.id,
-                    columnId: column.id,
-                    gridState: this,
-                    child: cellChild,
-                  );
+                      final cellWrapper = _GridCellWrapper(
+                        rowId: row.id,
+                        columnId: column.id,
+                        gridState: this,
+                        child: cellChild,
+                      );
 
-                  final cellVal = row.cells[column.id];
-                  final String valueText;
-                  if (column.type is FxBooleanCellType) {
-                    valueText = (cellVal == true) ? 'checked' : 'unchecked';
-                  } else {
-                    valueText = cellVal?.toString() ?? '';
-                  }
+                      final cellVal = row.cells[column.id];
+                      final String valueText;
+                      if (column.type is FxBooleanCellType) {
+                        valueText = (cellVal == true) ? 'checked' : 'unchecked';
+                      } else {
+                        valueText = cellVal?.toString() ?? '';
+                      }
 
-                  final errorMsg = widget.validationErrors?[row.id]?[column.id];
-                  final String errorSuffix = errorMsg != null
-                      ? ', validation error: $errorMsg'
-                      : '';
-                  final colLabel = column.caption ?? column.id;
+                      final errorMsg =
+                          widget.validationErrors?[row.id]?[column.id];
+                      final String errorSuffix = errorMsg != null
+                          ? ', validation error: $errorMsg'
+                          : '';
+                      final colLabel = column.caption ?? column.id;
 
-                  final cellSemantics = Semantics(
-                    selected: selected,
-                    enabled: row.enabled,
-                    label:
-                        'Row ${vicinity.row}, Column $colLabel: $valueText$errorSuffix',
-                    child: MouseRegion(
-                      onEnter: (_) {
-                        if (row.enabled) {
-                          setState(() => _hoveredCell = vicinity);
-                        }
-                      },
-                      onExit: (_) {
-                        if (row.enabled) {
-                          setState(() => _hoveredCell = null);
-                        }
-                      },
-                      child: cellWrapper,
-                    ),
-                  );
+                      final cellSemantics = Semantics(
+                        selected: selected,
+                        enabled: row.enabled,
+                        label:
+                            'Row ${vicinity.row}, Column $colLabel: $valueText$errorSuffix',
+                        child: MouseRegion(
+                          onEnter: (_) {
+                            if (row.enabled) {
+                              setState(() => _hoveredCell = vicinity);
+                            }
+                          },
+                          onExit: (_) {
+                            if (row.enabled) {
+                              setState(() => _hoveredCell = null);
+                            }
+                          },
+                          child: cellWrapper,
+                        ),
+                      );
 
-                  return table.TableViewCell(child: cellSemantics);
-                },
+                      return table.TableViewCell(child: cellSemantics);
+                    },
+                  ),
+                ),
               ),
             ),
           );
@@ -2447,18 +3137,51 @@ class _FxGridState extends State<FxGrid> {
   }
 }
 
-table.TableSpanDecoration? _borderDecoration(
-  FxTheme theme,
-  bool showGridLines,
-) {
-  if (!showGridLines) {
-    return null;
+table.TableSpanDecoration? _borderDecoration({
+  required FxTheme theme,
+  required bool showGridLines,
+  required bool isActive,
+  required bool isColumn,
+  bool isDragTarget = false,
+  bool isDragAbove = true,
+}) {
+  final defaultColor = theme.gridLineColor;
+  final darkerColor = HSLColor.fromColor(defaultColor)
+      .withLightness((HSLColor.fromColor(defaultColor).lightness * 0.5).clamp(0.0, 1.0))
+      .toColor();
+
+  BorderSide? leadingBorder;
+  BorderSide? trailingBorder;
+
+  if (showGridLines) {
+    trailingBorder = BorderSide(color: defaultColor);
   }
-  return table.TableSpanDecoration(
-    border: table.TableSpanBorder(
-      trailing: BorderSide(color: theme.gridLineColor),
-    ),
-  );
+
+  if (isActive) {
+    leadingBorder = BorderSide(color: darkerColor, width: 1.5);
+    trailingBorder = BorderSide(color: darkerColor, width: 1.5);
+  }
+
+  if (isDragTarget) {
+    final highlightColor = theme.selectionBackground;
+    final highlightBorder = BorderSide(color: highlightColor, width: 2.5);
+    if (isDragAbove) {
+      leadingBorder = highlightBorder;
+    } else {
+      trailingBorder = highlightBorder;
+    }
+  }
+
+  if (leadingBorder != null || trailingBorder != null) {
+    return table.TableSpanDecoration(
+      border: table.TableSpanBorder(
+        leading: leadingBorder ?? BorderSide.none,
+        trailing: trailingBorder ?? BorderSide.none,
+      ),
+    );
+  }
+
+  return null;
 }
 
 void _validateColumns(List<FxListBoxColumn> columns) {
@@ -2485,12 +3208,16 @@ class _CellText extends StatelessWidget {
     required this.alignment,
     this.enabled = true,
     this.isSelected = false,
+    this.lineWrap = false,
+    this.supportStyledText = false,
   });
 
   final String text;
   final FxCellAlignment alignment;
   final bool enabled;
   final bool isSelected;
+  final bool lineWrap;
+  final bool supportStyledText;
 
   @override
   Widget build(BuildContext context) {
@@ -2515,27 +3242,125 @@ class _CellText extends StatelessWidget {
       textColor = Theme.of(context).colorScheme.onSurface;
     }
 
+    final baseStyle = TextStyle(fontWeight: FontWeight.normal, color: textColor);
+
+    final Widget childWidget;
+    if (supportStyledText) {
+      childWidget = Text.rich(
+        TextSpan(
+          children: _parseStyledText(text, baseStyle),
+        ),
+        maxLines: lineWrap ? null : 1,
+        overflow: lineWrap ? null : TextOverflow.ellipsis,
+        textAlign: textAlign,
+      );
+    } else {
+      childWidget = Text(
+        text,
+        maxLines: lineWrap ? null : 1,
+        overflow: lineWrap ? null : TextOverflow.ellipsis,
+        textAlign: textAlign,
+        style: baseStyle,
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
       child: Align(
         alignment: switch (alignment) {
-          FxCellAlignment.leading => Alignment.centerLeft,
-          FxCellAlignment.center => Alignment.center,
-          FxCellAlignment.trailing => Alignment.centerRight,
+          FxCellAlignment.leading => Alignment.topLeft,
+          FxCellAlignment.center => Alignment.topCenter,
+          FxCellAlignment.trailing => Alignment.topRight,
         },
-        child: Text(
-          text,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          textAlign: textAlign,
-          style: TextStyle(fontWeight: FontWeight.normal, color: textColor),
-        ),
+        child: childWidget,
       ),
     );
   }
 }
 
-class _HeaderCell extends StatelessWidget {
+List<InlineSpan> _parseStyledText(String text, TextStyle baseStyle) {
+  if (!text.contains('<b>') &&
+      !text.contains('<i>') &&
+      !text.contains('<u>') &&
+      !text.contains('</b>') &&
+      !text.contains('</i>') &&
+      !text.contains('</u>') &&
+      !text.contains('**') &&
+      !text.contains('*') &&
+      !text.contains('~')) {
+    return [TextSpan(text: text, style: baseStyle)];
+  }
+
+  final List<InlineSpan> spans = [];
+  int index = 0;
+
+  bool isBold = false;
+  bool isItalic = false;
+  bool isUnderline = false;
+
+  TextStyle currentStyle() {
+    var style = baseStyle;
+    if (isBold) {
+      style = style.copyWith(fontWeight: FontWeight.bold);
+    }
+    if (isItalic) {
+      style = style.copyWith(fontStyle: FontStyle.italic);
+    }
+    if (isUnderline) {
+      style = style.copyWith(decoration: TextDecoration.underline);
+    }
+    return style;
+  }
+
+  while (index < text.length) {
+    if (text.startsWith('<b>', index)) {
+      isBold = true;
+      index += 3;
+    } else if (text.startsWith('</b>', index)) {
+      isBold = false;
+      index += 4;
+    } else if (text.startsWith('<i>', index)) {
+      isItalic = true;
+      index += 3;
+    } else if (text.startsWith('</i>', index)) {
+      isItalic = false;
+      index += 4;
+    } else if (text.startsWith('<u>', index)) {
+      isUnderline = true;
+      index += 3;
+    } else if (text.startsWith('</u>', index)) {
+      isUnderline = false;
+      index += 4;
+    } else if (text.startsWith('**', index)) {
+      isBold = !isBold;
+      index += 2;
+    } else if (text.startsWith('*', index)) {
+      isItalic = !isItalic;
+      index += 1;
+    } else if (text.startsWith('~', index)) {
+      isUnderline = !isUnderline;
+      index += 1;
+    } else {
+      int nextTagIndex = text.length;
+      final candidates = ['<b>', '</b>', '<i>', '</i>', '<u>', '</u>', '**', '*', '~'];
+      for (final candidate in candidates) {
+        final pos = text.indexOf(candidate, index);
+        if (pos != -1 && pos < nextTagIndex) {
+          nextTagIndex = pos;
+        }
+      }
+      final chunk = text.substring(index, nextTagIndex);
+      if (chunk.isNotEmpty) {
+        spans.add(TextSpan(text: chunk, style: currentStyle()));
+      }
+      index = nextTagIndex;
+    }
+  }
+
+  return spans.isEmpty ? [TextSpan(text: text, style: baseStyle)] : spans;
+}
+
+class _HeaderCell extends StatefulWidget {
   const _HeaderCell({
     required this.caption,
     required this.alignment,
@@ -2544,6 +3369,7 @@ class _HeaderCell extends StatelessWidget {
     required this.ascending,
     this.onSort,
     this.onResize,
+    this.onDoubleResize,
   });
 
   final String caption;
@@ -2553,14 +3379,22 @@ class _HeaderCell extends StatelessWidget {
   final bool ascending;
   final VoidCallback? onSort;
   final ValueChanged<double>? onResize;
+  final VoidCallback? onDoubleResize;
+
+  @override
+  State<_HeaderCell> createState() => _HeaderCellState();
+}
+
+class _HeaderCellState extends State<_HeaderCell> {
+  DateTime? _lastTapTime;
 
   @override
   Widget build(BuildContext context) {
     // Chevron sort indicator
     Widget? sortIndicator;
-    if (sortable && sorted) {
+    if (widget.sortable && widget.sorted) {
       sortIndicator = Icon(
-        ascending ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+        widget.ascending ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
         size: 16,
         color: Theme.of(context).colorScheme.onSurface,
       );
@@ -2568,14 +3402,14 @@ class _HeaderCell extends StatelessWidget {
 
     final content = GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: sortable ? onSort : null,
+      onTap: widget.sortable ? widget.onSort : null,
       child: MouseRegion(
-        cursor: sortable ? SystemMouseCursors.click : MouseCursor.defer,
+        cursor: widget.sortable ? SystemMouseCursors.click : MouseCursor.defer,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
           child: Row(
             mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: switch (alignment) {
+            mainAxisAlignment: switch (widget.alignment) {
               FxCellAlignment.leading => MainAxisAlignment.start,
               FxCellAlignment.center => MainAxisAlignment.center,
               FxCellAlignment.trailing => MainAxisAlignment.end,
@@ -2583,7 +3417,7 @@ class _HeaderCell extends StatelessWidget {
             children: [
               Flexible(
                 child: Text(
-                  caption,
+                  widget.caption,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontWeight: FontWeight.w600),
@@ -2599,15 +3433,15 @@ class _HeaderCell extends StatelessWidget {
       ),
     );
 
-    final sortAnnouncement = sorted
-        ? (ascending ? ', sorted ascending' : ', sorted descending')
+    final sortAnnouncement = widget.sorted
+        ? (widget.ascending ? ', sorted ascending' : ', sorted descending')
         : '';
     final labelText =
-        '$caption column header${sortable ? ", sortable" : ""}$sortAnnouncement';
+        '${widget.caption} column header${widget.sortable ? ", sortable" : ""}$sortAnnouncement';
 
-    final Widget childWidget = onResize == null
+    final Widget childWidget = widget.onResize == null
         ? Align(
-            alignment: switch (alignment) {
+            alignment: switch (widget.alignment) {
               FxCellAlignment.leading => Alignment.centerLeft,
               FxCellAlignment.center => Alignment.center,
               FxCellAlignment.trailing => Alignment.centerRight,
@@ -2618,7 +3452,7 @@ class _HeaderCell extends StatelessWidget {
             clipBehavior: Clip.none,
             children: [
               Align(
-                alignment: switch (alignment) {
+                alignment: switch (widget.alignment) {
                   FxCellAlignment.leading => Alignment.centerLeft,
                   FxCellAlignment.center => Alignment.center,
                   FxCellAlignment.trailing => Alignment.centerRight,
@@ -2632,11 +3466,23 @@ class _HeaderCell extends StatelessWidget {
                 width: 8,
                 child: MouseRegion(
                   cursor: SystemMouseCursors.resizeLeftRight,
-                  child: GestureDetector(
+                  child: Listener(
                     behavior: HitTestBehavior.opaque,
-                    onHorizontalDragUpdate: (details) {
-                      onResize?.call(details.primaryDelta ?? 0.0);
+                    onPointerDown: (event) {
+                      final now = DateTime.now();
+                      if (_lastTapTime != null &&
+                          now.difference(_lastTapTime!) <
+                              const Duration(milliseconds: 300)) {
+                        widget.onDoubleResize?.call();
+                      }
+                      _lastTapTime = now;
                     },
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onHorizontalDragUpdate: (details) {
+                        widget.onResize?.call(details.primaryDelta ?? 0.0);
+                      },
+                    ),
                   ),
                 ),
               ),
@@ -2645,7 +3491,7 @@ class _HeaderCell extends StatelessWidget {
 
     return Semantics(
       label: labelText,
-      button: sortable,
+      button: widget.sortable,
       enabled: true,
       child: childWidget,
     );
@@ -2697,4 +3543,49 @@ class _GridCellWrapperState extends State<_GridCellWrapper> {
   Widget build(BuildContext context) {
     return widget.child;
   }
+}
+
+bool _isNumericColumn(List<dynamic> rows, String columnId) {
+  if (rows.isEmpty) return false;
+  var hasValues = false;
+  for (final row in rows) {
+    final val = row.cells[columnId];
+    if (val != null && val.toString().trim().isNotEmpty) {
+      hasValues = true;
+      final str = val.toString().trim();
+      final cleanStr = str.endsWith('%') ? str.substring(0, str.length - 1).trim() : str;
+      if (num.tryParse(cleanStr) == null) {
+        return false;
+      }
+    }
+  }
+  return hasValues;
+}
+
+bool _isImplicitCheckbox(dynamic column, Object? value) {
+  if (value == null) return false;
+  final str = value.toString().trim().toLowerCase();
+  return str == 'true' || str == 'false';
+}
+
+double? _parsePercentage(Object? value) {
+  if (value == null) return null;
+  final str = value.toString().trim();
+  if (str.endsWith('%')) {
+    final numStr = str.substring(0, str.length - 1).trim();
+    final val = double.tryParse(numStr);
+    if (val != null) {
+      return val.clamp(0.0, 100.0);
+    }
+  }
+  return null;
+}
+
+FxCellAlignment _getResolvedAlignment(dynamic column, List<dynamic> rows) {
+  if (column.alignment == FxCellAlignment.leading) {
+    if (_isNumericColumn(rows, column.id)) {
+      return FxCellAlignment.trailing;
+    }
+  }
+  return column.alignment;
 }

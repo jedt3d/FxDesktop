@@ -1,3 +1,4 @@
+// ignore_for_file: prefer_initializing_formals
 import 'package:flutter/material.dart';
 
 /// Layout direction for choice controls with multiple options.
@@ -179,7 +180,7 @@ class FxSlider extends StatelessWidget {
   /// Creates an FxDesktop slider.
   const FxSlider({
     super.key,
-    required this.value,
+    required double value,
     this.min = 0,
     this.max = 100,
     this.divisions,
@@ -188,15 +189,47 @@ class FxSlider extends StatelessWidget {
     this.onChangeEnd,
     this.enabled = true,
     this.valueLabel,
-  }) : assert(min <= max, 'min must be less than or equal to max'),
+  }) : value = value,
+       rangeValue = null,
+       onRangeChanged = null,
+       onChangeStartRange = null,
+       onChangeEndRange = null,
+       assert(min <= max, 'min must be less than or equal to max'),
        assert(
          value >= min && value <= max,
          'value must be between min and max',
        ),
        assert(divisions == null || divisions > 0);
 
+  /// Creates an FxDesktop range slider.
+  FxSlider.range({
+    super.key,
+    required RangeValues rangeValue,
+    this.min = 0,
+    this.max = 100,
+    this.divisions,
+    this.onRangeChanged,
+    this.onChangeStartRange,
+    this.onChangeEndRange,
+    this.enabled = true,
+    this.valueLabel,
+  }) : value = null,
+       rangeValue = rangeValue,
+       onChanged = null,
+       onChangeStart = null,
+       onChangeEnd = null,
+       assert(min <= max, 'min must be less than or equal to max'),
+       assert(
+         rangeValue.start >= min && rangeValue.end <= max,
+         'rangeValue values must be between min and max',
+       ),
+       assert(divisions == null || divisions > 0);
+
   /// Current slider value.
-  final double value;
+  final double? value;
+
+  /// Current range slider values.
+  final RangeValues? rangeValue;
 
   /// Minimum allowed value.
   final double min;
@@ -216,6 +249,15 @@ class FxSlider extends StatelessWidget {
   /// Called when a slider drag is committed.
   final ValueChanged<double>? onChangeEnd;
 
+  /// Called when the range slider values change.
+  final ValueChanged<RangeValues>? onRangeChanged;
+
+  /// Called when a range slider drag begins.
+  final ValueChanged<RangeValues>? onChangeStartRange;
+
+  /// Called when a range slider drag is committed.
+  final ValueChanged<RangeValues>? onChangeEndRange;
+
   /// Whether the slider is enabled.
   final bool enabled;
 
@@ -224,24 +266,39 @@ class FxSlider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isEnabled = enabled && onChanged != null;
     final label = valueLabel;
+
+    Widget sliderWidget;
+    if (rangeValue != null) {
+      final isEnabled = enabled && onRangeChanged != null;
+      sliderWidget = RangeSlider(
+        values: rangeValue!,
+        min: min,
+        max: max,
+        divisions: divisions,
+        labels: label != null ? RangeLabels(label, label) : null,
+        onChanged: isEnabled ? onRangeChanged : null,
+        onChangeStart: isEnabled ? onChangeStartRange : null,
+        onChangeEnd: isEnabled ? onChangeEndRange : null,
+      );
+    } else {
+      final isEnabled = enabled && onChanged != null;
+      sliderWidget = Slider(
+        value: value!,
+        min: min,
+        max: max,
+        divisions: divisions,
+        label: label,
+        onChanged: isEnabled ? onChanged : null,
+        onChangeStart: isEnabled ? onChangeStart : null,
+        onChangeEnd: isEnabled ? onChangeEnd : null,
+      );
+    }
 
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Expanded(
-          child: Slider(
-            value: value,
-            min: min,
-            max: max,
-            divisions: divisions,
-            label: label,
-            onChanged: isEnabled ? onChanged : null,
-            onChangeStart: isEnabled ? onChangeStart : null,
-            onChangeEnd: isEnabled ? onChangeEnd : null,
-          ),
-        ),
+        Expanded(child: sliderWidget),
         if (label != null) ...[
           const SizedBox(width: 8),
           Text(label, style: Theme.of(context).textTheme.bodySmall),

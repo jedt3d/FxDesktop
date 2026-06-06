@@ -413,3 +413,32 @@ Milestone 3 is complete when:
 - undo integration boundaries are documented and tested.
 - all `0.3.x` phase releases are merged to `main`, tagged, and published as
   GitHub Releases.
+
+## Refinements in v0.3.3
+
+### Capped Column Auto-Sizing & Line-Wrapping
+- **Double-click auto-fit**: Double-clicking the header resize border automatically adjusts the column width to fit the longest content.
+- **50% Total Width Cap**: If the fit-content width exceeds 50% of the total table width, the column is capped at 50% width and line wrapping is automatically enabled (`true`). Otherwise, line wrapping is disabled (`false`).
+- **Parent State Synchronization**: In `didUpdateWidget`, if the column descriptor's `lineWrap` property is modified by the parent widget, any local wrapping override is removed, syncing the layout state with the parent.
+
+### Undo/Redo Layout Integration
+- **Atomic Actions**: Auto-fitting changes both width and wrapping state in a single committed `FxUndoAction`.
+- **Manual Switches**: Switch toggles on Page 8 are integrated with `FxUndoController.commitValue` for undoable manual wrapping toggles.
+
+## Refinements in v0.3.4
+
+### Range Slider (`FxSlider.range`)
+- **Dual-Value Selection**: A range slider constructor that allows users to adjust both start (minimum) and end (maximum) values on a single track.
+- **Parity with Desktop Slider Ranges**: Implements double thumb indicators with bounds checking and optional divisions.
+
+### Drag-and-Drop Row Reordering
+- **Virtual Grab Handles**: Renders a dedicated drag-handle column at index 0 when `allowRowReordering` is true.
+- **Insertion Indicator**: Draws dynamic top/bottom row borders when dragging over target rows to indicate where the row will be dropped.
+- **Reorder Callbacks**: Triggers the `onRowReordered` callback allowing developers to update their data models.
+
+### Selection Crosshairs
+- **Darker Target Borders**: Highlights the row and column boundaries corresponding to the active/selected cell by painting their borders 50% darker than the default grid line color, improving readability in dense layouts.
+
+### Inline Rich Styled Text Cells
+- **Styled Cell Formatting**: Renders formatted text blocks inline within cells when `supportStyledText` is true.
+- **Supported Tags**: Markdown (`**` for bold, `*` for italic, `~` for underline) and HTML (`<b>`, `<i>`, `<u>`) styles are parsed efficiently in `O(N)` time and rendered using rich text span hierarchies.
