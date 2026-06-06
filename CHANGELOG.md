@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.1
+
+Version `0.3.1` introduces the interactive `listbox_demo` spec gallery application for desktop platforms and polishes the scrollbar behavior in the table components.
+
+### Added
+- **FxListBox Interactive Spec Gallery**: A standalone Flutter desktop gallery demonstrating all 7 feature areas (Selection, Column Sizing/Resizing, Sorting, Inline Editing, Validation, Table States, and Scale/Virtualization) on PagePanel screens.
+- **Draggable Multi-Axis Scrollbars**: Embedded axis-filtered draggable vertical and horizontal scrollbars (`thumbVisibility: true`) in both `FxListBox` and `FxGrid` using nested `Scrollbar` containers.
+- **Theme Synchronization**: Synced the interactive spec gallery UI colors with the light theme of the main example app (seed color `0xff2563eb`, scaffold background `0xfff6f7f9`).
+
 ## 0.3.0
 
 Version `0.3.0` completes Milestone 3, delivering high-performance, deep implementations of the row-oriented `FxListBox` (matching Xojo `DesktopListBox`) and cell-oriented `FxGrid` (matching Xojo `DesktopGrid`) controls. 
