@@ -212,7 +212,6 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
     );
   }
 
-  // --- HEADER WIDGET ---
   Widget _buildHeader(ThemeData theme) {
     return Container(
       color: const Color(0xFF1E293B), // Slate 800
@@ -220,46 +219,57 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              Icon(
-                Icons.table_rows,
-                color: theme.colorScheme.primary,
-                size: 28,
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'FxListBox Interactive Spec Gallery',
-                style: theme.textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.5,
-                  color: Colors.white,
+          Expanded(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.table_rows,
+                  color: theme.colorScheme.primary,
+                  size: 28,
                 ),
-              ),
-              const SizedBox(width: 12),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
+                const SizedBox(width: 12),
+                Flexible(
+                  child: Text(
+                    'FxListBox Interactive Spec Gallery',
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
-                child: const Text(
-                  'v0.3.0 Ready',
-                  style: TextStyle(
-                    color: Color(0xFF38BDF8),
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
+                const SizedBox(width: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: const Text(
+                    'v0.3.0 Ready',
+                    style: TextStyle(
+                      color: Color(0xFF38BDF8),
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-
+          const SizedBox(width: 16),
           // Page Panel Navigation Controls
           Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               FxButton(
                 label: 'Previous',

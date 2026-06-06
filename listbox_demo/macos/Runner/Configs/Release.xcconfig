@@ -1,2 +1,5 @@
 #include "../../Flutter/Flutter-Release.xcconfig"
 #include "Warnings.xcconfig"
+
+SYMROOT = /tmp/build/listbox_demo
+OBJROOT = /tmp/build/listbox_demo/intermediates
