@@ -945,12 +945,14 @@ class _FxListBoxState extends State<FxListBox> {
               child: Scrollbar(
                 controller: _verticalController,
                 interactive: true,
+                thumbVisibility: true,
                 notificationPredicate: (notification) =>
                     notification.depth == 0 &&
                     notification.metrics.axis == Axis.vertical,
                 child: Scrollbar(
                   controller: _horizontalController,
                   interactive: true,
+                  thumbVisibility: true,
                   notificationPredicate: (notification) =>
                       notification.depth == 0 &&
                       notification.metrics.axis == Axis.horizontal,
@@ -2130,12 +2132,14 @@ class _FxGridState extends State<FxGrid> {
               child: Scrollbar(
                 controller: _verticalController,
                 interactive: true,
+                thumbVisibility: true,
                 notificationPredicate: (notification) =>
                     notification.depth == 0 &&
                     notification.metrics.axis == Axis.vertical,
                 child: Scrollbar(
                   controller: _horizontalController,
                   interactive: true,
+                  thumbVisibility: true,
                   notificationPredicate: (notification) =>
                       notification.depth == 0 &&
                       notification.metrics.axis == Axis.horizontal,
