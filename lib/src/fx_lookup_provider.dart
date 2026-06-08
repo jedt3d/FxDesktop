@@ -8,8 +8,11 @@ class FxLookupItem<K> {
   /// The human-readable string displayed in the UI.
   final String display;
 
+  /// Additional column values for multi-column dropdowns.
+  final List<String>? extraDetails;
+
   /// Creates a lookup item.
-  const FxLookupItem(this.key, this.display);
+  const FxLookupItem(this.key, this.display, [this.extraDetails]);
 }
 
 /// A contract for resolving raw keys (IDs) to display values and retrieving selection options.
@@ -22,6 +25,9 @@ abstract class FxLookupProvider<K> {
 
   /// Fetches options for selection, supporting search query filtering.
   FutureOr<List<FxLookupItem<K>>> getOptions(String query);
+
+  /// Returns the headers for a multi-column dropdown, if supported.
+  List<String> getLookupHeaders() => const [];
 
   /// Converts this lookup provider configuration to JSON.
   Map<String, Object?> toJson();
@@ -94,6 +100,69 @@ class FxEnumLookupProvider<T extends Enum> extends FxLookupProvider<T> {
       'type': 'enum',
       'values': values.map((e) => e.name).toList(),
       'labels': labels?.map((key, value) => MapEntry(key.name, value)),
+    };
+  }
+}
+
+/// A database-style multi-column lookup provider.
+class FxDbLookupProvider<K> extends FxLookupProvider<K> {
+  /// The headers of the lookup columns.
+  final List<String> headers;
+
+  /// The map of keys to a list of strings representing the row values.
+  final Map<K, List<String>> recordMap;
+
+  /// Index of the column within the list of values that contains the main display value.
+  final int displayColumnIndex;
+
+  /// Creates a database-style lookup provider.
+  const FxDbLookupProvider({
+    required this.headers,
+    required this.recordMap,
+    this.displayColumnIndex = 0,
+  });
+
+  @override
+  String getDisplayValue(K key) {
+    final record = recordMap[key];
+    if (record == null || record.isEmpty) return key.toString();
+    if (displayColumnIndex < record.length) {
+      return record[displayColumnIndex];
+    }
+    return record.first;
+  }
+
+  @override
+  FutureOr<List<FxLookupItem<K>>> getOptions(String query) {
+    final results = <FxLookupItem<K>>[];
+    final lowercaseQuery = query.toLowerCase();
+    for (final entry in recordMap.entries) {
+      final record = entry.value;
+      final matches =
+          query.isEmpty ||
+          record.any((col) => col.toLowerCase().contains(lowercaseQuery));
+      if (matches) {
+        final display = displayColumnIndex < record.length
+            ? record[displayColumnIndex]
+            : (record.isNotEmpty ? record.first : '');
+        results.add(FxLookupItem(entry.key, display, record));
+      }
+    }
+    return results;
+  }
+
+  @override
+  List<String> getLookupHeaders() => headers;
+
+  @override
+  Map<String, Object?> toJson() {
+    return {
+      'type': 'db',
+      'headers': headers,
+      'recordMap': recordMap.map(
+        (key, value) => MapEntry(key.toString(), value),
+      ),
+      'displayColumnIndex': displayColumnIndex,
     };
   }
 }

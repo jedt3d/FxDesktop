@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.6
+
+Version `0.3.6` introduces advanced enterprise cell editing features: cell action buttons, input masking, and multi-column lookups.
+
+### Added
+- **Multi-Column Lookup (`FxDbLookupProvider`)**: Added database-style multi-column lookup supporting multiple detail headers and columns in dropdown selectors.
+- **Cell Action/Ellipsis Buttons**: Added `hasActionButton`, `actionIcon`, and `onActionPressed` callback to `FxListBoxColumn` and `FxGridColumn` for custom ellipsis action dialog integration.
+- **Input Masking (`FxMaskTextInputFormatter`)**: Built custom regex-based input formatter for applying patterns like phone format `(###) ###-####` and SSN `###-##-####` on-the-fly.
+- **Demo Gallery Page 11**: Created interactive demonstration featuring input mask formatting, ellipsis file picking, and tabular database lookups.
+
 ## 0.3.5
 
 Version `0.3.5` introduces custom cell rendering, database-grade key-value lookups, and hosted combobox overlays.

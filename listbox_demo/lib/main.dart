@@ -25,11 +25,7 @@ class FxListBoxDemoApp extends StatelessWidget {
   }
 }
 
-enum TaskPriority {
-  low,
-  medium,
-  high,
-}
+enum TaskPriority { low, medium, high }
 
 class DemoGalleryPage extends StatefulWidget {
   const DemoGalleryPage({super.key});
@@ -40,13 +36,53 @@ class DemoGalleryPage extends StatefulWidget {
 
 class _DemoGalleryPageState extends State<DemoGalleryPage> {
   int _currentPageIndex = 0;
-  static const int _totalPages = 10;
+  static const int _totalPages = 11;
 
   // Page 10: Lookup Fields & Custom Rendering
   final List<Map<String, Object?>> _lookupDataPage10 = [
-    {'id': 'item-1', 'category_id': 1, 'priority': TaskPriority.high, 'sales_trend': [10.0, 15.0, 8.0, 25.0, 30.0]},
-    {'id': 'item-2', 'category_id': 2, 'priority': TaskPriority.medium, 'sales_trend': [20.0, 10.0, 15.0, 12.0, 18.0]},
-    {'id': 'item-3', 'category_id': 1, 'priority': TaskPriority.low, 'sales_trend': [5.0, 8.0, 12.0, 15.0, 10.0]},
+    {
+      'id': 'item-1',
+      'category_id': 1,
+      'priority': TaskPriority.high,
+      'sales_trend': [10.0, 15.0, 8.0, 25.0, 30.0],
+    },
+    {
+      'id': 'item-2',
+      'category_id': 2,
+      'priority': TaskPriority.medium,
+      'sales_trend': [20.0, 10.0, 15.0, 12.0, 18.0],
+    },
+    {
+      'id': 'item-3',
+      'category_id': 1,
+      'priority': TaskPriority.low,
+      'sales_trend': [5.0, 8.0, 12.0, 15.0, 10.0],
+    },
+  ];
+
+  // Page 11: Advanced Grid Editors
+  final List<Map<String, Object?>> _advancedEditorsDataPage11 = [
+    {
+      'id': 'item-1',
+      'vendor_code': 'V01',
+      'phone': '(555) 019-8234',
+      'ssn': '987-65-4321',
+      'attachment': 'invoice_v01.pdf',
+    },
+    {
+      'id': 'item-2',
+      'vendor_code': 'V02',
+      'phone': '(555) 024-9988',
+      'ssn': '123-45-6789',
+      'attachment': 'contract_final.docx',
+    },
+    {
+      'id': 'item-3',
+      'vendor_code': 'V03',
+      'phone': '(555) 038-1234',
+      'ssn': '456-78-9012',
+      'attachment': 'receipt.png',
+    },
   ];
 
   // Event Log Console
@@ -173,7 +209,8 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
       'status': 'true',
       'score': 22400,
       'progress': '55%',
-      'notes': 'Stable condition. Active physical exercises **maintained regularly**.',
+      'notes':
+          'Stable condition. Active physical exercises **maintained regularly**.',
     },
   ];
   final Map<String, double> _page8ColumnWidths = {};
@@ -182,7 +219,7 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
   RangeValues _sliderRange = const RangeValues(20, 80);
   RangeValues? _sliderDragStartRange;
   Set<({String rowId, String columnId})> _selectedGridCellsPage9 = {
-    (rowId: 'row-1', columnId: 'col-2')
+    (rowId: 'row-1', columnId: 'col-2'),
   };
   final List<Map<String, Object?>> _gridDataPage9 = [
     {'id': 'row-1', 'col-1': 'Cell A1', 'col-2': 'Cell B1', 'col-3': 'Cell C1'},
@@ -259,6 +296,7 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
                             _buildPage8AdvancedFeatures(),
                             _buildPage9RangeSliderAndCrosshairs(),
                             _buildPage10LookupAndBadges(),
+                            _buildPage11AdvancedEditors(),
                           ],
                         ),
                       ),
@@ -378,6 +416,7 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
       'Excel-Style Advanced Features',
       'Range Slider & Crosshair Highlight',
       'Lookup Fields & Custom Rendering',
+      'Advanced Grid Editors',
     ];
 
     final descriptions = [
@@ -437,6 +476,11 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
           '• Category (Lookup Map): stores integer IDs (e.g. 1) under the hood but displays and edits human-readable labels (e.g. Electronics) using a dropdown ComboBox.\n'
           '• Priority (Lookup Enum): stores TaskPriority enum values but resolves them using custom enum labels.\n'
           '• Sales Trend (Sparkline): uses custom cellRenderer to draw a lightweight Canvas line chart with cached RepaintBoundary.',
+      'Demonstrates advanced Delphi-style inline cell editing controls:\n\n'
+          '• Multi-Column Lookup: double-click Vendor column to see code, name, and rating dropdown table.\n'
+          '• Input Masking: edit Phone or SSN columns. Input characters are formatted on-the-fly according to the mask.\n'
+          '• Ellipsis Action Button: edit Attachment column. The ellipsis icon button opens a simulated file selector dialog.\n'
+          '• Undo/Redo: edits are recorded, use Undo/Redo buttons below.',
     ];
 
     final guidanceSteps = [
@@ -505,6 +549,13 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
         'Double-click a cell in the Priority column and change the enum value.',
         'Observe the custom Canvas-drawn Sales Trend sparklines rendering inline.',
         'Observe that clicking Undo/Redo in the console correctly reverts lookup selection changes.',
+      ],
+      [
+        'Double-click Vendor column to open multi-column dropdown, select a vendor.',
+        'Double-click Phone column to edit; type only numbers and watch them format.',
+        'Double-click SSN column to edit; notice the SSN mask constraint.',
+        'Double-click Attachment cell, then click the Ellipsis [...] action button to simulate picking a file.',
+        'Observe Undo/Redo functionality reverts actions accurately.',
       ],
     ];
 
@@ -1469,7 +1520,9 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
                       final item = _advancedData.removeAt(newIndex);
                       _advancedData.insert(oldIndex, item);
                     });
-                    _log('Page 8 Revert reordered rows: $newIndex -> $oldIndex');
+                    _log(
+                      'Page 8 Revert reordered rows: $newIndex -> $oldIndex',
+                    );
                   },
                 ),
               );
@@ -1491,12 +1544,16 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
             },
             onCellEdited: (rowId, columnId, newValue) {
               setState(() {
-                final rowIndex = _advancedData.indexWhere((r) => r['id'] == rowId);
+                final rowIndex = _advancedData.indexWhere(
+                  (r) => r['id'] == rowId,
+                );
                 if (rowIndex != -1) {
                   _advancedData[rowIndex][columnId] = newValue;
                 }
               });
-              _log('Page 8 Edited Cell: Row: $rowId, Col: $columnId -> $newValue');
+              _log(
+                'Page 8 Edited Cell: Row: $rowId, Col: $columnId -> $newValue',
+              );
             },
           ),
         ),
@@ -1543,7 +1600,11 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
             ),
             const Text(
               'Try: Double-click resize borders, toggle Line Wrap, edit Insured checkboxes.',
-              style: TextStyle(fontSize: 12, color: Color(0xFF64748B), fontStyle: FontStyle.italic),
+              style: TextStyle(
+                fontSize: 12,
+                color: Color(0xFF64748B),
+                fontStyle: FontStyle.italic,
+              ),
             ),
           ],
         ),
@@ -1612,18 +1673,22 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
                   min: 0,
                   max: 100,
                   divisions: 20,
-                  valueLabel: '${_sliderRange.start.round()} - ${_sliderRange.end.round()}',
+                  valueLabel:
+                      '${_sliderRange.start.round()} - ${_sliderRange.end.round()}',
                   onRangeChanged: (val) {
                     setState(() {
                       _sliderRange = val;
                     });
-                    _log('Range Slider changed: ${val.start.round()} - ${val.end.round()}');
+                    _log(
+                      'Range Slider changed: ${val.start.round()} - ${val.end.round()}',
+                    );
                   },
                   onChangeStartRange: (val) {
                     _sliderDragStartRange = val;
                   },
                   onChangeEndRange: (val) {
-                    final startVal = _sliderDragStartRange ?? const RangeValues(20, 80);
+                    final startVal =
+                        _sliderDragStartRange ?? const RangeValues(20, 80);
                     _undoController.commitValue<RangeValues>(
                       'Range Slider',
                       oldValue: startVal,
@@ -1632,7 +1697,9 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
                         setState(() {
                           _sliderRange = newRange;
                         });
-                        _log('Undo/Redo Range Slider: ${newRange.start.round()} - ${newRange.end.round()}');
+                        _log(
+                          'Undo/Redo Range Slider: ${newRange.start.round()} - ${newRange.end.round()}',
+                        );
                       },
                     );
                   },
@@ -1659,7 +1726,9 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
               });
               if (cells.isNotEmpty) {
                 final cell = cells.last;
-                _log('Selected Grid Cell: Row: ${cell.rowId}, Col: ${cell.columnId}');
+                _log(
+                  'Selected Grid Cell: Row: ${cell.rowId}, Col: ${cell.columnId}',
+                );
               }
             },
           ),
@@ -1667,7 +1736,11 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
         const SizedBox(height: 8),
         const Text(
           'Try: Click or use arrow keys to navigate the grid cells. The selected cell\'s row and column borders are redrawn 50% darker.',
-          style: TextStyle(fontSize: 12, color: Color(0xFF64748B), fontStyle: FontStyle.italic),
+          style: TextStyle(
+            fontSize: 12,
+            color: Color(0xFF64748B),
+            fontStyle: FontStyle.italic,
+          ),
         ),
       ],
     );
@@ -1680,7 +1753,7 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
       2: 'Apparel',
       3: 'Office Supplies',
     });
-    
+
     final priorityProvider = FxEnumLookupProvider<TaskPriority>(
       values: TaskPriority.values,
       labels: const {
@@ -1695,7 +1768,9 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
       children: [
         Text(
           'Page 10: Lookup Fields & Custom Rendering',
-          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
         ),
         const SizedBox(height: 8),
         Expanded(
@@ -1724,40 +1799,187 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
                 id: 'sales_trend',
                 caption: 'Sales Trend (Sparkline Renderer)',
                 width: const FxColumnWidth.fixed(220),
-                cellRenderer: (context, rowId, columnId, value, isSelected, isHovered) {
-                  final list = (value as List?)?.cast<double>() ?? const <double>[];
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Row(
-                      children: [
-                        SparklineWidget(values: list),
-                        const SizedBox(width: 8),
-                        Text(list.isNotEmpty ? '${list.last.round()}%' : 'N/A', style: const TextStyle(fontSize: 12)),
-                      ],
-                    ),
-                  );
-                },
+                cellRenderer:
+                    (context, rowId, columnId, value, isSelected, isHovered) {
+                      final list =
+                          (value as List?)?.cast<double>() ?? const <double>[];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Row(
+                          children: [
+                            SparklineWidget(values: list),
+                            const SizedBox(width: 8),
+                            Text(
+                              list.isNotEmpty ? '${list.last.round()}%' : 'N/A',
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
               ),
             ],
             rows: [
               for (final map in _lookupDataPage10)
-                FxListBoxRow(
-                  id: map['id'] as String,
-                  cells: map,
-                ),
+                FxListBoxRow(id: map['id'] as String, cells: map),
             ],
             onCellEdited: (rowId, colId, newValue) {
-              final oldValue = _lookupDataPage10.firstWhere((r) => r['id'] == rowId)[colId];
+              final oldValue = _lookupDataPage10.firstWhere(
+                (r) => r['id'] == rowId,
+              )[colId];
               _undoController.commitValue<Object?>(
                 'Edit Category/Priority',
                 oldValue: oldValue,
                 newValue: newValue,
                 apply: (val) {
                   setState(() {
-                    final row = _lookupDataPage10.firstWhere((r) => r['id'] == rowId);
+                    final row = _lookupDataPage10.firstWhere(
+                      (r) => r['id'] == rowId,
+                    );
                     row[colId] = val;
                   });
                   _log('Edit Page 10 commit: Row $rowId, Col $colId -> $val');
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _simulateFilePicker(String rowId, String colId, String currentValue) {
+    showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('File Selection Simulator'),
+          content: const Text(
+            'Okay this is the simulation of a file selector.\n\n'
+            'Press OK to attach a new generated random file name.',
+            style: TextStyle(fontSize: 13),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    ).then((confirmed) {
+      if (confirmed == true) {
+        final randNum = DateTime.now().millisecond;
+        final newValue = 'attachment_$randNum.pdf';
+
+        final oldValue = _advancedEditorsDataPage11.firstWhere(
+          (r) => r['id'] == rowId,
+        )[colId];
+        _undoController.commitValue<Object?>(
+          'Attach Simulated File',
+          oldValue: oldValue,
+          newValue: newValue,
+          apply: (val) {
+            setState(() {
+              final row = _advancedEditorsDataPage11.firstWhere(
+                (r) => r['id'] == rowId,
+              );
+              row[colId] = val;
+            });
+            _log('File picked: Row $rowId, Col $colId -> $val');
+          },
+        );
+      }
+    });
+  }
+
+  Widget _buildPage11AdvancedEditors() {
+    final theme = Theme.of(context);
+    final vendorProvider = FxDbLookupProvider<String>(
+      headers: const ['Code', 'Vendor Name', 'Rating'],
+      recordMap: const {
+        'V01': ['V01', 'Acme Corp', '★★★★★'],
+        'V02': ['V02', 'Globex Industries', '★★★★☆'],
+        'V03': ['V03', 'Initech LLC', '★★★☆☆'],
+        'V04': ['V04', 'Umbrella Corp', '★★★★★'],
+      },
+      displayColumnIndex: 1,
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          'Page 11: Advanced Grid Editors',
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Expanded(
+          child: FxListBox(
+            columns: [
+              const FxListBoxColumn(
+                id: 'id',
+                caption: 'ID',
+                width: FxColumnWidth.fixed(80),
+              ),
+              FxListBoxColumn(
+                id: 'vendor_code',
+                caption: 'Vendor (Multi-Col Lookup)',
+                editable: true,
+                type: FxCellType.lookup(vendorProvider),
+                width: const FxColumnWidth.fixed(220),
+              ),
+              const FxListBoxColumn(
+                id: 'phone',
+                caption: 'Phone (Input Mask)',
+                editable: true,
+                inputMask: '(###) ###-####',
+                width: FxColumnWidth.fixed(160),
+              ),
+              const FxListBoxColumn(
+                id: 'ssn',
+                caption: 'SSN (Input Mask)',
+                editable: true,
+                inputMask: '###-##-####',
+                width: FxColumnWidth.fixed(150),
+              ),
+              FxListBoxColumn(
+                id: 'attachment',
+                caption: 'Attachment (Ellipsis Action)',
+                editable: true,
+                hasActionButton: true,
+                onActionPressed: (rowId, colId, value) {
+                  _simulateFilePicker(rowId, colId, value?.toString() ?? '');
+                },
+                width: const FxColumnWidth.fixed(200),
+              ),
+            ],
+            rows: [
+              for (final map in _advancedEditorsDataPage11)
+                FxListBoxRow(id: map['id'] as String, cells: map),
+            ],
+            onCellEdited: (rowId, colId, newValue) {
+              final oldValue = _advancedEditorsDataPage11.firstWhere(
+                (r) => r['id'] == rowId,
+              )[colId];
+              _undoController.commitValue<Object?>(
+                'Edit Page 11 $colId',
+                oldValue: oldValue,
+                newValue: newValue,
+                apply: (val) {
+                  setState(() {
+                    final row = _advancedEditorsDataPage11.firstWhere(
+                      (r) => r['id'] == rowId,
+                    );
+                    row[colId] = val;
+                  });
+                  _log('Edit Page 11 commit: Row $rowId, Col $colId -> $val');
                 },
               );
             },

@@ -260,6 +260,13 @@ const fxComponentRegistry = <FxComponentDescriptor>[
     supportLevel: FxComponentSupportLevel.custom,
     notes: 'Data/cell grid control, not the CSS-like FxGridLayout manager.',
   ),
+  FxComponentDescriptor(
+    id: 'fx.lookup_combo_box',
+    name: 'FxLookupComboBox',
+    xojoDesktopClass: 'DesktopComboBox',
+    supportLevel: FxComponentSupportLevel.custom,
+    notes: 'A hosted lookup dropdown combo box cell editor.',
+  ),
 ];
 
 /// A compact desktop button comparable to Xojo's DesktopButton.

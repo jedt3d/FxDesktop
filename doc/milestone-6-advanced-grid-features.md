@@ -1,0 +1,113 @@
+# Advanced Grid Features (v0.3.6)
+
+This document describes the design, implementation, and usage of the advanced grid features introduced in `v0.3.6` for both `FxListBox` and `FxGrid`. These features build upon the core table infrastructure to deliver professional, enterprise-grade capabilities comparable to high-end desktop/VCL grids (e.g. Delphi InfoPower/DevExpress).
+
+---
+
+## 1. Multi-Column Database Lookups (`FxDbLookupProvider`)
+
+To support foreign-key relations where the visual option list requires more details than a simple label, `v0.3.6` extends the lookup framework to support multi-column tabular dropdown overlays.
+
+### Key Classes:
+* **`FxLookupItem<K>`**: Extended to contain an optional list of extra column details (`List<String>? extraDetails`).
+* **`FxDbLookupProvider<K>`**: A specialized database-grade lookup provider.
+  ```dart
+  const FxDbLookupProvider({
+    required this.headers,
+    required this.recordMap,
+    this.displayColumnIndex = 0,
+  });
+  ```
+
+### Behavior:
+When `getLookupHeaders()` returns a non-empty list of headers, the hosted combo box dropdown overlay (`FxLookupComboBox`) automatically upgrades its layout:
+1. Renders a tabular layout showing a bold header row at the top.
+2. Formats all options as rows matching the header columns.
+3. Automatically widens the overlay panel to fit multi-column details.
+4. Highlights the selected option and returns its raw key to the commit stream when tapped or selected via keyboard.
+
+---
+
+## 2. Input Masking (`FxMaskTextInputFormatter`)
+
+Input masking ensures that data typed into cell text fields strictly conforms to formatted pattern rules on-the-fly.
+
+### Placeholder Rules:
+* `#` — matches a digit (`0–9`)
+* `A` — matches a letter (`a–z`, `A–Z`)
+* `*` — matches any character
+* Any other character is treated as a literal separator.
+
+### Usage:
+Set the `inputMask` property on `FxListBoxColumn` or `FxGridColumn`:
+```dart
+const FxListBoxColumn(
+  id: 'phone',
+  caption: 'Phone Number',
+  editable: true,
+  inputMask: '(###) ###-####',
+);
+```
+When editing is activated, the text field automatically attaches `FxMaskTextInputFormatter`, restricting input and formatting the visible characters as the user types.
+
+---
+
+## 3. Ellipsis/Cell Action Buttons
+
+Action buttons allow cell editors to branch out into complex workflows (e.g., opening a modal folder/file picker, choosing dates, or loading a dialog) without cluttering the grid canvas.
+
+### Column Configuration:
+* `hasActionButton`: Set to `true` to display an action button inside the active cell editor.
+* `actionIcon`: (Optional) Custom icon (defaults to `Icons.more_horiz`).
+* `onActionPressed`: Callback triggered when the action button is clicked. Exposes `rowId`, `columnId`, and the current cell `value`.
+
+### Simulated File Picker Example:
+```dart
+FxListBoxColumn(
+  id: 'attachment',
+  caption: 'Attachment',
+  editable: true,
+  hasActionButton: true,
+  onActionPressed: (rowId, colId, value) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('File Selection Simulator'),
+        content: const Text('Okay this is the simulation of a file selector.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop('attachment_rand.pdf'),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    ).then((newValue) {
+      if (newValue != null) {
+        // Commit file pick to Undo/Redo stack
+        undoController.commitValue(
+          'Attach File',
+          oldValue: currentValue,
+          newValue: newValue,
+          apply: (val) => updateRowAttachment(rowId, val),
+        );
+      }
+    });
+  },
+);
+```
+
+---
+
+## 4. Active Row/Column Background Saturation Highlighting
+
+To make the active selected cell, row, and column stand out cleanly without using heavy, intrusive border lines (which can distort grid lines and text readability), `v0.3.6` introduces **Background Saturation Highlighting**.
+
+### How it Works:
+1. **Border Reset**: The active cell row/column borders use standard grid border rendering. No heavy border lines are overlayed.
+2. **Subtle Hue Tint**: The entire active row and active column containing the selected cell are highlighted by increasing their background color's saturation by 20%.
+3. **Cohesive Theme Pastel Colors**:
+   - If the background is white/grey (saturation < 0.03), it dynamically applies the theme's primary color hue with a light lightness offset (`lightness = 0.92`).
+   - If the cell already has a custom background color (e.g. conditional formatting alerts), it scales that specific color's saturation.
+   - The selected cell itself preserves its primary selection color, creating a clear focal crosshair that is visually premium and easy to scan.
+
+---

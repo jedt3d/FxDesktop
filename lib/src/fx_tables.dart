@@ -221,13 +221,15 @@ sealed class FxCellType {
         if (providerJson != null) {
           final pType = providerJson['type'] as String?;
           if (pType == 'map') {
-            final mapData = (providerJson['map'] as Map?)?.cast<Object?, String>().map(
+            final mapData =
+                (providerJson['map'] as Map?)?.cast<Object?, String>().map(
                   (k, v) => MapEntry(k, v),
                 ) ??
                 const <Object?, String>{};
             provider = FxMapLookupProvider(mapData);
           } else if (pType == 'enum') {
-            final labels = (providerJson['labels'] as Map?)?.cast<String, String>() ??
+            final labels =
+                (providerJson['labels'] as Map?)?.cast<String, String>() ??
                 const <String, String>{};
             provider = FxMapLookupProvider<String>(labels);
           } else {
@@ -286,20 +288,21 @@ class FxLookupCellType extends FxCellType {
 
   @override
   Map<String, Object?> toJson() => {
-        'type': 'lookup',
-        'provider': provider.toJson(),
-      };
+    'type': 'lookup',
+    'provider': provider.toJson(),
+  };
 }
 
 /// Callback signature for custom cell rendering.
-typedef FxCellRendererBuilder = Widget Function(
-  BuildContext context,
-  String rowId,
-  String columnId,
-  Object? value,
-  bool isSelected,
-  bool isHovered,
-);
+typedef FxCellRendererBuilder =
+    Widget Function(
+      BuildContext context,
+      String rowId,
+      String columnId,
+      Object? value,
+      bool isSelected,
+      bool isHovered,
+    );
 
 /// A column descriptor for [FxListBox].
 class FxListBoxColumn {
@@ -317,6 +320,10 @@ class FxListBoxColumn {
     this.lineWrap = false,
     this.supportStyledText = false,
     this.cellRenderer,
+    this.hasActionButton = false,
+    this.actionIcon,
+    this.onActionPressed,
+    this.inputMask,
   });
 
   /// Stable column id.
@@ -354,6 +361,20 @@ class FxListBoxColumn {
 
   /// Optional custom cell renderer builder callback.
   final FxCellRendererBuilder? cellRenderer;
+
+  /// Whether to show an action/ellipsis button at the end of the cell editor.
+  final bool hasActionButton;
+
+  /// Custom icon for the action button. Defaults to `Icons.more_horiz`.
+  final IconData? actionIcon;
+
+  /// Callback invoked when the action button is pressed.
+  final void Function(String rowId, String columnId, Object? value)?
+  onActionPressed;
+
+  /// Input mask pattern for text fields (e.g., '(###) ###-####').
+  /// '#' matches a digit, 'A' matches a letter, '*' matches any character.
+  final String? inputMask;
 
   /// Converts this column to JSON.
   Map<String, Object?> toJson() {
@@ -503,7 +524,7 @@ class FxListBox extends StatefulWidget {
 
   /// Callback to build conditional background color for a cell.
   final Color? Function(String rowId, String columnId, Object? value)?
-      cellBackgroundColorBuilder;
+  cellBackgroundColorBuilder;
 
   /// Whether manual drag-and-drop row reordering is allowed.
   final bool allowRowReordering;
@@ -676,10 +697,15 @@ class _FxListBoxState extends State<FxListBox> {
   }
 
   void _startEditing(String rowId, String columnId, Object? currentValue) {
-    final col = widget.columns.firstWhere((c) => c.id == columnId, orElse: () => widget.columns.first);
+    final col = widget.columns.firstWhere(
+      (c) => c.id == columnId,
+      orElse: () => widget.columns.first,
+    );
     final String initialText;
     if (col.type is FxLookupCellType) {
-      initialText = (col.type as FxLookupCellType).provider.getDisplayValue(currentValue);
+      initialText = (col.type as FxLookupCellType).provider.getDisplayValue(
+        currentValue,
+      );
     } else {
       initialText = currentValue?.toString() ?? '';
     }
@@ -761,7 +787,10 @@ class _FxListBoxState extends State<FxListBox> {
       _focusNode.addListener(_onFocusChanged);
     }
     for (final col in widget.columns) {
-      final oldCol = oldWidget.columns.firstWhere((c) => c.id == col.id, orElse: () => col);
+      final oldCol = oldWidget.columns.firstWhere(
+        (c) => c.id == col.id,
+        orElse: () => col,
+      );
       if (oldCol.lineWrap != col.lineWrap) {
         _columnLineWrapOverrides.remove(col.id);
       }
@@ -1010,22 +1039,30 @@ class _FxListBoxState extends State<FxListBox> {
     }
   }
 
-  double _getRowHeight(FxListBoxRow row, List<FxListBoxColumn> visibleColumns, double totalWidth) {
+  double _getRowHeight(
+    FxListBoxRow row,
+    List<FxListBoxColumn> visibleColumns,
+    double totalWidth,
+  ) {
     if (row.height != null) {
       return row.height!;
     }
     double maxCellHeight = widget.rowHeight;
     final defaultStyle = DefaultTextStyle.of(context).style;
-    final cellStyle = defaultStyle.merge(const TextStyle(fontWeight: FontWeight.normal));
+    final cellStyle = defaultStyle.merge(
+      const TextStyle(fontWeight: FontWeight.normal),
+    );
 
     for (final col in visibleColumns) {
       if (_getColumnLineWrap(col)) {
         final rawValue = row.cells[col.id];
-        if (rawValue != null && rawValue is! bool && !_isImplicitCheckbox(col, rawValue)) {
+        if (rawValue != null &&
+            rawValue is! bool &&
+            !_isImplicitCheckbox(col, rawValue)) {
           final text = rawValue.toString();
           final colWidth = _getColumnWidth(col, totalWidth);
           final textWidth = (colWidth - 16.0).clamp(0.0, double.infinity);
-          
+
           final textPainter = TextPainter(
             text: TextSpan(
               children: col.supportStyledText
@@ -1049,7 +1086,9 @@ class _FxListBoxState extends State<FxListBox> {
     double maxNeededWidth = 0.0;
     final defaultStyle = DefaultTextStyle.of(context).style;
 
-    final headerStyle = defaultStyle.merge(const TextStyle(fontWeight: FontWeight.w600));
+    final headerStyle = defaultStyle.merge(
+      const TextStyle(fontWeight: FontWeight.w600),
+    );
     final headerPainter = TextPainter(
       text: TextSpan(text: column.caption, style: headerStyle),
       textDirection: TextDirection.ltr,
@@ -1061,10 +1100,13 @@ class _FxListBoxState extends State<FxListBox> {
     }
     maxNeededWidth = headerWidth;
 
-    final cellStyle = defaultStyle.merge(const TextStyle(fontWeight: FontWeight.normal));
+    final cellStyle = defaultStyle.merge(
+      const TextStyle(fontWeight: FontWeight.normal),
+    );
     for (final row in widget.rows) {
       final rawValue = row.cells[column.id];
-      if (column.type is FxBooleanCellType || _isImplicitCheckbox(column, rawValue)) {
+      if (column.type is FxBooleanCellType ||
+          _isImplicitCheckbox(column, rawValue)) {
         const double checkboxWidth = 40.0;
         if (checkboxWidth > maxNeededWidth) {
           maxNeededWidth = checkboxWidth;
@@ -1155,10 +1197,22 @@ class _FxListBoxState extends State<FxListBox> {
       );
     }
 
-    final activeRowId = widget.selectedRowIds.isEmpty ? null : widget.selectedRowIds.last;
-    final activeRowIndex = activeRowId == null ? -1 : widget.rows.indexWhere((r) => r.id == activeRowId);
-    final activeColId = _activeColumnId ?? (activeRowId != null && visibleColumns.isNotEmpty ? (widget.allowRowReordering && visibleColumns.length > 1 ? visibleColumns[1].id : visibleColumns.first.id) : null);
-    final activeColIndex = activeColId == null ? -1 : visibleColumns.indexWhere((c) => c.id == activeColId);
+    final activeRowId = widget.selectedRowIds.isEmpty
+        ? null
+        : widget.selectedRowIds.last;
+    final activeRowIndex = activeRowId == null
+        ? -1
+        : widget.rows.indexWhere((r) => r.id == activeRowId);
+    final activeColId =
+        _activeColumnId ??
+        (activeRowId != null && visibleColumns.isNotEmpty
+            ? (widget.allowRowReordering && visibleColumns.length > 1
+                  ? visibleColumns[1].id
+                  : visibleColumns.first.id)
+            : null);
+    final activeColIndex = activeColId == null
+        ? -1
+        : visibleColumns.indexWhere((c) => c.id == activeColId);
 
     return Focus(
       focusNode: _focusNode,
@@ -1204,7 +1258,8 @@ class _FxListBoxState extends State<FxListBox> {
                     ),
                     columnBuilder: (index) {
                       final column = visibleColumns[index];
-                      final isActive = activeColIndex != -1 && index == activeColIndex;
+                      final isActive =
+                          activeColIndex != -1 && index == activeColIndex;
                       return table.TableSpan(
                         extent: _getColumnExtent(column, totalWidth),
                         foregroundDecoration: _borderDecoration(
@@ -1221,8 +1276,13 @@ class _FxListBoxState extends State<FxListBox> {
                       final isSelected =
                           row != null && widget.selectedRowIds.contains(row.id);
                       final isHovered = index == _hoveredRowIndex;
-                      final isActive = !isHeader && activeRowIndex != -1 && (index - 1) == activeRowIndex;
-                      final isDragTarget = widget.allowRowReordering && _draggedOverRowIndex == (index - 1);
+                      final isActive =
+                          !isHeader &&
+                          activeRowIndex != -1 &&
+                          (index - 1) == activeRowIndex;
+                      final isDragTarget =
+                          widget.allowRowReordering &&
+                          _draggedOverRowIndex == (index - 1);
                       return table.TableSpan(
                         extent: table.FixedTableSpanExtent(
                           isHeader
@@ -1257,33 +1317,45 @@ class _FxListBoxState extends State<FxListBox> {
                         return table.TableViewCell(
                           child: _HeaderCell(
                             caption: column.caption,
-                            alignment: _getResolvedAlignment(column, widget.rows),
-                            sortable: column.sortable && column.id != '__reorder_handle__',
+                            alignment: _getResolvedAlignment(
+                              column,
+                              widget.rows,
+                            ),
+                            sortable:
+                                column.sortable &&
+                                column.id != '__reorder_handle__',
                             sorted: sorted,
                             ascending: widget.sortAscending,
-                            onSort: column.id == '__reorder_handle__' ? null : () {
-                              widget.onSortChanged?.call(
-                                column.id,
-                                sorted ? !widget.sortAscending : true,
-                              );
-                            },
-                            onResize: column.id == '__reorder_handle__' ? null : (delta) {
-                              final currentWidth = _getColumnWidth(
-                                column,
-                                totalWidth,
-                              );
-                              final newWidth = (currentWidth + delta).clamp(
-                                column.minWidth,
-                                1000.0,
-                              );
-                              setState(() {
-                                _columnWidths[column.id] = newWidth;
-                              });
-                              widget.onColumnResized?.call(column.id, newWidth);
-                            },
-                            onDoubleResize: column.id == '__reorder_handle__' ? null : () {
-                              _autoFitColumn(column, totalWidth);
-                            },
+                            onSort: column.id == '__reorder_handle__'
+                                ? null
+                                : () {
+                                    widget.onSortChanged?.call(
+                                      column.id,
+                                      sorted ? !widget.sortAscending : true,
+                                    );
+                                  },
+                            onResize: column.id == '__reorder_handle__'
+                                ? null
+                                : (delta) {
+                                    final currentWidth = _getColumnWidth(
+                                      column,
+                                      totalWidth,
+                                    );
+                                    final newWidth = (currentWidth + delta)
+                                        .clamp(column.minWidth, 1000.0);
+                                    setState(() {
+                                      _columnWidths[column.id] = newWidth;
+                                    });
+                                    widget.onColumnResized?.call(
+                                      column.id,
+                                      newWidth,
+                                    );
+                                  },
+                            onDoubleResize: column.id == '__reorder_handle__'
+                                ? null
+                                : () {
+                                    _autoFitColumn(column, totalWidth);
+                                  },
                           ),
                         );
                       }
@@ -1303,24 +1375,41 @@ class _FxListBoxState extends State<FxListBox> {
                             feedback: Material(
                               elevation: 4,
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: theme.selectionBackground.withValues(alpha: 0.9),
+                                  color: theme.selectionBackground.withValues(
+                                    alpha: 0.9,
+                                  ),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
                                   'Moving Row ${vicinity.row}',
-                                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                             ),
                             childWhenDragging: const Opacity(
                               opacity: 0.3,
-                              child: Icon(Icons.drag_handle, color: Colors.grey, size: 18),
+                              child: Icon(
+                                Icons.drag_handle,
+                                color: Colors.grey,
+                                size: 18,
+                              ),
                             ),
                             child: const MouseRegion(
                               cursor: SystemMouseCursors.grab,
-                              child: Icon(Icons.drag_handle, color: Colors.grey, size: 18),
+                              child: Icon(
+                                Icons.drag_handle,
+                                color: Colors.grey,
+                                size: 18,
+                              ),
                             ),
                           ),
                         );
@@ -1361,7 +1450,8 @@ class _FxListBoxState extends State<FxListBox> {
                           );
                         } else if (column.type is FxLookupCellType) {
                           cellChild = FxLookupComboBox(
-                            provider: (column.type as FxLookupCellType).provider,
+                            provider:
+                                (column.type as FxLookupCellType).provider,
                             initialValue: value,
                             onCommit: (newValue) {
                               _commitCellEdit(row.id, column.id, newValue);
@@ -1370,6 +1460,12 @@ class _FxListBoxState extends State<FxListBox> {
                             onCancel: _cancelEdit,
                           );
                         } else {
+                          final List<TextInputFormatter> formatters = [];
+                          if (column.inputMask != null) {
+                            formatters.add(
+                              FxMaskTextInputFormatter(column.inputMask!),
+                            );
+                          }
                           cellChild = Container(
                             color: Theme.of(context).colorScheme.surface,
                             alignment: Alignment.centerLeft,
@@ -1404,27 +1500,63 @@ class _FxListBoxState extends State<FxListBox> {
                                 }
                                 return KeyEventResult.ignored;
                               },
-                              child: TextField(
-                                controller: _editingController,
-                                autofocus: true,
-                                style: const TextStyle(fontSize: 13),
-                                decoration: const InputDecoration(
-                                  contentPadding: EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 6,
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: TextField(
+                                      controller: _editingController,
+                                      autofocus: true,
+                                      style: const TextStyle(fontSize: 13),
+                                      inputFormatters: formatters.isNotEmpty
+                                          ? formatters
+                                          : null,
+                                      decoration: const InputDecoration(
+                                        contentPadding: EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 6,
+                                        ),
+                                        border: InputBorder.none,
+                                        isDense: true,
+                                      ),
+                                      onSubmitted: (newValue) {
+                                        _commitEdit(
+                                          row.id,
+                                          column.id,
+                                          newValue,
+                                        );
+                                      },
+                                    ),
                                   ),
-                                  border: InputBorder.none,
-                                  isDense: true,
-                                ),
-                                onSubmitted: (newValue) {
-                                  _commitEdit(row.id, column.id, newValue);
-                                },
+                                  if (column.hasActionButton)
+                                    SizedBox(
+                                      width: 28,
+                                      height: 28,
+                                      child: IconButton(
+                                        padding: EdgeInsets.zero,
+                                        iconSize: 16,
+                                        icon: Icon(
+                                          column.actionIcon ?? Icons.more_horiz,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.primary,
+                                        ),
+                                        onPressed: () {
+                                          column.onActionPressed?.call(
+                                            row.id,
+                                            column.id,
+                                            _editingController!.text,
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                ],
                               ),
                             ),
                           );
                         }
                       } else if (column.cellRenderer != null) {
-                        final isHovered = (vicinity.row - 1 == _hoveredRowIndex);
+                        final isHovered =
+                            (vicinity.row - 1 == _hoveredRowIndex);
                         final customChild = column.cellRenderer!(
                           context,
                           row.id,
@@ -1454,9 +1586,13 @@ class _FxListBoxState extends State<FxListBox> {
                           child: customChild,
                         );
                       } else {
-                        final isCheckbox = column.type is FxBooleanCellType || _isImplicitCheckbox(column, value);
+                        final isCheckbox =
+                            column.type is FxBooleanCellType ||
+                            _isImplicitCheckbox(column, value);
                         if (isCheckbox) {
-                          final bool val = (value == true || value?.toString().toLowerCase().trim() == 'true');
+                          final bool val =
+                              (value == true ||
+                              value?.toString().toLowerCase().trim() == 'true');
                           cellChild = Center(
                             child: Checkbox(
                               value: val,
@@ -1478,7 +1614,9 @@ class _FxListBoxState extends State<FxListBox> {
                         } else {
                           final String displayText;
                           if (column.type is FxLookupCellType) {
-                            displayText = (column.type as FxLookupCellType).provider.getDisplayValue(value);
+                            displayText = (column.type as FxLookupCellType)
+                                .provider
+                                .getDisplayValue(value);
                           } else {
                             displayText = value?.toString() ?? '';
                           }
@@ -1502,7 +1640,10 @@ class _FxListBoxState extends State<FxListBox> {
                                 : null,
                             child: _CellText(
                               text: displayText,
-                              alignment: _getResolvedAlignment(column, widget.rows),
+                              alignment: _getResolvedAlignment(
+                                column,
+                                widget.rows,
+                              ),
                               enabled: row.enabled,
                               isSelected: isSelected,
                               lineWrap: _getColumnLineWrap(column),
@@ -1512,16 +1653,25 @@ class _FxListBoxState extends State<FxListBox> {
                         }
                       }
 
-                      // Apply conditional background formatting
-                      final customBgColor = widget.cellBackgroundColorBuilder?.call(row.id, column.id, value);
-                      if (customBgColor != null) {
-                        cellChild = Container(
-                          color: isSelected
-                              ? Color.alphaBlend(customBgColor.withValues(alpha: 0.4), theme.selectionBackground)
-                              : customBgColor,
-                          child: cellChild,
-                        );
-                      }
+                      final customBgColor = widget.cellBackgroundColorBuilder
+                          ?.call(row.id, column.id, value);
+                      final isHovered = (vicinity.row - 1) == _hoveredRowIndex;
+                      final cellBgColor = _getHighlightCellColor(
+                        context: context,
+                        theme: theme,
+                        isSelected: isSelected,
+                        isHovered: isHovered,
+                        rowIndex: vicinity.row - 1,
+                        colIndex: vicinity.column,
+                        activeRowIndex: activeRowIndex,
+                        activeColIndex: activeColIndex,
+                        customBgColor: customBgColor,
+                        primaryColor: Theme.of(context).colorScheme.primary,
+                      );
+                      cellChild = Container(
+                        color: cellBgColor,
+                        child: cellChild,
+                      );
 
                       // Apply percentage progress bar overlay
                       final pct = _parsePercentage(value);
@@ -1539,7 +1689,9 @@ class _FxListBoxState extends State<FxListBox> {
                                 child: FractionallySizedBox(
                                   widthFactor: pct / 100.0,
                                   child: Container(
-                                    color: Theme.of(context).colorScheme.primary.withAlpha(180),
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary.withAlpha(180),
                                   ),
                                 ),
                               ),
@@ -1559,15 +1711,24 @@ class _FxListBoxState extends State<FxListBox> {
                             setState(() {
                               _draggedOverRowIndex = null;
                             });
-                            widget.onRowReordered?.call(draggedIndex, vicinity.row - 1);
+                            widget.onRowReordered?.call(
+                              draggedIndex,
+                              vicinity.row - 1,
+                            );
                           },
                           onMove: (details) {
                             final targetIndex = vicinity.row - 1;
-                            final RenderBox? renderBox = context.findRenderObject() as RenderBox?;
+                            final RenderBox? renderBox =
+                                context.findRenderObject() as RenderBox?;
                             if (renderBox != null) {
-                              final localPosition = renderBox.globalToLocal(details.offset);
-                              final isAbove = localPosition.dy < (renderBox.size.height / 2);
-                              if (_draggedOverRowIndex != targetIndex || _isDragAbove != isAbove) {
+                              final localPosition = renderBox.globalToLocal(
+                                details.offset,
+                              );
+                              final isAbove =
+                                  localPosition.dy <
+                                  (renderBox.size.height / 2);
+                              if (_draggedOverRowIndex != targetIndex ||
+                                  _isDragAbove != isAbove) {
                                 setState(() {
                                   _draggedOverRowIndex = targetIndex;
                                   _isDragAbove = isAbove;
@@ -1674,6 +1835,10 @@ class FxGridColumn {
     this.lineWrap = false,
     this.supportStyledText = false,
     this.cellRenderer,
+    this.hasActionButton = false,
+    this.actionIcon,
+    this.onActionPressed,
+    this.inputMask,
   });
 
   /// Stable column id.
@@ -1711,6 +1876,20 @@ class FxGridColumn {
 
   /// Optional custom cell renderer builder callback.
   final FxCellRendererBuilder? cellRenderer;
+
+  /// Whether to show an action/ellipsis button at the end of the cell editor.
+  final bool hasActionButton;
+
+  /// Custom icon for the action button. Defaults to `Icons.more_horiz`.
+  final IconData? actionIcon;
+
+  /// Callback invoked when the action button is pressed.
+  final void Function(String rowId, String columnId, Object? value)?
+  onActionPressed;
+
+  /// Input mask pattern for text fields (e.g., '(###) ###-####').
+  /// '#' matches a digit, 'A' matches a letter, '*' matches any character.
+  final String? inputMask;
 
   /// Converts this column to JSON.
   Map<String, Object?> toJson() {
@@ -1875,7 +2054,7 @@ class FxGrid extends StatefulWidget {
 
   /// Callback to build conditional background color for a cell.
   final Color? Function(String rowId, String columnId, Object? value)?
-      cellBackgroundColorBuilder;
+  cellBackgroundColorBuilder;
 
   /// Whether manual drag-and-drop row reordering is allowed.
   final bool allowRowReordering;
@@ -2177,10 +2356,15 @@ class _FxGridState extends State<FxGrid> {
   }
 
   void _startEditing(String rowId, String columnId, Object? currentValue) {
-    final col = widget.columns.firstWhere((c) => c.id == columnId, orElse: () => widget.columns.first);
+    final col = widget.columns.firstWhere(
+      (c) => c.id == columnId,
+      orElse: () => widget.columns.first,
+    );
     final String initialText;
     if (col.type is FxLookupCellType) {
-      initialText = (col.type as FxLookupCellType).provider.getDisplayValue(currentValue);
+      initialText = (col.type as FxLookupCellType).provider.getDisplayValue(
+        currentValue,
+      );
     } else {
       initialText = currentValue?.toString() ?? '';
     }
@@ -2266,7 +2450,10 @@ class _FxGridState extends State<FxGrid> {
       _focusNode.addListener(_onFocusChanged);
     }
     for (final col in widget.columns) {
-      final oldCol = oldWidget.columns.firstWhere((c) => c.id == col.id, orElse: () => col);
+      final oldCol = oldWidget.columns.firstWhere(
+        (c) => c.id == col.id,
+        orElse: () => col,
+      );
       if (oldCol.lineWrap != col.lineWrap) {
         _columnLineWrapOverrides.remove(col.id);
       }
@@ -2565,22 +2752,30 @@ class _FxGridState extends State<FxGrid> {
     }
   }
 
-  double _getRowHeight(FxGridRow row, List<FxGridColumn> visibleColumns, double totalWidth) {
+  double _getRowHeight(
+    FxGridRow row,
+    List<FxGridColumn> visibleColumns,
+    double totalWidth,
+  ) {
     if (row.height != null) {
       return row.height!;
     }
     double maxCellHeight = widget.rowHeight;
     final defaultStyle = DefaultTextStyle.of(context).style;
-    final cellStyle = defaultStyle.merge(const TextStyle(fontWeight: FontWeight.normal));
+    final cellStyle = defaultStyle.merge(
+      const TextStyle(fontWeight: FontWeight.normal),
+    );
 
     for (final col in visibleColumns) {
       if (_getColumnLineWrap(col)) {
         final rawValue = row.cells[col.id];
-        if (rawValue != null && rawValue is! bool && !_isImplicitCheckbox(col, rawValue)) {
+        if (rawValue != null &&
+            rawValue is! bool &&
+            !_isImplicitCheckbox(col, rawValue)) {
           final text = rawValue.toString();
           final colWidth = _getColumnWidth(col, totalWidth);
           final textWidth = (colWidth - 16.0).clamp(0.0, double.infinity);
-          
+
           final textPainter = TextPainter(
             text: TextSpan(
               children: col.supportStyledText
@@ -2605,7 +2800,9 @@ class _FxGridState extends State<FxGrid> {
     final defaultStyle = DefaultTextStyle.of(context).style;
 
     final captionText = column.caption ?? column.id;
-    final headerStyle = defaultStyle.merge(const TextStyle(fontWeight: FontWeight.w600));
+    final headerStyle = defaultStyle.merge(
+      const TextStyle(fontWeight: FontWeight.w600),
+    );
     final headerPainter = TextPainter(
       text: TextSpan(text: captionText, style: headerStyle),
       textDirection: TextDirection.ltr,
@@ -2617,10 +2814,13 @@ class _FxGridState extends State<FxGrid> {
     }
     maxNeededWidth = headerWidth;
 
-    final cellStyle = defaultStyle.merge(const TextStyle(fontWeight: FontWeight.normal));
+    final cellStyle = defaultStyle.merge(
+      const TextStyle(fontWeight: FontWeight.normal),
+    );
     for (final row in widget.rows) {
       final rawValue = row.cells[column.id];
-      if (column.type is FxBooleanCellType || _isImplicitCheckbox(column, rawValue)) {
+      if (column.type is FxBooleanCellType ||
+          _isImplicitCheckbox(column, rawValue)) {
         const double checkboxWidth = 40.0;
         if (checkboxWidth > maxNeededWidth) {
           maxNeededWidth = checkboxWidth;
@@ -2711,7 +2911,9 @@ class _FxGridState extends State<FxGrid> {
       );
     }
 
-    final activeCell = widget.selectedCells.isEmpty ? null : widget.selectedCells.last;
+    final activeCell = widget.selectedCells.isEmpty
+        ? null
+        : widget.selectedCells.last;
     final activeRowIndex = activeCell == null
         ? -1
         : widget.rows.indexWhere((r) => r.id == activeCell.rowId);
@@ -2764,7 +2966,8 @@ class _FxGridState extends State<FxGrid> {
                     ),
                     columnBuilder: (index) {
                       final column = visibleColumns[index];
-                      final isActive = activeColIndex != -1 && index == activeColIndex;
+                      final isActive =
+                          activeColIndex != -1 && index == activeColIndex;
                       return table.TableSpan(
                         extent: _getColumnExtent(column, totalWidth),
                         foregroundDecoration: _borderDecoration(
@@ -2780,13 +2983,22 @@ class _FxGridState extends State<FxGrid> {
                       final dataRow = isHeader
                           ? null
                           : widget.rows[index - rowOffset];
-                      final isActive = !isHeader && activeRowIndex != -1 && (index - rowOffset) == activeRowIndex;
-                      final isDragTarget = widget.allowRowReordering && _draggedOverRowIndex == (index - rowOffset);
+                      final isActive =
+                          !isHeader &&
+                          activeRowIndex != -1 &&
+                          (index - rowOffset) == activeRowIndex;
+                      final isDragTarget =
+                          widget.allowRowReordering &&
+                          _draggedOverRowIndex == (index - rowOffset);
                       return table.TableSpan(
                         extent: table.FixedTableSpanExtent(
                           isHeader
                               ? widget.headerHeight
-                              : _getRowHeight(dataRow!, visibleColumns, totalWidth),
+                              : _getRowHeight(
+                                  dataRow!,
+                                  visibleColumns,
+                                  totalWidth,
+                                ),
                         ),
                         backgroundDecoration: table.TableSpanDecoration(
                           color: isHeader
@@ -2812,38 +3024,52 @@ class _FxGridState extends State<FxGrid> {
                         return table.TableViewCell(
                           child: _HeaderCell(
                             caption: column.caption ?? column.id,
-                            alignment: _getResolvedAlignment(column, widget.rows),
-                            sortable: column.sortable && column.id != '__reorder_handle__',
+                            alignment: _getResolvedAlignment(
+                              column,
+                              widget.rows,
+                            ),
+                            sortable:
+                                column.sortable &&
+                                column.id != '__reorder_handle__',
                             sorted: sorted,
                             ascending: widget.sortAscending,
-                            onSort: column.id == '__reorder_handle__' ? null : () {
-                              widget.onSortChanged?.call(
-                                column.id,
-                                sorted ? !widget.sortAscending : true,
-                              );
-                            },
-                            onResize: column.id == '__reorder_handle__' ? null : (delta) {
-                              final currentWidth = _getColumnWidth(
-                                column,
-                                totalWidth,
-                              );
-                              final newWidth = (currentWidth + delta).clamp(
-                                column.minWidth,
-                                1000.0,
-                              );
-                              setState(() {
-                                _columnWidths[column.id] = newWidth;
-                              });
-                              widget.onColumnResized?.call(column.id, newWidth);
-                            },
-                            onDoubleResize: column.id == '__reorder_handle__' ? null : () {
-                              _autoFitColumn(column, totalWidth);
-                            },
+                            onSort: column.id == '__reorder_handle__'
+                                ? null
+                                : () {
+                                    widget.onSortChanged?.call(
+                                      column.id,
+                                      sorted ? !widget.sortAscending : true,
+                                    );
+                                  },
+                            onResize: column.id == '__reorder_handle__'
+                                ? null
+                                : (delta) {
+                                    final currentWidth = _getColumnWidth(
+                                      column,
+                                      totalWidth,
+                                    );
+                                    final newWidth = (currentWidth + delta)
+                                        .clamp(column.minWidth, 1000.0);
+                                    setState(() {
+                                      _columnWidths[column.id] = newWidth;
+                                    });
+                                    widget.onColumnResized?.call(
+                                      column.id,
+                                      newWidth,
+                                    );
+                                  },
+                            onDoubleResize: column.id == '__reorder_handle__'
+                                ? null
+                                : () {
+                                    _autoFitColumn(column, totalWidth);
+                                  },
                           ),
                         );
                       }
                       final row = widget.rows[vicinity.row - rowOffset];
-                      final isDataRow = widget.showHeaders ? vicinity.row > 0 : vicinity.row >= 0;
+                      final isDataRow = widget.showHeaders
+                          ? vicinity.row > 0
+                          : vicinity.row >= 0;
                       final dataRowIndex = vicinity.row - rowOffset;
                       final value = row.cells[column.id];
                       final inRange =
@@ -2878,24 +3104,41 @@ class _FxGridState extends State<FxGrid> {
                             feedback: Material(
                               elevation: 4,
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: theme.selectionBackground.withValues(alpha: 0.9),
+                                  color: theme.selectionBackground.withValues(
+                                    alpha: 0.9,
+                                  ),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
                                   'Moving Row ${vicinity.row - rowOffset + 1}',
-                                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                             ),
                             childWhenDragging: const Opacity(
                               opacity: 0.3,
-                              child: Icon(Icons.drag_handle, color: Colors.grey, size: 18),
+                              child: Icon(
+                                Icons.drag_handle,
+                                color: Colors.grey,
+                                size: 18,
+                              ),
                             ),
                             child: const MouseRegion(
                               cursor: SystemMouseCursors.grab,
-                              child: Icon(Icons.drag_handle, color: Colors.grey, size: 18),
+                              child: Icon(
+                                Icons.drag_handle,
+                                color: Colors.grey,
+                                size: 18,
+                              ),
                             ),
                           ),
                         );
@@ -2936,7 +3179,8 @@ class _FxGridState extends State<FxGrid> {
                           );
                         } else if (column.type is FxLookupCellType) {
                           cellChild = FxLookupComboBox(
-                            provider: (column.type as FxLookupCellType).provider,
+                            provider:
+                                (column.type as FxLookupCellType).provider,
                             initialValue: value,
                             onCommit: (newValue) {
                               _commitCellEdit(row.id, column.id, newValue);
@@ -2945,6 +3189,12 @@ class _FxGridState extends State<FxGrid> {
                             onCancel: _cancelEdit,
                           );
                         } else {
+                          final List<TextInputFormatter> formatters = [];
+                          if (column.inputMask != null) {
+                            formatters.add(
+                              FxMaskTextInputFormatter(column.inputMask!),
+                            );
+                          }
                           cellChild = Container(
                             color: Theme.of(context).colorScheme.surface,
                             alignment: Alignment.centerLeft,
@@ -2979,27 +3229,75 @@ class _FxGridState extends State<FxGrid> {
                                 }
                                 return KeyEventResult.ignored;
                               },
-                              child: TextField(
-                                controller: _editingController,
-                                autofocus: true,
-                                style: const TextStyle(fontSize: 13),
-                                decoration: const InputDecoration(
-                                  contentPadding: EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 6,
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: TextField(
+                                      controller: _editingController,
+                                      autofocus: true,
+                                      style: const TextStyle(fontSize: 13),
+                                      inputFormatters: formatters.isNotEmpty
+                                          ? formatters
+                                          : null,
+                                      decoration: const InputDecoration(
+                                        contentPadding: EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 6,
+                                        ),
+                                        border: InputBorder.none,
+                                        isDense: true,
+                                      ),
+                                      onSubmitted: (newValue) {
+                                        _commitEdit(
+                                          row.id,
+                                          column.id,
+                                          newValue,
+                                        );
+                                      },
+                                    ),
                                   ),
-                                  border: InputBorder.none,
-                                  isDense: true,
-                                ),
-                                onSubmitted: (newValue) {
-                                  _commitEdit(row.id, column.id, newValue);
-                                },
+                                  if (column.hasActionButton)
+                                    SizedBox(
+                                      width: 28,
+                                      height: 28,
+                                      child: IconButton(
+                                        padding: EdgeInsets.zero,
+                                        iconSize: 16,
+                                        icon: Icon(
+                                          column.actionIcon ?? Icons.more_horiz,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.primary,
+                                        ),
+                                        onPressed: () {
+                                          column.onActionPressed?.call(
+                                            row.id,
+                                            column.id,
+                                            _editingController!.text,
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                ],
                               ),
                             ),
                           );
                         }
                       } else {
-                        final customBgColor = widget.cellBackgroundColorBuilder?.call(row.id, column.id, value);
+                        final customBgColor = widget.cellBackgroundColorBuilder
+                            ?.call(row.id, column.id, value);
+                        final cellBgColor = _getHighlightCellColor(
+                          context: context,
+                          theme: theme,
+                          isSelected: selected,
+                          isHovered: hovered,
+                          rowIndex: vicinity.row - rowOffset,
+                          colIndex: vicinity.column,
+                          activeRowIndex: activeRowIndex,
+                          activeColIndex: activeColIndex,
+                          customBgColor: customBgColor,
+                          primaryColor: Theme.of(context).colorScheme.primary,
+                        );
                         if (column.cellRenderer != null) {
                           final customChild = column.cellRenderer!(
                             context,
@@ -3018,29 +3316,26 @@ class _FxGridState extends State<FxGrid> {
                                 ? () => _startEditing(row.id, column.id, value)
                                 : null,
                             child: ColoredBox(
-                              color: selected
-                                  ? theme.selectionBackground
-                                  : hovered
-                                  ? Theme.of(context).hoverColor
-                                  : (customBgColor ?? Colors.transparent),
+                              color: cellBgColor,
                               child: customChild,
                             ),
                           );
                         } else {
-                          final isCheckbox = column.type is FxBooleanCellType || _isImplicitCheckbox(column, value);
+                          final isCheckbox =
+                              column.type is FxBooleanCellType ||
+                              _isImplicitCheckbox(column, value);
                           if (isCheckbox) {
-                            final bool val = (value == true || value?.toString().toLowerCase().trim() == 'true');
+                            final bool val =
+                                (value == true ||
+                                value?.toString().toLowerCase().trim() ==
+                                    'true');
                             cellChild = GestureDetector(
                               behavior: HitTestBehavior.opaque,
                               onTap: row.enabled
                                   ? () => _handleCellTap(row.id, column.id)
                                   : null,
                               child: ColoredBox(
-                                color: selected
-                                    ? theme.selectionBackground
-                                    : hovered
-                                    ? Theme.of(context).hoverColor
-                                    : (customBgColor ?? Colors.transparent),
+                                color: cellBgColor,
                                 child: Center(
                                   child: Checkbox(
                                     value: val,
@@ -3048,7 +3343,8 @@ class _FxGridState extends State<FxGrid> {
                                         ? (newValue) {
                                             Object? committedValue = newValue;
                                             if (value is String) {
-                                              committedValue = newValue.toString();
+                                              committedValue = newValue
+                                                  .toString();
                                             }
                                             _commitCellEdit(
                                               row.id,
@@ -3065,7 +3361,9 @@ class _FxGridState extends State<FxGrid> {
                           } else {
                             final String displayText;
                             if (column.type is FxLookupCellType) {
-                              displayText = (column.type as FxLookupCellType).provider.getDisplayValue(value);
+                              displayText = (column.type as FxLookupCellType)
+                                  .provider
+                                  .getDisplayValue(value);
                             } else {
                               displayText = value?.toString() ?? '';
                             }
@@ -3075,17 +3373,17 @@ class _FxGridState extends State<FxGrid> {
                                   ? () => _handleCellTap(row.id, column.id)
                                   : null,
                               onDoubleTap: (row.enabled && column.editable)
-                                  ? () => _startEditing(row.id, column.id, value)
+                                  ? () =>
+                                        _startEditing(row.id, column.id, value)
                                   : null,
                               child: ColoredBox(
-                                color: selected
-                                    ? theme.selectionBackground
-                                    : hovered
-                                    ? Theme.of(context).hoverColor
-                                    : (customBgColor ?? Colors.transparent),
+                                color: cellBgColor,
                                 child: _CellText(
                                   text: displayText,
-                                  alignment: _getResolvedAlignment(column, widget.rows),
+                                  alignment: _getResolvedAlignment(
+                                    column,
+                                    widget.rows,
+                                  ),
                                   enabled: row.enabled,
                                   isSelected: selected,
                                   lineWrap: _getColumnLineWrap(column),
@@ -3108,14 +3406,23 @@ class _FxGridState extends State<FxGrid> {
                             setState(() {
                               _draggedOverRowIndex = null;
                             });
-                            widget.onRowReordered?.call(draggedIndex, dataRowIndex);
+                            widget.onRowReordered?.call(
+                              draggedIndex,
+                              dataRowIndex,
+                            );
                           },
                           onMove: (details) {
-                            final RenderBox? renderBox = context.findRenderObject() as RenderBox?;
+                            final RenderBox? renderBox =
+                                context.findRenderObject() as RenderBox?;
                             if (renderBox != null) {
-                              final localPosition = renderBox.globalToLocal(details.offset);
-                              final isAbove = localPosition.dy < (renderBox.size.height / 2);
-                              if (_draggedOverRowIndex != dataRowIndex || _isDragAbove != isAbove) {
+                              final localPosition = renderBox.globalToLocal(
+                                details.offset,
+                              );
+                              final isAbove =
+                                  localPosition.dy <
+                                  (renderBox.size.height / 2);
+                              if (_draggedOverRowIndex != dataRowIndex ||
+                                  _isDragAbove != isAbove) {
                                 setState(() {
                                   _draggedOverRowIndex = dataRowIndex;
                                   _isDragAbove = isAbove;
@@ -3182,7 +3489,9 @@ class _FxGridState extends State<FxGrid> {
                                   child: FractionallySizedBox(
                                     widthFactor: pct / 100.0,
                                     child: Container(
-                                      color: Theme.of(context).colorScheme.primary.withAlpha(180),
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.primary.withAlpha(180),
                                     ),
                                   ),
                                 ),
@@ -3296,6 +3605,76 @@ class _FxGridState extends State<FxGrid> {
   }
 }
 
+Color _getHighlightCellColor({
+  required BuildContext context,
+  required FxTheme theme,
+  required bool isSelected,
+  required bool isHovered,
+  required int rowIndex,
+  required int colIndex,
+  required int activeRowIndex,
+  required int activeColIndex,
+  required Color? customBgColor,
+  required Color primaryColor,
+}) {
+  if (isSelected) {
+    if (customBgColor != null) {
+      return Color.alphaBlend(
+        customBgColor.withValues(alpha: 0.4),
+        theme.selectionBackground,
+      );
+    }
+    return theme.selectionBackground;
+  }
+
+  final Color baseColor;
+  if (customBgColor != null) {
+    baseColor = customBgColor;
+  } else if (isHovered) {
+    baseColor = Theme.of(context).hoverColor;
+  } else if (rowIndex.isEven) {
+    baseColor = theme.alternatingRowBackground;
+  } else {
+    baseColor = Theme.of(context).colorScheme.surface;
+  }
+
+  final isRowActive = activeRowIndex != -1 && rowIndex == activeRowIndex;
+  final isColActive = activeColIndex != -1 && colIndex == activeColIndex;
+
+  if (isRowActive || isColActive) {
+    final hslBase = HSLColor.fromColor(baseColor);
+    final hslPrimary = HSLColor.fromColor(primaryColor);
+
+    double hue = hslBase.hue;
+    double saturation = hslBase.saturation;
+    double lightness = hslBase.lightness;
+
+    if (saturation < 0.03) {
+      hue = hslPrimary.hue;
+      saturation = 0.08;
+      if (lightness > 0.95) {
+        lightness = 0.95;
+      }
+    }
+
+    final newSaturation = (saturation + 0.20).clamp(0.0, 1.0);
+    double newLightness = lightness;
+    if (lightness > 0.9) {
+      newLightness = (lightness - 0.03).clamp(0.0, 1.0);
+    } else if (lightness < 0.2) {
+      newLightness = (lightness + 0.03).clamp(0.0, 1.0);
+    }
+
+    return HSLColor.fromColor(baseColor)
+        .withHue(hue)
+        .withSaturation(newSaturation)
+        .withLightness(newLightness)
+        .toColor();
+  }
+
+  return baseColor;
+}
+
 table.TableSpanDecoration? _borderDecoration({
   required FxTheme theme,
   required bool showGridLines,
@@ -3305,20 +3684,12 @@ table.TableSpanDecoration? _borderDecoration({
   bool isDragAbove = true,
 }) {
   final defaultColor = theme.gridLineColor;
-  final darkerColor = HSLColor.fromColor(defaultColor)
-      .withLightness((HSLColor.fromColor(defaultColor).lightness * 0.5).clamp(0.0, 1.0))
-      .toColor();
 
   BorderSide? leadingBorder;
   BorderSide? trailingBorder;
 
   if (showGridLines) {
     trailingBorder = BorderSide(color: defaultColor);
-  }
-
-  if (isActive) {
-    leadingBorder = BorderSide(color: darkerColor, width: 1.5);
-    trailingBorder = BorderSide(color: darkerColor, width: 1.5);
   }
 
   if (isDragTarget) {
@@ -3401,14 +3772,15 @@ class _CellText extends StatelessWidget {
       textColor = Theme.of(context).colorScheme.onSurface;
     }
 
-    final baseStyle = TextStyle(fontWeight: FontWeight.normal, color: textColor);
+    final baseStyle = TextStyle(
+      fontWeight: FontWeight.normal,
+      color: textColor,
+    );
 
     final Widget childWidget;
     if (supportStyledText) {
       childWidget = Text.rich(
-        TextSpan(
-          children: _parseStyledText(text, baseStyle),
-        ),
+        TextSpan(children: _parseStyledText(text, baseStyle)),
         maxLines: lineWrap ? null : 1,
         overflow: lineWrap ? null : TextOverflow.ellipsis,
         textAlign: textAlign,
@@ -3501,7 +3873,17 @@ List<InlineSpan> _parseStyledText(String text, TextStyle baseStyle) {
       index += 1;
     } else {
       int nextTagIndex = text.length;
-      final candidates = ['<b>', '</b>', '<i>', '</i>', '<u>', '</u>', '**', '*', '~'];
+      final candidates = [
+        '<b>',
+        '</b>',
+        '<i>',
+        '</i>',
+        '<u>',
+        '</u>',
+        '**',
+        '*',
+        '~',
+      ];
       for (final candidate in candidates) {
         final pos = text.indexOf(candidate, index);
         if (pos != -1 && pos < nextTagIndex) {
@@ -3712,7 +4094,9 @@ bool _isNumericColumn(List<dynamic> rows, String columnId) {
     if (val != null && val.toString().trim().isNotEmpty) {
       hasValues = true;
       final str = val.toString().trim();
-      final cleanStr = str.endsWith('%') ? str.substring(0, str.length - 1).trim() : str;
+      final cleanStr = str.endsWith('%')
+          ? str.substring(0, str.length - 1).trim()
+          : str;
       if (num.tryParse(cleanStr) == null) {
         return false;
       }
@@ -3847,10 +4231,16 @@ class _FxLookupComboBoxState<K> extends State<FxLookupComboBox<K>> {
     if (renderBox == null) return;
     final size = renderBox.size;
 
+    final headers = widget.provider.getLookupHeaders();
+    final isMultiColumn = headers.isNotEmpty;
+    final overlayWidth = isMultiColumn
+        ? (size.width * 2.5).clamp(350.0, 800.0)
+        : size.width.clamp(200.0, 600.0);
+
     _overlayEntry = OverlayEntry(
       builder: (context) {
         return Positioned(
-          width: size.width.clamp(200.0, 600.0),
+          width: overlayWidth,
           child: CompositedTransformFollower(
             link: _layerLink,
             showWhenUnlinked: false,
@@ -3860,7 +4250,7 @@ class _FxLookupComboBoxState<K> extends State<FxLookupComboBox<K>> {
               borderRadius: BorderRadius.circular(4),
               color: Theme.of(context).colorScheme.surface,
               child: Container(
-                constraints: const BoxConstraints(maxHeight: 250),
+                constraints: const BoxConstraints(maxHeight: 300),
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.grey.shade300),
                   borderRadius: BorderRadius.circular(4),
@@ -3877,42 +4267,44 @@ class _FxLookupComboBoxState<K> extends State<FxLookupComboBox<K>> {
                         ),
                       )
                     : _options.isEmpty
-                        ? const Padding(
-                            padding: EdgeInsets.all(12.0),
-                            child: Text(
-                              'No options found',
-                              style: TextStyle(fontSize: 13, color: Colors.grey),
-                            ),
-                          )
-                        : ListView.builder(
-                            padding: EdgeInsets.zero,
-                            shrinkWrap: true,
-                            itemCount: _options.length,
-                            itemBuilder: (context, index) {
-                              final option = _options[index];
-                              final isHighlighted = index == _highlightedIndex;
-                              return GestureDetector(
-                                onTap: () {
-                                  widget.onCommit(option.key);
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 8,
-                                  ),
-                                  color: isHighlighted
-                                      ? Theme.of(context)
-                                          .colorScheme
-                                          .primaryContainer
-                                      : Colors.transparent,
-                                  child: Text(
-                                    option.display,
-                                    style: const TextStyle(fontSize: 13),
-                                  ),
-                                ),
-                              );
+                    ? const Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: Text(
+                          'No options found',
+                          style: TextStyle(fontSize: 13, color: Colors.grey),
+                        ),
+                      )
+                    : isMultiColumn
+                    ? _buildMultiColumnList(context, headers)
+                    : ListView.builder(
+                        padding: EdgeInsets.zero,
+                        shrinkWrap: true,
+                        itemCount: _options.length,
+                        itemBuilder: (context, index) {
+                          final option = _options[index];
+                          final isHighlighted = index == _highlightedIndex;
+                          return GestureDetector(
+                            onTap: () {
+                              widget.onCommit(option.key);
                             },
-                          ),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
+                              color: isHighlighted
+                                  ? Theme.of(
+                                      context,
+                                    ).colorScheme.primaryContainer
+                                  : Colors.transparent,
+                              child: Text(
+                                option.display,
+                                style: const TextStyle(fontSize: 13),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
               ),
             ),
           ),
@@ -3926,6 +4318,90 @@ class _FxLookupComboBoxState<K> extends State<FxLookupComboBox<K>> {
   void _hideOverlay() {
     _overlayEntry?.remove();
     _overlayEntry = null;
+  }
+
+  Widget _buildMultiColumnList(BuildContext context, List<String> headers) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Header row
+        Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            border: Border(
+              bottom: BorderSide(color: Colors.grey.shade400, width: 1.5),
+            ),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          child: Row(
+            children: [
+              for (int h = 0; h < headers.length; h++) ...[
+                if (h > 0) const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    headers[h],
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+        // Data rows
+        Flexible(
+          child: ListView.builder(
+            padding: EdgeInsets.zero,
+            shrinkWrap: true,
+            itemCount: _options.length,
+            itemBuilder: (context, index) {
+              final option = _options[index];
+              final isHighlighted = index == _highlightedIndex;
+              final details = option.extraDetails ?? [option.display];
+              return GestureDetector(
+                onTap: () {
+                  widget.onCommit(option.key);
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isHighlighted
+                        ? Theme.of(context).colorScheme.primaryContainer
+                        : Colors.transparent,
+                    border: Border(
+                      bottom: BorderSide(
+                        color: Colors.grey.shade200,
+                        width: 0.5,
+                      ),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      for (int d = 0; d < headers.length; d++) ...[
+                        if (d > 0) const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            d < details.length ? details[d] : '',
+                            style: const TextStyle(fontSize: 13),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
   }
 
   void _commitActive() {
@@ -3956,7 +4432,8 @@ class _FxLookupComboBoxState<K> extends State<FxLookupComboBox<K>> {
               setState(() {
                 if (_options.isNotEmpty) {
                   _highlightedIndex =
-                      (_highlightedIndex - 1 + _options.length) % _options.length;
+                      (_highlightedIndex - 1 + _options.length) %
+                      _options.length;
                 }
               });
               _overlayEntry?.markNeedsBuild();
@@ -4005,5 +4482,108 @@ class _FxLookupComboBoxState<K> extends State<FxLookupComboBox<K>> {
         ),
       ),
     );
+  }
+}
+
+/// A [TextInputFormatter] that enforces a mask pattern on text input.
+///
+/// Mask characters:
+/// * `#` — matches a digit (0–9)
+/// * `A` — matches a letter (a–z, A–Z)
+/// * `*` — matches any character
+/// * Any other character is treated as a literal separator.
+///
+/// Example: `(###) ###-####` produces `(123) 456-7890`.
+class FxMaskTextInputFormatter extends TextInputFormatter {
+  /// Creates a mask input formatter with the given [mask] pattern.
+  FxMaskTextInputFormatter(this.mask);
+
+  /// The mask pattern string.
+  final String mask;
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    // Extract raw characters (non-separator chars) from the new value.
+    final rawChars = <String>[];
+    for (final ch in newValue.text.characters) {
+      if (_isRawChar(ch)) {
+        rawChars.add(ch);
+      }
+    }
+
+    final buffer = StringBuffer();
+    int rawIndex = 0;
+
+    for (int i = 0; i < mask.length && rawIndex < rawChars.length; i++) {
+      final maskChar = mask[i];
+      if (maskChar == '#' || maskChar == 'A' || maskChar == '*') {
+        final raw = rawChars[rawIndex];
+        if (_matchesMask(maskChar, raw)) {
+          buffer.write(raw);
+          rawIndex++;
+        } else {
+          // Skip non-matching input characters.
+          rawIndex++;
+          i--; // retry this mask position with next raw char
+        }
+      } else {
+        // Literal separator — insert it.
+        buffer.write(maskChar);
+      }
+    }
+
+    final formatted = buffer.toString();
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
+
+  /// Returns the raw (unmasked) value by stripping separator literals.
+  String unmask(String maskedText) {
+    final buffer = StringBuffer();
+    int maskIdx = 0;
+    for (int i = 0; i < maskedText.length && maskIdx < mask.length; i++) {
+      final maskChar = mask[maskIdx];
+      if (maskChar == '#' || maskChar == 'A' || maskChar == '*') {
+        buffer.write(maskedText[i]);
+      }
+      maskIdx++;
+    }
+    return buffer.toString();
+  }
+
+  /// Applies the mask to a raw value string, returning the formatted output.
+  String applyMask(String rawText) {
+    final buffer = StringBuffer();
+    int rawIndex = 0;
+    for (int i = 0; i < mask.length && rawIndex < rawText.length; i++) {
+      final maskChar = mask[i];
+      if (maskChar == '#' || maskChar == 'A' || maskChar == '*') {
+        buffer.write(rawText[rawIndex]);
+        rawIndex++;
+      } else {
+        buffer.write(maskChar);
+      }
+    }
+    return buffer.toString();
+  }
+
+  bool _isRawChar(String ch) {
+    // A raw char is not a separator from our mask.
+    // We identify separators as characters in the mask that aren't #, A, or *.
+    return true; // Accept all chars; filtering happens during mask application.
+  }
+
+  static bool _matchesMask(String maskChar, String inputChar) {
+    return switch (maskChar) {
+      '#' => RegExp(r'[0-9]').hasMatch(inputChar),
+      'A' => RegExp(r'[a-zA-Z]').hasMatch(inputChar),
+      '*' => true,
+      _ => false,
+    };
   }
 }

@@ -1353,450 +1353,437 @@ void main() {
     });
   });
 
-  group(
-    'Milestone 3, Phase 3.4: Clipboard, Range Selection & Undo Integration',
-    () {
-      test('FxGridCellRange equality, hashCode, and toString', () {
-        const r1 = FxGridCellRange(
-          startRowId: 'r1',
-          startColumnId: 'c1',
-          endRowId: 'r2',
-          endColumnId: 'c2',
-        );
-        const r2 = FxGridCellRange(
-          startRowId: 'r1',
-          startColumnId: 'c1',
-          endRowId: 'r2',
-          endColumnId: 'c2',
-        );
-        const r3 = FxGridCellRange(
-          startRowId: 'r1',
-          startColumnId: 'c1',
-          endRowId: 'r2',
-          endColumnId: 'c3',
-        );
+  group('Milestone 3, Phase 3.4: Clipboard, Range Selection & Undo Integration', () {
+    test('FxGridCellRange equality, hashCode, and toString', () {
+      const r1 = FxGridCellRange(
+        startRowId: 'r1',
+        startColumnId: 'c1',
+        endRowId: 'r2',
+        endColumnId: 'c2',
+      );
+      const r2 = FxGridCellRange(
+        startRowId: 'r1',
+        startColumnId: 'c1',
+        endRowId: 'r2',
+        endColumnId: 'c2',
+      );
+      const r3 = FxGridCellRange(
+        startRowId: 'r1',
+        startColumnId: 'c1',
+        endRowId: 'r2',
+        endColumnId: 'c3',
+      );
 
-        expect(r1, equals(r2));
-        expect(r1.hashCode, equals(r2.hashCode));
-        expect(r1, isNot(equals(r3)));
-        expect(r1.toString(), contains('start: (r1, c1)'));
-      });
+      expect(r1, equals(r2));
+      expect(r1.hashCode, equals(r2.hashCode));
+      expect(r1, isNot(equals(r3)));
+      expect(r1.toString(), contains('start: (r1, c1)'));
+    });
 
-      testWidgets('FxGrid range selection mouse drag', (tester) async {
-        Set<({String rowId, String columnId})>? selected;
-        FxGridCellRange? selectedRange;
+    testWidgets('FxGrid range selection mouse drag', (tester) async {
+      Set<({String rowId, String columnId})>? selected;
+      FxGridCellRange? selectedRange;
 
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: FxGrid(
-                selectionMode: FxGridSelectionMode.range,
-                columns: const [
-                  FxGridColumn(id: 'c1', caption: 'Col 1'),
-                  FxGridColumn(id: 'c2', caption: 'Col 2'),
-                ],
-                rows: const [
-                  FxGridRow(id: 'r1', cells: {'c1': 'A1', 'c2': 'A2'}),
-                  FxGridRow(id: 'r2', cells: {'c1': 'B1', 'c2': 'B2'}),
-                ],
-                onCellsSelected: (cells) => selected = cells,
-                onRangeSelected: (range) => selectedRange = range,
-              ),
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: FxGrid(
+              selectionMode: FxGridSelectionMode.range,
+              columns: const [
+                FxGridColumn(id: 'c1', caption: 'Col 1'),
+                FxGridColumn(id: 'c2', caption: 'Col 2'),
+              ],
+              rows: const [
+                FxGridRow(id: 'r1', cells: {'c1': 'A1', 'c2': 'A2'}),
+                FxGridRow(id: 'r2', cells: {'c1': 'B1', 'c2': 'B2'}),
+              ],
+              onCellsSelected: (cells) => selected = cells,
+              onRangeSelected: (range) => selectedRange = range,
             ),
           ),
-        );
+        ),
+      );
 
-        // Drag from A1 to B2
-        final gesture = await tester.startGesture(
-          tester.getCenter(find.text('A1')),
-          kind: PointerDeviceKind.mouse,
-        );
-        await tester.pump(const Duration(milliseconds: 50));
-        await gesture.moveTo(tester.getCenter(find.text('B2')));
-        await tester.pump(const Duration(milliseconds: 50));
-        await gesture.up();
-        await tester.pumpAndSettle();
+      // Drag from A1 to B2
+      final gesture = await tester.startGesture(
+        tester.getCenter(find.text('A1')),
+        kind: PointerDeviceKind.mouse,
+      );
+      await tester.pump(const Duration(milliseconds: 50));
+      await gesture.moveTo(tester.getCenter(find.text('B2')));
+      await tester.pump(const Duration(milliseconds: 50));
+      await gesture.up();
+      await tester.pumpAndSettle();
 
-        expect(selectedRange, isNotNull);
-        expect(selectedRange!.startRowId, 'r1');
-        expect(selectedRange!.startColumnId, 'c1');
-        expect(selectedRange!.endRowId, 'r2');
-        expect(selectedRange!.endColumnId, 'c2');
+      expect(selectedRange, isNotNull);
+      expect(selectedRange!.startRowId, 'r1');
+      expect(selectedRange!.startColumnId, 'c1');
+      expect(selectedRange!.endRowId, 'r2');
+      expect(selectedRange!.endColumnId, 'c2');
 
-        expect(selected, {
-          (rowId: 'r1', columnId: 'c1'),
-          (rowId: 'r1', columnId: 'c2'),
-          (rowId: 'r2', columnId: 'c1'),
-          (rowId: 'r2', columnId: 'c2'),
-        });
+      expect(selected, {
+        (rowId: 'r1', columnId: 'c1'),
+        (rowId: 'r1', columnId: 'c2'),
+        (rowId: 'r2', columnId: 'c1'),
+        (rowId: 'r2', columnId: 'c2'),
       });
+    });
 
-      testWidgets('FxGrid Shift + Arrow range selection expansion', (
-        tester,
-      ) async {
-        Set<({String rowId, String columnId})> selected = const {
-          (rowId: 'r1', columnId: 'c1'),
-        };
-        FxGridCellRange? selectedRange;
-        final focusNode = FocusNode();
+    testWidgets('FxGrid Shift + Arrow range selection expansion', (
+      tester,
+    ) async {
+      Set<({String rowId, String columnId})> selected = const {
+        (rowId: 'r1', columnId: 'c1'),
+      };
+      FxGridCellRange? selectedRange;
+      final focusNode = FocusNode();
 
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: StatefulBuilder(
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: StatefulBuilder(
+              builder: (context, setState) {
+                return FxGrid(
+                  focusNode: focusNode,
+                  selectionMode: FxGridSelectionMode.range,
+                  selectedCells: selected,
+                  selectedRange: selectedRange,
+                  columns: const [
+                    FxGridColumn(id: 'c1', caption: 'Col 1'),
+                    FxGridColumn(id: 'c2', caption: 'Col 2'),
+                  ],
+                  rows: const [
+                    FxGridRow(id: 'r1', cells: {'c1': 'A1', 'c2': 'A2'}),
+                    FxGridRow(id: 'r2', cells: {'c1': 'B1', 'c2': 'B2'}),
+                  ],
+                  onCellsSelected: (cells) => setState(() => selected = cells),
+                  onRangeSelected: (range) =>
+                      setState(() => selectedRange = range),
+                );
+              },
+            ),
+          ),
+        ),
+      );
+
+      focusNode.requestFocus();
+      await tester.pumpAndSettle();
+
+      // Press Shift + ArrowRight to select A1 and A2
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.shift);
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.shift);
+      await tester.pumpAndSettle();
+
+      expect(selectedRange, isNotNull);
+      expect(selectedRange!.startRowId, 'r1');
+      expect(selectedRange!.startColumnId, 'c1');
+      expect(selectedRange!.endRowId, 'r1');
+      expect(selectedRange!.endColumnId, 'c2');
+
+      expect(selected, {
+        (rowId: 'r1', columnId: 'c1'),
+        (rowId: 'r1', columnId: 'c2'),
+      });
+    });
+
+    testWidgets('Clipboard Copy/Paste TSV in FxListBox', (tester) async {
+      final List<Map<String, Object?>> committedEdits = [];
+      final focusNode = FocusNode();
+
+      // Mock Clipboard values
+      const clipboardText = '1004\tDavid\n1005\tEve';
+      TestWidgetsFlutterBinding.ensureInitialized();
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        (methodCall) async {
+          if (methodCall.method == 'Clipboard.getData') {
+            return {'text': clipboardText};
+          }
+          if (methodCall.method == 'Clipboard.setData') {
+            final text = methodCall.arguments['text'] as String;
+            expect(text, equals('1001\tAlice\tOpen\ttrue'));
+            return null;
+          }
+          return null;
+        },
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: FxListBox(
+              focusNode: focusNode,
+              selectionMode: FxListBoxSelectionMode.multiple,
+              selectedRowIds: const {'r1'},
+              columns: const [
+                FxListBoxColumn(id: 'id', caption: 'ID', editable: true),
+                FxListBoxColumn(id: 'name', caption: 'Name', editable: true),
+                FxListBoxColumn(id: 'status', caption: 'Status'),
+                FxListBoxColumn(
+                  id: 'approved',
+                  caption: 'Approved',
+                  type: FxCellType.boolean(),
+                ),
+              ],
+              rows: const [
+                FxListBoxRow(
+                  id: 'r1',
+                  cells: {
+                    'id': '1001',
+                    'name': 'Alice',
+                    'status': 'Open',
+                    'approved': true,
+                  },
+                ),
+                FxListBoxRow(
+                  id: 'r2',
+                  cells: {
+                    'id': '1002',
+                    'name': 'Bob',
+                    'status': 'Pending',
+                    'approved': false,
+                  },
+                ),
+                FxListBoxRow(
+                  id: 'r3',
+                  cells: {
+                    'id': '1003',
+                    'name': 'Charlie',
+                    'status': 'Closed',
+                    'approved': true,
+                  },
+                ),
+              ],
+              onCellEdited: (rowId, colId, value) {
+                committedEdits.add({
+                  'rowId': rowId,
+                  'columnId': colId,
+                  'value': value,
+                });
+              },
+            ),
+          ),
+        ),
+      );
+
+      focusNode.requestFocus();
+      await tester.pumpAndSettle();
+
+      // Trigger Copy shortcut (Meta+C)
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.meta);
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyC);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.meta);
+      await tester.pumpAndSettle();
+
+      // Trigger Paste shortcut (Meta+V)
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.meta);
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyV);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.meta);
+      await tester.pumpAndSettle();
+
+      // Verify Paste commits
+      expect(committedEdits, hasLength(4));
+      expect(committedEdits[0], {
+        'rowId': 'r1',
+        'columnId': 'id',
+        'value': '1004',
+      });
+      expect(committedEdits[1], {
+        'rowId': 'r1',
+        'columnId': 'name',
+        'value': 'David',
+      });
+      expect(committedEdits[2], {
+        'rowId': 'r2',
+        'columnId': 'id',
+        'value': '1005',
+      });
+      expect(committedEdits[3], {
+        'rowId': 'r2',
+        'columnId': 'name',
+        'value': 'Eve',
+      });
+    });
+
+    testWidgets('Clipboard Copy/Paste TSV in FxGrid', (tester) async {
+      final List<Map<String, Object?>> committedEdits = [];
+      final focusNode = FocusNode();
+
+      // Mock Clipboard values
+      const clipboardText = 'David\tfalse\nEve\ttrue';
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        (methodCall) async {
+          if (methodCall.method == 'Clipboard.getData') {
+            return {'text': clipboardText};
+          }
+          if (methodCall.method == 'Clipboard.setData') {
+            final text = methodCall.arguments['text'] as String;
+            expect(text, equals('Alice\ttrue'));
+            return null;
+          }
+          return null;
+        },
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: FxGrid(
+              focusNode: focusNode,
+              selectionMode: FxGridSelectionMode.range,
+              selectedCells: const {
+                (rowId: 'r1', columnId: 'name'),
+                (rowId: 'r1', columnId: 'approved'),
+              },
+              columns: const [
+                FxGridColumn(id: 'name', caption: 'Name', editable: true),
+                FxGridColumn(
+                  id: 'approved',
+                  caption: 'Approved',
+                  editable: true,
+                  type: FxCellType.boolean(),
+                ),
+              ],
+              rows: const [
+                FxGridRow(id: 'r1', cells: {'name': 'Alice', 'approved': true}),
+                FxGridRow(id: 'r2', cells: {'name': 'Bob', 'approved': false}),
+              ],
+              onCellEdited: (rowId, colId, value) {
+                committedEdits.add({
+                  'rowId': rowId,
+                  'columnId': colId,
+                  'value': value,
+                });
+              },
+            ),
+          ),
+        ),
+      );
+
+      focusNode.requestFocus();
+      await tester.pumpAndSettle();
+
+      // Trigger Copy shortcut (Control+C)
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.control);
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyC);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.control);
+      await tester.pumpAndSettle();
+
+      // Trigger Paste shortcut (Control+V)
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.control);
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyV);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.control);
+      await tester.pumpAndSettle();
+
+      // Verify Paste commits
+      expect(committedEdits, hasLength(4));
+      expect(committedEdits[0], {
+        'rowId': 'r1',
+        'columnId': 'name',
+        'value': 'David',
+      });
+      expect(committedEdits[1], {
+        'rowId': 'r1',
+        'columnId': 'approved',
+        'value': false,
+      });
+      expect(committedEdits[2], {
+        'rowId': 'r2',
+        'columnId': 'name',
+        'value': 'Eve',
+      });
+      expect(committedEdits[3], {
+        'rowId': 'r2',
+        'columnId': 'approved',
+        'value': true,
+      });
+    });
+
+    testWidgets('Undo Scope integration for FxGrid commits and bulk paste', (
+      tester,
+    ) async {
+      final undoController = FxUndoController();
+      String cellValue = 'Alice';
+      bool approvedValue = true;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: FxUndoScope(
+              controller: undoController,
+              child: StatefulBuilder(
                 builder: (context, setState) {
                   return FxGrid(
-                    focusNode: focusNode,
-                    selectionMode: FxGridSelectionMode.range,
-                    selectedCells: selected,
-                    selectedRange: selectedRange,
                     columns: const [
-                      FxGridColumn(id: 'c1', caption: 'Col 1'),
-                      FxGridColumn(id: 'c2', caption: 'Col 2'),
+                      FxGridColumn(id: 'name', caption: 'Name', editable: true),
+                      FxGridColumn(
+                        id: 'approved',
+                        caption: 'Approved',
+                        editable: true,
+                        type: FxCellType.boolean(),
+                      ),
                     ],
-                    rows: const [
-                      FxGridRow(id: 'r1', cells: {'c1': 'A1', 'c2': 'A2'}),
-                      FxGridRow(id: 'r2', cells: {'c1': 'B1', 'c2': 'B2'}),
+                    rows: [
+                      FxGridRow(
+                        id: 'r1',
+                        cells: {'name': cellValue, 'approved': approvedValue},
+                      ),
                     ],
-                    onCellsSelected: (cells) =>
-                        setState(() => selected = cells),
-                    onRangeSelected: (range) =>
-                        setState(() => selectedRange = range),
+                    onCellEdited: (rowId, colId, newValue) {
+                      setState(() {
+                        if (colId == 'name') {
+                          cellValue = newValue as String;
+                        }
+                        if (colId == 'approved') {
+                          approvedValue = newValue as bool;
+                        }
+                      });
+                    },
                   );
                 },
               ),
             ),
           ),
-        );
+        ),
+      );
 
-        focusNode.requestFocus();
-        await tester.pumpAndSettle();
+      // Verify initial states
+      expect(find.text('Alice'), findsOneWidget);
+      expect(undoController.canUndo, isFalse);
 
-        // Press Shift + ArrowRight to select A1 and A2
-        await tester.sendKeyDownEvent(LogicalKeyboardKey.shift);
-        await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
-        await tester.sendKeyUpEvent(LogicalKeyboardKey.shift);
-        await tester.pumpAndSettle();
+      // Double click name cell and edit to Bob
+      await tester.tap(find.text('Alice'));
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.tap(find.text('Alice'));
+      await tester.pumpAndSettle();
 
-        expect(selectedRange, isNotNull);
-        expect(selectedRange!.startRowId, 'r1');
-        expect(selectedRange!.startColumnId, 'c1');
-        expect(selectedRange!.endRowId, 'r1');
-        expect(selectedRange!.endColumnId, 'c2');
+      final textFieldFinder = find.byType(TextField);
+      await tester.enterText(textFieldFinder, 'Bob');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
 
-        expect(selected, {
-          (rowId: 'r1', columnId: 'c1'),
-          (rowId: 'r1', columnId: 'c2'),
-        });
-      });
+      // Verify updated value & Undo state
+      expect(find.text('Bob'), findsOneWidget);
+      expect(undoController.canUndo, isTrue);
+      expect(undoController.undoLabel, 'Edit Name');
 
-      testWidgets('Clipboard Copy/Paste TSV in FxListBox', (tester) async {
-        final List<Map<String, Object?>> committedEdits = [];
-        final focusNode = FocusNode();
+      // Undo the action
+      undoController.undo();
+      await tester.pumpAndSettle();
+      expect(find.text('Alice'), findsOneWidget);
+      expect(undoController.canRedo, isTrue);
 
-        // Mock Clipboard values
-        const clipboardText = '1004\tDavid\n1005\tEve';
-        TestWidgetsFlutterBinding.ensureInitialized();
-        tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
-          SystemChannels.platform,
-          (methodCall) async {
-            if (methodCall.method == 'Clipboard.getData') {
-              return {'text': clipboardText};
-            }
-            if (methodCall.method == 'Clipboard.setData') {
-              final text = methodCall.arguments['text'] as String;
-              expect(text, equals('1001\tAlice\tOpen\ttrue'));
-              return null;
-            }
-            return null;
-          },
-        );
+      // Redo the action
+      undoController.redo();
+      await tester.pumpAndSettle();
+      expect(find.text('Bob'), findsOneWidget);
+    });
 
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: FxListBox(
-                focusNode: focusNode,
-                selectionMode: FxListBoxSelectionMode.multiple,
-                selectedRowIds: const {'r1'},
-                columns: const [
-                  FxListBoxColumn(id: 'id', caption: 'ID', editable: true),
-                  FxListBoxColumn(id: 'name', caption: 'Name', editable: true),
-                  FxListBoxColumn(id: 'status', caption: 'Status'),
-                  FxListBoxColumn(
-                    id: 'approved',
-                    caption: 'Approved',
-                    type: FxCellType.boolean(),
-                  ),
-                ],
-                rows: const [
-                  FxListBoxRow(
-                    id: 'r1',
-                    cells: {
-                      'id': '1001',
-                      'name': 'Alice',
-                      'status': 'Open',
-                      'approved': true,
-                    },
-                  ),
-                  FxListBoxRow(
-                    id: 'r2',
-                    cells: {
-                      'id': '1002',
-                      'name': 'Bob',
-                      'status': 'Pending',
-                      'approved': false,
-                    },
-                  ),
-                  FxListBoxRow(
-                    id: 'r3',
-                    cells: {
-                      'id': '1003',
-                      'name': 'Charlie',
-                      'status': 'Closed',
-                      'approved': true,
-                    },
-                  ),
-                ],
-                onCellEdited: (rowId, colId, value) {
-                  committedEdits.add({
-                    'rowId': rowId,
-                    'columnId': colId,
-                    'value': value,
-                  });
-                },
-              ),
-            ),
-          ),
-        );
-
-        focusNode.requestFocus();
-        await tester.pumpAndSettle();
-
-        // Trigger Copy shortcut (Meta+C)
-        await tester.sendKeyDownEvent(LogicalKeyboardKey.meta);
-        await tester.sendKeyEvent(LogicalKeyboardKey.keyC);
-        await tester.sendKeyUpEvent(LogicalKeyboardKey.meta);
-        await tester.pumpAndSettle();
-
-        // Trigger Paste shortcut (Meta+V)
-        await tester.sendKeyDownEvent(LogicalKeyboardKey.meta);
-        await tester.sendKeyEvent(LogicalKeyboardKey.keyV);
-        await tester.sendKeyUpEvent(LogicalKeyboardKey.meta);
-        await tester.pumpAndSettle();
-
-        // Verify Paste commits
-        expect(committedEdits, hasLength(4));
-        expect(committedEdits[0], {
-          'rowId': 'r1',
-          'columnId': 'id',
-          'value': '1004',
-        });
-        expect(committedEdits[1], {
-          'rowId': 'r1',
-          'columnId': 'name',
-          'value': 'David',
-        });
-        expect(committedEdits[2], {
-          'rowId': 'r2',
-          'columnId': 'id',
-          'value': '1005',
-        });
-        expect(committedEdits[3], {
-          'rowId': 'r2',
-          'columnId': 'name',
-          'value': 'Eve',
-        });
-      });
-
-      testWidgets('Clipboard Copy/Paste TSV in FxGrid', (tester) async {
-        final List<Map<String, Object?>> committedEdits = [];
-        final focusNode = FocusNode();
-
-        // Mock Clipboard values
-        const clipboardText = 'David\tfalse\nEve\ttrue';
-        tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
-          SystemChannels.platform,
-          (methodCall) async {
-            if (methodCall.method == 'Clipboard.getData') {
-              return {'text': clipboardText};
-            }
-            if (methodCall.method == 'Clipboard.setData') {
-              final text = methodCall.arguments['text'] as String;
-              expect(text, equals('Alice\ttrue'));
-              return null;
-            }
-            return null;
-          },
-        );
-
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: FxGrid(
-                focusNode: focusNode,
-                selectionMode: FxGridSelectionMode.range,
-                selectedCells: const {
-                  (rowId: 'r1', columnId: 'name'),
-                  (rowId: 'r1', columnId: 'approved'),
-                },
-                columns: const [
-                  FxGridColumn(id: 'name', caption: 'Name', editable: true),
-                  FxGridColumn(
-                    id: 'approved',
-                    caption: 'Approved',
-                    editable: true,
-                    type: FxCellType.boolean(),
-                  ),
-                ],
-                rows: const [
-                  FxGridRow(
-                    id: 'r1',
-                    cells: {'name': 'Alice', 'approved': true},
-                  ),
-                  FxGridRow(
-                    id: 'r2',
-                    cells: {'name': 'Bob', 'approved': false},
-                  ),
-                ],
-                onCellEdited: (rowId, colId, value) {
-                  committedEdits.add({
-                    'rowId': rowId,
-                    'columnId': colId,
-                    'value': value,
-                  });
-                },
-              ),
-            ),
-          ),
-        );
-
-        focusNode.requestFocus();
-        await tester.pumpAndSettle();
-
-        // Trigger Copy shortcut (Control+C)
-        await tester.sendKeyDownEvent(LogicalKeyboardKey.control);
-        await tester.sendKeyEvent(LogicalKeyboardKey.keyC);
-        await tester.sendKeyUpEvent(LogicalKeyboardKey.control);
-        await tester.pumpAndSettle();
-
-        // Trigger Paste shortcut (Control+V)
-        await tester.sendKeyDownEvent(LogicalKeyboardKey.control);
-        await tester.sendKeyEvent(LogicalKeyboardKey.keyV);
-        await tester.sendKeyUpEvent(LogicalKeyboardKey.control);
-        await tester.pumpAndSettle();
-
-        // Verify Paste commits
-        expect(committedEdits, hasLength(4));
-        expect(committedEdits[0], {
-          'rowId': 'r1',
-          'columnId': 'name',
-          'value': 'David',
-        });
-        expect(committedEdits[1], {
-          'rowId': 'r1',
-          'columnId': 'approved',
-          'value': false,
-        });
-        expect(committedEdits[2], {
-          'rowId': 'r2',
-          'columnId': 'name',
-          'value': 'Eve',
-        });
-        expect(committedEdits[3], {
-          'rowId': 'r2',
-          'columnId': 'approved',
-          'value': true,
-        });
-      });
-
-      testWidgets('Undo Scope integration for FxGrid commits and bulk paste', (
-        tester,
-      ) async {
-        final undoController = FxUndoController();
-        String cellValue = 'Alice';
-        bool approvedValue = true;
-
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: FxUndoScope(
-                controller: undoController,
-                child: StatefulBuilder(
-                  builder: (context, setState) {
-                    return FxGrid(
-                      columns: const [
-                        FxGridColumn(
-                          id: 'name',
-                          caption: 'Name',
-                          editable: true,
-                        ),
-                        FxGridColumn(
-                          id: 'approved',
-                          caption: 'Approved',
-                          editable: true,
-                          type: FxCellType.boolean(),
-                        ),
-                      ],
-                      rows: [
-                        FxGridRow(
-                          id: 'r1',
-                          cells: {'name': cellValue, 'approved': approvedValue},
-                        ),
-                      ],
-                      onCellEdited: (rowId, colId, newValue) {
-                        setState(() {
-                          if (colId == 'name') {
-                            cellValue = newValue as String;
-                          }
-                          if (colId == 'approved') {
-                            approvedValue = newValue as bool;
-                          }
-                        });
-                      },
-                    );
-                  },
-                ),
-              ),
-            ),
-          ),
-        );
-
-        // Verify initial states
-        expect(find.text('Alice'), findsOneWidget);
-        expect(undoController.canUndo, isFalse);
-
-        // Double click name cell and edit to Bob
-        await tester.tap(find.text('Alice'));
-        await tester.pump(const Duration(milliseconds: 50));
-        await tester.tap(find.text('Alice'));
-        await tester.pumpAndSettle();
-
-        final textFieldFinder = find.byType(TextField);
-        await tester.enterText(textFieldFinder, 'Bob');
-        await tester.testTextInput.receiveAction(TextInputAction.done);
-        await tester.pumpAndSettle();
-
-        // Verify updated value & Undo state
-        expect(find.text('Bob'), findsOneWidget);
-        expect(undoController.canUndo, isTrue);
-        expect(undoController.undoLabel, 'Edit Name');
-
-        // Undo the action
-        undoController.undo();
-        await tester.pumpAndSettle();
-        expect(find.text('Alice'), findsOneWidget);
-        expect(undoController.canRedo, isTrue);
-
-        // Redo the action
-        undoController.redo();
-        await tester.pumpAndSettle();
-        expect(find.text('Bob'), findsOneWidget);
-      });
-
-      testWidgets('FxListBox auto-fit column resize respects 50% width cap, auto-wraps, and supports undo/redo', (
-        tester,
-      ) async {
+    testWidgets(
+      'FxListBox auto-fit column resize respects 50% width cap, auto-wraps, and supports undo/redo',
+      (tester) async {
         final undoController = FxUndoController();
         double columnWidth = 100.0;
         bool pageLineWrap = false;
@@ -1831,7 +1818,8 @@ void main() {
                               id: 'r1',
                               cells: {
                                 'name': 'Alice',
-                                'notes': 'This is a very very very very long notes content that should exceed 200 pixels',
+                                'notes':
+                                    'This is a very very very very long notes content that should exceed 200 pixels',
                               },
                             ),
                           ],
@@ -1853,7 +1841,9 @@ void main() {
         // Find the Notes header cell using runtimeType string match to avoid private class import issues
         final headerCellFinder = find.ancestor(
           of: find.text('Notes'),
-          matching: find.byElementPredicate((element) => element.widget.runtimeType.toString() == '_HeaderCell'),
+          matching: find.byElementPredicate(
+            (element) => element.widget.runtimeType.toString() == '_HeaderCell',
+          ),
         );
         expect(headerCellFinder, findsOneWidget);
 
@@ -1869,9 +1859,11 @@ void main() {
         // The content is very long, so auto-fit should cap the width at 50% of 400 = 200
         // and also set the column's wrapping override to true.
         expect(columnWidth, equals(200.0));
-        
+
         // Find text widget to verify wrapping
-        final textWidget = tester.widget<Text>(find.textContaining('This is a very very'));
+        final textWidget = tester.widget<Text>(
+          find.textContaining('This is a very very'),
+        );
         expect(textWidget.maxLines, isNull);
 
         // Verify Undo stack has the action
@@ -1884,7 +1876,9 @@ void main() {
 
         // Verify it reverted to original width and wrap state
         expect(columnWidth, equals(100.0));
-        final textWidgetUndone = tester.widget<Text>(find.textContaining('This is a very very'));
+        final textWidgetUndone = tester.widget<Text>(
+          find.textContaining('This is a very very'),
+        );
         expect(textWidgetUndone.maxLines, equals(1));
 
         // Redo the auto-fit
@@ -1893,71 +1887,78 @@ void main() {
 
         // Verify it reapplied
         expect(columnWidth, equals(200.0));
-        final textWidgetRedone = tester.widget<Text>(find.textContaining('This is a very very'));
+        final textWidgetRedone = tester.widget<Text>(
+          find.textContaining('This is a very very'),
+        );
         expect(textWidgetRedone.maxLines, isNull);
+      },
+    );
+
+    group('v0.3.4 Features (Styled Text, Crosshairs, Reordering)', () {
+      testWidgets('renders Text.rich when supportStyledText is true', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: FxListBox(
+                columns: const [
+                  FxListBoxColumn(
+                    id: 'notes',
+                    caption: 'Notes',
+                    supportStyledText: true,
+                  ),
+                ],
+                rows: const [
+                  FxListBoxRow(
+                    id: 'r1',
+                    cells: {'notes': '<b>Urgent:</b> Sugar *abnormal* ~check~'},
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+
+        final richTextFinder = find.byType(RichText);
+        expect(richTextFinder, findsWidgets);
       });
 
-      group('v0.3.4 Features (Styled Text, Crosshairs, Reordering)', () {
-        testWidgets('renders Text.rich when supportStyledText is true', (tester) async {
-          await tester.pumpWidget(
-            MaterialApp(
-              home: Scaffold(
-                body: FxListBox(
-                  columns: const [
-                    FxListBoxColumn(
-                      id: 'notes',
-                      caption: 'Notes',
-                      supportStyledText: true,
-                    ),
-                  ],
-                  rows: const [
-                    FxListBoxRow(
-                      id: 'r1',
-                      cells: {'notes': '<b>Urgent:</b> Sugar *abnormal* ~check~'},
-                    ),
-                  ],
-                ),
+      testWidgets('FxGrid calculates selection crosshair borders', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: FxGrid(
+                columns: const [
+                  FxGridColumn(id: 'c1', caption: 'Col 1'),
+                  FxGridColumn(id: 'c2', caption: 'Col 2'),
+                ],
+                rows: const [
+                  FxGridRow(id: 'r1', cells: {'c1': 'A1', 'c2': 'B1'}),
+                  FxGridRow(id: 'r2', cells: {'c1': 'A2', 'c2': 'B2'}),
+                ],
+                selectedCells: const {(rowId: 'r1', columnId: 'c2')},
               ),
             ),
-          );
+          ),
+        );
 
-          final richTextFinder = find.byType(RichText);
-          expect(richTextFinder, findsWidgets);
-        });
+        // Grid renders active borders
+        expect(find.text('B1'), findsOneWidget);
+      });
 
-        testWidgets('FxGrid calculates selection crosshair borders', (tester) async {
-          await tester.pumpWidget(
-            MaterialApp(
-              home: Scaffold(
-                body: FxGrid(
-                  columns: const [
-                    FxGridColumn(id: 'c1', caption: 'Col 1'),
-                    FxGridColumn(id: 'c2', caption: 'Col 2'),
-                  ],
-                  rows: const [
-                    FxGridRow(id: 'r1', cells: {'c1': 'A1', 'c2': 'B1'}),
-                    FxGridRow(id: 'r2', cells: {'c1': 'A2', 'c2': 'B2'}),
-                  ],
-                  selectedCells: const {(rowId: 'r1', columnId: 'c2')},
-                ),
-              ),
-            ),
-          );
-
-          // Grid renders active borders
-          expect(find.text('B1'), findsOneWidget);
-        });
-
-        testWidgets('FxListBox renders drag handle column when allowRowReordering is true', (tester) async {
+      testWidgets(
+        'FxListBox renders drag handle column when allowRowReordering is true',
+        (tester) async {
           await tester.pumpWidget(
             MaterialApp(
               home: Scaffold(
                 body: FxListBox(
                   allowRowReordering: true,
                   onRowReordered: (oldIdx, newIdx) {},
-                  columns: const [
-                    FxListBoxColumn(id: 'c1', caption: 'Col 1'),
-                  ],
+                  columns: const [FxListBoxColumn(id: 'c1', caption: 'Col 1')],
                   rows: const [
                     FxListBoxRow(id: 'r1', cells: {'c1': 'Row 1'}),
                     FxListBoxRow(id: 'r2', cells: {'c1': 'Row 2'}),
@@ -1969,8 +1970,8 @@ void main() {
 
           // Verify reorder handle exists
           expect(find.byIcon(Icons.drag_handle), findsNWidgets(2));
-        });
-      });
-    },
-  );
+        },
+      );
+    });
+  });
 }

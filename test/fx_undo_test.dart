@@ -270,6 +270,69 @@ void main() {
 
       expect(committedColor, const Color(0xff22cc88));
     });
+
+    test(
+      'FxUndoController depth, clear, empty batch and invalid undo/redo cases',
+      () {
+        final controller = FxUndoController();
+        expect(controller.undoDepth, 0);
+        expect(controller.redoDepth, 0);
+
+        // Empty batch returns false
+        expect(controller.commitBatch('Empty', []), isFalse);
+
+        // Invalid undo/redo calls do not throw
+        controller.undo();
+        controller.redo();
+
+        // Clear does nothing when empty
+        controller.clear();
+
+        // Commit one value
+        var value = 1;
+        controller.commitValue(
+          'Set 2',
+          oldValue: value,
+          newValue: 2,
+          apply: (v) => value = v,
+        );
+        expect(controller.undoDepth, 1);
+        expect(controller.redoDepth, 0);
+
+        // Undo increases redo depth
+        controller.undo();
+        expect(controller.undoDepth, 0);
+        expect(controller.redoDepth, 1);
+
+        // Clear empties both
+        controller.clear();
+        expect(controller.undoDepth, 0);
+        expect(controller.redoDepth, 0);
+      },
+    );
+
+    testWidgets('FxUndoScope of and maybeOf error/null cases', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (context) {
+                // maybeOf returns null when no scope
+                expect(FxUndoScope.maybeOf(context), isNull);
+
+                // of throws when no scope
+                expect(
+                  () => FxUndoScope.of(context),
+                  throwsA(isA<FlutterError>()),
+                );
+
+                return const SizedBox();
+              },
+            ),
+          ),
+        ),
+      );
+    });
   });
 }
 
