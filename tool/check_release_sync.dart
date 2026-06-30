@@ -84,11 +84,12 @@ void _checkPackageVersion(
     message: 'pubspec.yaml must declare pub.dev screenshots.',
   );
 
-  for (final path in [
-    'doc/screenshots/v$version/fxdesktop-v$version-lookup-renderers.png',
-    'doc/screenshots/v$version/fxdesktop-v$version-db-lookup-overlay.png',
-    'doc/screenshots/v$version/fxdesktop-v$version-masked-action-editor.png',
-  ]) {
+  final screenshotPaths = _readPubspecScreenshotPaths();
+  if (screenshotPaths.isEmpty) {
+    _fail(failures, 'pubspec.yaml screenshots must include at least one path.');
+  }
+
+  for (final path in screenshotPaths) {
     _checkScreenshot(failures, path);
   }
 }
@@ -117,6 +118,35 @@ String? _readYamlScalar(File file, String key) {
         .replaceAll(RegExp(r'''^['"]|['"]$'''), '');
   }
   return null;
+}
+
+List<String> _readPubspecScreenshotPaths() {
+  final file = File('pubspec.yaml');
+  if (!file.existsSync()) return const [];
+
+  final paths = <String>[];
+  var inScreenshots = false;
+  for (final line in file.readAsLinesSync()) {
+    if (line.trimRight() == 'screenshots:') {
+      inScreenshots = true;
+      continue;
+    }
+    if (inScreenshots && line.isNotEmpty && !line.startsWith(' ')) {
+      break;
+    }
+    if (!inScreenshots) continue;
+
+    final trimmed = line.trim();
+    if (trimmed.startsWith('path:')) {
+      paths.add(
+        trimmed
+            .substring('path:'.length)
+            .trim()
+            .replaceAll(RegExp(r'''^['"]|['"]$'''), ''),
+      );
+    }
+  }
+  return paths;
 }
 
 String? _gitExactTag() {

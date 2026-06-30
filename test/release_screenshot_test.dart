@@ -7,6 +7,8 @@ import 'package:fx_desktop/fx_desktop.dart';
 
 enum _Priority { normal, urgent, critical }
 
+final bool _isCi = Platform.environment['CI'] == 'true';
+
 Future<void> _loadReleaseScreenshotFonts() async {
   final flutterRoot = Platform.environment['FLUTTER_ROOT'];
   if (flutterRoot == null) return;
@@ -72,11 +74,11 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await expectLater(
-      find.byKey(rootKey),
-      matchesGoldenFile(
-        '../doc/screenshots/v0.3.6/fxdesktop-v0.3.6-lookup-renderers.png',
-      ),
+    await _expectReleaseScreenshot(
+      tester,
+      boundaryKey: rootKey,
+      goldenPath:
+          '../doc/screenshots/v0.3.6/fxdesktop-v0.3.6-lookup-renderers.png',
     );
   });
 
@@ -101,11 +103,11 @@ void main() {
     await tester.tap(find.text('Globex Industries').first);
     await tester.pumpAndSettle();
 
-    await expectLater(
-      find.byKey(rootKey),
-      matchesGoldenFile(
-        '../doc/screenshots/v0.3.6/fxdesktop-v0.3.6-db-lookup-overlay.png',
-      ),
+    await _expectReleaseScreenshot(
+      tester,
+      boundaryKey: rootKey,
+      goldenPath:
+          '../doc/screenshots/v0.3.6/fxdesktop-v0.3.6-db-lookup-overlay.png',
     );
   });
 
@@ -128,13 +130,25 @@ void main() {
     await tester.tap(find.text('invoice_v01.pdf').first);
     await tester.pumpAndSettle();
 
-    await expectLater(
-      find.byKey(rootKey),
-      matchesGoldenFile(
-        '../doc/screenshots/v0.3.6/fxdesktop-v0.3.6-masked-action-editor.png',
-      ),
+    await _expectReleaseScreenshot(
+      tester,
+      boundaryKey: rootKey,
+      goldenPath:
+          '../doc/screenshots/v0.3.6/fxdesktop-v0.3.6-masked-action-editor.png',
     );
   });
+}
+
+Future<void> _expectReleaseScreenshot(
+  WidgetTester tester, {
+  required Key boundaryKey,
+  required String goldenPath,
+}) async {
+  expect(find.byKey(boundaryKey), findsOneWidget);
+  if (_isCi) {
+    return;
+  }
+  await expectLater(find.byKey(boundaryKey), matchesGoldenFile(goldenPath));
 }
 
 class _ReleaseScreenshotShell extends StatelessWidget {

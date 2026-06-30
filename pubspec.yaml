@@ -1,6 +1,6 @@
 name: fx_desktop
 description: Desktop-first Flutter components and CSS-like layout contracts for Xojo-style UI design.
-version: 0.3.6
+version: 0.3.7
 homepage: https://github.com/jedt3d/FxDesktop
 repository: https://github.com/jedt3d/FxDesktop
 issue_tracker: https://github.com/jedt3d/FxDesktop/issues
@@ -22,11 +22,11 @@ topics:
   - xojo
 
 screenshots:
-  - description: "FxDesktop v0.3.6 lookup cells with custom renderers."
+  - description: "FxDesktop ListBox/Grid lookup cells with custom renderers."
     path: doc/screenshots/v0.3.6/fxdesktop-v0.3.6-lookup-renderers.png
-  - description: "FxDesktop v0.3.6 hosted multi-column database lookup overlay."
+  - description: "FxDesktop hosted multi-column database lookup overlay."
     path: doc/screenshots/v0.3.6/fxdesktop-v0.3.6-db-lookup-overlay.png
-  - description: "FxDesktop v0.3.6 masked editor and cell action button."
+  - description: "FxDesktop masked editor and cell action button."
     path: doc/screenshots/v0.3.6/fxdesktop-v0.3.6-masked-action-editor.png
 
 dependencies:

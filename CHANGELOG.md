@@ -2,7 +2,14 @@
 
 ## Unreleased
 
+## 0.3.7
+
+Version `0.3.7` is a package-page and release automation polish release for the
+first public pub.dev deployment line.
+
 ### Documentation
+- Added ListBox/Grid screenshots directly to `README.md` so pub.dev readers can
+  see the advanced table surface without opening the repository.
 - Reconciled Milestone 3 documentation with the delivered `0.3.6` release
   history.
 - Updated ListBox/Grid docs, release-versioning guidance, component mapping,
@@ -10,6 +17,16 @@
   as shipped rather than planned.
 - Moved release verification notes into `doc/` and refreshed the `v0.3.6`
   manual checklist.
+
+### Release
+- Added package screenshots to `pubspec.yaml` for pub.dev package-page media.
+- Added release-sync validation for `pubspec.yaml`, README, `CHANGELOG.md`,
+  screenshots, and Git tags.
+- Hardened GitHub Actions publishing for Flutter package publishing through
+  `flutter pub publish`.
+- Kept release screenshot widget checks in CI while avoiding exact pixel-golden
+  comparisons on Ubuntu, where renderer differences can invalidate macOS
+  release screenshot artifacts.
 
 ## 0.3.6
 

@@ -1,7 +1,7 @@
 # FxDesktop
 
-[![Pub](https://img.shields.io/badge/pub-0.3.6-blue)](https://pub.dev/packages/fx_desktop)
-[![Release](https://img.shields.io/badge/release-v0.3.6-blue)](https://github.com/jedt3d/FxDesktop/releases/tag/v0.3.6)
+[![Pub](https://img.shields.io/badge/pub-0.3.7-blue)](https://pub.dev/packages/fx_desktop)
+[![Release](https://img.shields.io/badge/release-v0.3.7-blue)](https://github.com/jedt3d/FxDesktop/releases/tag/v0.3.7)
 [![CI](https://github.com/jedt3d/FxDesktop/actions/workflows/ci.yml/badge.svg)](https://github.com/jedt3d/FxDesktop/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
@@ -26,7 +26,7 @@ multi-size desktop workflows.
 
 ```yaml
 dependencies:
-  fx_desktop: ^0.3.6
+  fx_desktop: ^0.3.7
 ```
 
 ## Quick Start
@@ -113,6 +113,20 @@ Milestone 3 is delivered through `v0.3.6`; the original plan remains in the
 milestone document as the acceptance map, and the delivered release history is
 now tracked there. See [Milestone 3: ListBox And Grid Depth](doc/milestone-3-listbox-grid.md)
 and [Advanced Grid Features (v0.3.6)](doc/milestone-6-advanced-grid-features.md).
+
+## ListBox And Grid
+
+`FxListBox` and `FxGrid` are the deepest controls in the package. They cover
+dense desktop tables with virtualized scrolling, keyboard traversal, selection
+models, inline editing, validation, TSV clipboard operations, undo/redo
+integration, custom renderers, hosted lookup editors, input masks, cell action
+buttons, and accessibility semantics.
+
+![FxDesktop lookup cells and custom renderers](https://raw.githubusercontent.com/jedt3d/FxDesktop/v0.3.7/doc/screenshots/v0.3.6/fxdesktop-v0.3.6-lookup-renderers.png)
+
+![FxDesktop hosted multi-column database lookup overlay](https://raw.githubusercontent.com/jedt3d/FxDesktop/v0.3.7/doc/screenshots/v0.3.6/fxdesktop-v0.3.6-db-lookup-overlay.png)
+
+![FxDesktop masked editor and cell action button](https://raw.githubusercontent.com/jedt3d/FxDesktop/v0.3.7/doc/screenshots/v0.3.6/fxdesktop-v0.3.6-masked-action-editor.png)
 
 ## Text Input Constraints
 
