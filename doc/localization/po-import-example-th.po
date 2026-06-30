@@ -1,0 +1,366 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: fx_desktop\n"
+"Language: th\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+
+#. ARB key: colorPickerApplyButton
+#. Description: Apply action in the color picker dialog.
+msgctxt "color_picker.apply_button"
+msgid "Apply"
+msgstr "นำไปใช้"
+
+#. ARB key: colorPickerCancelButton
+#. Description: Cancel action in the color picker dialog.
+msgctxt "color_picker.cancel_button"
+msgid "Cancel"
+msgstr "ยกเลิก"
+
+#. ARB key: colorPickerHexError
+#. Description: Validation error shown when the RGB hex value is invalid.
+msgctxt "color_picker.hex_error"
+msgid "Enter a color as #RRGGBB."
+msgstr "ป้อนสีในรูปแบบ #RRGGBB"
+
+#. ARB key: colorPickerHueLabel
+#. Description: Hue slider label in the color picker dialog.
+msgctxt "color_picker.hue_label"
+msgid "Hue"
+msgstr "เฉดสี"
+
+#. ARB key: colorPickerNoColorButton
+#. Description: Dialog action button that clears a nullable color value.
+msgctxt "color_picker.no_color_button"
+msgid "No Color"
+msgstr "ไม่มีสี"
+
+#. ARB key: colorPickerNoColorValue
+#. Description: Value text shown when a nullable color picker has no selected color.
+msgctxt "color_picker.no_color_value"
+msgid "No color"
+msgstr "ไม่มีสี"
+
+#. ARB key: colorPickerPreviewLabel
+#. Description: Preview label in the color picker dialog.
+msgctxt "color_picker.preview_label"
+msgid "Preview: {color}"
+msgstr "ตัวอย่าง: {color}"
+
+#. ARB key: colorPickerRgbHexLabel
+#. Description: Hex RGB input label in the color picker dialog.
+msgctxt "color_picker.rgb_hex_label"
+msgid "RGB #RRGGBB"
+msgstr "RGB #RRGGBB"
+
+#. ARB key: colorPickerSaturationLabel
+#. Description: Saturation slider label in the color picker dialog.
+msgctxt "color_picker.saturation_label"
+msgid "Saturation"
+msgstr "ความอิ่มสี"
+
+#. ARB key: colorPickerValueLabel
+#. Description: Brightness/value slider label in the color picker dialog.
+msgctxt "color_picker.value_label"
+msgid "Value"
+msgstr "ความสว่าง"
+
+#. ARB key: datePickerEmptyHint
+#. Description: Empty prompt shown by FxDateTimePicker in date mode.
+msgctxt "date_time_picker.empty_hint.date"
+msgid "Select date"
+msgstr "เลือกวันที่"
+
+#. ARB key: dateTimePickerEmptyHint
+#. Description: Empty prompt shown by FxDateTimePicker in date-time mode.
+msgctxt "date_time_picker.empty_hint.date_time"
+msgid "Select date and time"
+msgstr "เลือกวันที่และเวลา"
+
+#. ARB key: designerEditMenuCopyItem
+#. Description: Designer edit-menu command that copies the selected component.
+msgctxt "designer.edit_menu.copy_item"
+msgid "Copy"
+msgstr "คัดลอก"
+
+#. ARB key: galleryAccentColorLabel
+#. Description: Localized color picker label in the gallery.
+msgctxt "gallery.sample.accent_color_label"
+msgid "Accent color"
+msgstr "สีเน้น"
+
+#. ARB key: galleryAuditTab
+#. Description: Localized audit tab label in the gallery.
+msgctxt "gallery.sample.audit_tab"
+msgid "Audit"
+msgstr "ตรวจสอบ"
+
+#. ARB key: galleryChoiceSection
+#. Description: Section heading for localized choice control examples.
+msgctxt "gallery.section.choice_controls"
+msgid "Choice controls"
+msgstr "ตัวควบคุมตัวเลือก"
+
+#. ARB key: galleryClosedStatus
+#. Description: Localized sample status value in the gallery.
+msgctxt "gallery.sample.closed_status"
+msgid "Closed"
+msgstr "ปิด"
+
+#. ARB key: galleryCompactLabel
+#. Description: Localized compact segmented-control label in the gallery.
+msgctxt "gallery.sample.compact_label"
+msgid "Compact"
+msgstr "กะทัดรัด"
+
+#. ARB key: galleryCustomerHint
+#. Description: Localized sample form field hint in the gallery.
+msgctxt "gallery.sample.customer_hint"
+msgid "Company or person name"
+msgstr "ชื่อบริษัทหรือบุคคล"
+
+#. ARB key: galleryCustomerLabel
+#. Description: Localized sample form field label in the gallery.
+msgctxt "gallery.sample.customer_label"
+msgid "Customer"
+msgstr "ลูกค้า"
+
+#. ARB key: galleryDateTimeColorSection
+#. Description: Section heading for localized date/time and color examples.
+msgctxt "gallery.section.date_time_color"
+msgid "Date, time, and color"
+msgstr "วันที่ เวลา และสี"
+
+#. ARB key: galleryDetailedLabel
+#. Description: Localized detailed segmented-control label in the gallery.
+msgctxt "gallery.sample.detailed_label"
+msgid "Detailed"
+msgstr "ละเอียด"
+
+#. ARB key: galleryDirectionLabel
+#. Description: Label for the active text direction in the localization gallery.
+msgctxt "gallery.direction_label"
+msgid "Direction"
+msgstr "ทิศทาง"
+
+#. ARB key: galleryEnabledLabel
+#. Description: Localized enabled checkbox label in the gallery.
+msgctxt "gallery.sample.enabled_label"
+msgid "Enabled"
+msgstr "เปิดใช้งาน"
+
+#. ARB key: galleryFormSection
+#. Description: Section heading for localized form control examples.
+msgctxt "gallery.section.form_controls"
+msgid "Form controls"
+msgstr "ตัวควบคุมฟอร์ม"
+
+#. ARB key: galleryLanguageEnglish
+#. Description: Language name shown in the gallery language switcher.
+msgctxt "gallery.language.english"
+msgid "English"
+msgstr "อังกฤษ"
+
+#. ARB key: galleryLanguageJapanese
+#. Description: Language name shown in the gallery language switcher.
+msgctxt "gallery.language.japanese"
+msgid "Japanese"
+msgstr "ญี่ปุ่น"
+
+#. ARB key: galleryLanguageNepali
+#. Description: Language name shown in the gallery language switcher.
+msgctxt "gallery.language.nepali"
+msgid "Nepali"
+msgstr "เนปาล"
+
+#. ARB key: galleryLanguageThai
+#. Description: Language name shown in the gallery language switcher.
+msgctxt "gallery.language.thai"
+msgid "Thai"
+msgstr "ไทย"
+
+#. ARB key: galleryLocaleLabel
+#. Description: Label for the active locale code in the localization gallery.
+msgctxt "gallery.locale_label"
+msgid "Locale"
+msgstr "โลเคล"
+
+#. ARB key: galleryNavigationSection
+#. Description: Section heading for localized navigation control examples.
+msgctxt "gallery.section.navigation_controls"
+msgid "Navigation controls"
+msgstr "ตัวควบคุมนำทาง"
+
+#. ARB key: galleryOpenStatus
+#. Description: Localized sample status value in the gallery.
+msgctxt "gallery.sample.open_status"
+msgid "Open"
+msgstr "เปิด"
+
+#. ARB key: galleryOrderColumn
+#. Description: Localized order column caption in the gallery.
+msgctxt "gallery.sample.order_column"
+msgid "Order"
+msgstr "คำสั่ง"
+
+#. ARB key: galleryOwnerColumn
+#. Description: Localized owner column caption in the gallery.
+msgctxt "gallery.sample.owner_column"
+msgid "Owner"
+msgstr "ผู้รับผิดชอบ"
+
+#. ARB key: galleryPoSection
+#. Description: Section heading for PO import/export proof in the gallery.
+msgctxt "gallery.section.po_bridge"
+msgid "PO bridge"
+msgstr "สะพาน PO"
+
+#. ARB key: galleryPoStatus
+#. Description: Short proof text explaining PO bridge status in the localization gallery.
+msgctxt "gallery.po_bridge.status"
+msgid "ARB remains the runtime source; PO and POT are translator bridge files."
+msgstr "ARB ยังเป็นแหล่งข้อความตอนรันไทม์ ส่วน PO และ POT เป็นไฟล์สะพานสำหรับนักแปล"
+
+#. ARB key: galleryPriorityLabel
+#. Description: Localized sample priority field label in the gallery.
+msgctxt "gallery.sample.priority_label"
+msgid "Priority"
+msgstr "ความสำคัญ"
+
+#. ARB key: gallerySelectedLabel
+#. Description: Localized selected radio button label in the gallery.
+msgctxt "gallery.sample.selected_label"
+msgid "Selected"
+msgstr "เลือกแล้ว"
+
+#. ARB key: galleryStartDateLabel
+#. Description: Localized start date label in the gallery.
+msgctxt "gallery.sample.start_date_label"
+msgid "Start date"
+msgstr "วันที่เริ่มต้น"
+
+#. ARB key: galleryStateColumn
+#. Description: Localized state column caption in the gallery.
+msgctxt "gallery.sample.state_column"
+msgid "State"
+msgstr "สถานะ"
+
+#. ARB key: galleryStateSection
+#. Description: Section heading for localized component states.
+msgctxt "gallery.section.states"
+msgid "States and validation"
+msgstr "สถานะและการตรวจสอบ"
+
+#. ARB key: galleryStatusLabel
+#. Description: Localized sample status field label in the gallery.
+msgctxt "gallery.sample.status_label"
+msgid "Status"
+msgstr "สถานะ"
+
+#. ARB key: gallerySubtitle
+#. Description: Subtitle for the one-window localization gallery.
+msgctxt "gallery.subtitle"
+msgid "One desktop surface for switching FxDesktop-owned component text across supported locales."
+msgstr "พื้นที่เดสก์ท็อปเดียวสำหรับสลับข้อความของคอมโพเนนต์ FxDesktop ในภาษาที่รองรับ"
+
+#. ARB key: gallerySummaryTab
+#. Description: Localized summary tab label in the gallery.
+msgctxt "gallery.sample.summary_tab"
+msgid "Summary"
+msgstr "สรุป"
+
+#. ARB key: galleryTableSection
+#. Description: Section heading for localized table examples.
+msgctxt "gallery.section.table"
+msgid "ListBox and Grid"
+msgstr "ListBox และ Grid"
+
+#. ARB key: galleryTitle
+#. Description: Title for the one-window localization gallery.
+msgctxt "gallery.title"
+msgid "FxDesktop Localization Gallery"
+msgstr "แกลเลอรีการแปล FxDesktop"
+
+#. ARB key: gridContextMenuCopySelection
+#. Description: Context menu action that copies the selected grid or list rows.
+msgctxt "grid.context_menu.copy_selection"
+msgid "Copy"
+msgstr "คัดลอกส่วนที่เลือก"
+
+#. ARB key: lookupNoOptionsFound
+#. Description: Empty result message shown by the hosted lookup combo overlay.
+msgctxt "lookup.overlay.no_options_found"
+msgid "No options found"
+msgstr "ไม่พบตัวเลือก"
+
+#. ARB key: popupMenuNoOptions
+#. Description: Fallback hint shown when FxPopupMenu has no selectable options.
+msgctxt "popup_menu.no_options"
+msgid "No options"
+msgstr "ไม่มีตัวเลือก"
+
+#. ARB key: tableAutoFitUndoLabel
+#. Description: Undo stack label for auto-fitting a table column.
+msgctxt "table.undo.auto_fit_column"
+msgid "Auto-fit {column}"
+msgstr "ปรับพอดี {column}"
+
+#. ARB key: tableBooleanChecked
+#. Description: Accessible value for a checked boolean table cell.
+msgctxt "table.semantics.boolean_checked"
+msgid "checked"
+msgstr "เลือกแล้ว"
+
+#. ARB key: tableBooleanUnchecked
+#. Description: Accessible value for an unchecked boolean table cell.
+msgctxt "table.semantics.boolean_unchecked"
+msgid "unchecked"
+msgstr "ยังไม่เลือก"
+
+#. ARB key: tableCellSemantics
+#. Description: Accessible label for a table cell.
+msgctxt "table.semantics.cell"
+msgid "Row {row}, Column {column}: {value}"
+msgstr "แถว {row}, คอลัมน์ {column}: {value}"
+
+#. ARB key: tableEditUndoLabel
+#. Description: Undo stack label for editing one table cell.
+msgctxt "table.undo.edit_cell"
+msgid "Edit {column}"
+msgstr "แก้ไข {column}"
+
+#. ARB key: tableLoadError
+#. Description: Default error message shown by FxListBox and FxGrid when no custom error text is supplied.
+msgctxt "table.state.load_error"
+msgid "An error occurred loading data"
+msgstr "เกิดข้อผิดพลาดขณะโหลดข้อมูล"
+
+#. ARB key: tableMovingRowFeedback
+#. Description: Drag feedback shown while a table row is being reordered.
+msgctxt "table.drag.moving_row_feedback"
+msgid "Moving Row {row}"
+msgstr "กำลังย้ายแถว {row}"
+
+#. ARB key: tableNoRecords
+#. Description: Empty state message shown by FxListBox and FxGrid.
+msgctxt "table.state.no_records"
+msgid "No records to display"
+msgstr "ไม่มีระเบียนให้แสดง"
+
+#. ARB key: tablePasteValuesUndoLabel
+#. Description: Undo stack label for a paste operation that edits several cells.
+msgctxt "table.undo.paste_values"
+msgid "Paste Values"
+msgstr "วางค่า"
+
+#. ARB key: tableValidationErrorSuffix
+#. Description: Accessible suffix appended to a table cell semantic label when the cell has a validation error.
+msgctxt "table.semantics.validation_error_suffix"
+msgid "validation error: {error}"
+msgstr "ข้อผิดพลาดการตรวจสอบ: {error}"
+
+#. ARB key: timePickerEmptyHint
+#. Description: Empty prompt shown by FxDateTimePicker in time mode.
+msgctxt "date_time_picker.empty_hint.time"
+msgid "Select time"
+msgstr "เลือกเวลา"
+

@@ -114,6 +114,17 @@ Future `0.3.x` documentation-only reconciliation work should not change
 only when implementation, public API, generated documentation, or release
 artifacts change in a way that should be published.
 
+## Milestone 4 Release Versions
+
+Milestone 4 uses the `0.4.x` release line:
+
+- `v0.4.0`: localization foundation, four bundled locales, PO/POT bridge,
+  `FxLocalizedText`, `FxLocalizationGallery`, and localization screenshots.
+
+Future `0.4.x` updates should keep ARB, generated localizations, PO fixtures,
+README, screenshots, public API docs, and pub.dev version metadata in sync.
+Run `dart run tool/fx_l10n.dart audit` before the full release harness.
+
 ## Pub.dev
 
 FxDesktop is a Flutter package. Use `flutter pub publish` commands, not

@@ -98,9 +98,8 @@ FxDesktop provides two distinct table controls, matching Xojo's layout patterns:
 
 ## Localization
 
-Milestone 4 plans the suite-wide localization foundation. Follow
-`doc/milestone-4-localization.md` before localizing components or adding
-new user-facing strings.
+Milestone 4 is delivered in `v0.4.0`. Follow `doc/localization.md` before
+localizing components or adding new framework-owned user-facing strings.
 
 Key rules:
 
@@ -108,15 +107,16 @@ Key rules:
 - Use `.po`/`.pot` only as translator import/export bridge formats.
 - Keep duplicate English words as separate keys when context differs.
 - Preserve PO `msgctxt` so imports do not merge unrelated translations.
-- Support English, Thai, Japanese, and Nepali in the first localization
-  milestone.
-- Include PO import examples for Thai, Japanese, and Nepali.
-- Maintain a one-window localization gallery that can switch every existing
-  FxDesktop component family between the four supported locales.
+- Keep English, Thai, Japanese, and Nepali updated together.
+- Maintain PO import examples for Thai, Japanese, and Nepali.
+- Maintain `FxLocalizationGallery` as the one-window localization proof surface
+  for existing FxDesktop component families.
 - Use `MaterialLocalizations` where Flutter already supplies localized text or
   formatting.
 - Keep app-authored labels and data caller-owned unless a component model
   explicitly supports localized values.
+- Run `flutter gen-l10n` and `dart run tool/fx_l10n.dart audit` after changing
+  ARB or PO fixtures.
 
 ## Ribbon Toolbar and Designer
 

@@ -267,6 +267,14 @@ const fxComponentRegistry = <FxComponentDescriptor>[
     supportLevel: FxComponentSupportLevel.custom,
     notes: 'A hosted lookup dropdown combo box cell editor.',
   ),
+  FxComponentDescriptor(
+    id: 'fx.localization_gallery',
+    name: 'FxLocalizationGallery',
+    xojoDesktopClass: 'LocalizationPreviewWindow',
+    supportLevel: FxComponentSupportLevel.custom,
+    notes:
+        'One-window localization proof surface for FxDesktop-owned strings, ARB locales, and PO bridge context.',
+  ),
 ];
 
 /// A compact desktop button comparable to Xojo's DesktopButton.

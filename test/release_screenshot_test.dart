@@ -31,6 +31,19 @@ Future<void> _loadReleaseScreenshotFonts() async {
   }
   await robotoLoader.load();
 
+  await _loadFontFamily(
+    'FxScreenshotJapanese',
+    '/System/Library/Fonts/Supplemental/Arial Unicode.ttf',
+  );
+  await _loadFontFamily(
+    'FxScreenshotThai',
+    '/System/Library/Fonts/Supplemental/Ayuthaya.ttf',
+  );
+  await _loadFontFamily(
+    'FxScreenshotNepali',
+    '/System/Library/Fonts/Supplemental/Devanagari Sangam MN.ttc',
+  );
+
   final iconsLoader = FontLoader('MaterialIcons');
   final icons = File('${fontsDir.path}/MaterialIcons-Regular.otf');
   if (icons.existsSync()) {
@@ -39,6 +52,14 @@ Future<void> _loadReleaseScreenshotFonts() async {
     );
   }
   await iconsLoader.load();
+}
+
+Future<void> _loadFontFamily(String family, String path) async {
+  final file = File(path);
+  if (!file.existsSync()) return;
+  final loader = FontLoader(family)
+    ..addFont(Future.value(file.readAsBytesSync().buffer.asByteData()));
+  await loader.load();
 }
 
 void main() {
@@ -137,6 +158,63 @@ void main() {
           '../doc/screenshots/v0.3.6/fxdesktop-v0.3.6-masked-action-editor.png',
     );
   });
+
+  for (final scenario in const [
+    _LocalizationScreenshotScenario(
+      name: 'English',
+      fileSuffix: 'en',
+      locale: Locale('en'),
+    ),
+    _LocalizationScreenshotScenario(
+      name: 'Thai',
+      fileSuffix: 'th',
+      locale: Locale('th'),
+      fontFamily: 'FxScreenshotThai',
+    ),
+    _LocalizationScreenshotScenario(
+      name: 'Japanese',
+      fileSuffix: 'ja',
+      locale: Locale('ja'),
+      fontFamily: 'FxScreenshotJapanese',
+    ),
+    _LocalizationScreenshotScenario(
+      name: 'Nepali',
+      fileSuffix: 'ne',
+      locale: Locale('ne'),
+      fontFamily: 'FxScreenshotNepali',
+    ),
+    _LocalizationScreenshotScenario(
+      name: 'RTL smoke',
+      fileSuffix: 'rtl-smoke',
+      locale: Locale('en'),
+      direction: TextDirection.rtl,
+    ),
+  ]) {
+    testWidgets('v0.4.0 localization gallery ${scenario.name}', (tester) async {
+      _setReleaseScreenshotSurface(const Size(1360, 1080));
+
+      final rootKey = ValueKey('v040_localization_${scenario.fileSuffix}');
+      await tester.pumpWidget(
+        _LocalizationScreenshotShell(boundaryKey: rootKey, scenario: scenario),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 120));
+
+      await _expectReleaseScreenshot(
+        tester,
+        boundaryKey: rootKey,
+        goldenPath:
+            '../doc/screenshots/v0.4.0/localization/fxdesktop-localized-${scenario.fileSuffix}.png',
+      );
+    });
+  }
+}
+
+void _setReleaseScreenshotSurface(Size size) {
+  final view =
+      TestWidgetsFlutterBinding.instance.platformDispatcher.views.first;
+  view.physicalSize = size;
+  view.devicePixelRatio = 1.0;
 }
 
 Future<void> _expectReleaseScreenshot(
@@ -215,6 +293,70 @@ class _ReleaseScreenshotShell extends StatelessWidget {
                   const SizedBox(height: 18),
                   Expanded(child: child),
                 ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _LocalizationScreenshotScenario {
+  const _LocalizationScreenshotScenario({
+    required this.name,
+    required this.fileSuffix,
+    required this.locale,
+    this.direction = TextDirection.ltr,
+    this.fontFamily = 'Roboto',
+  });
+
+  final String name;
+  final String fileSuffix;
+  final Locale locale;
+  final TextDirection direction;
+  final String fontFamily;
+}
+
+class _LocalizationScreenshotShell extends StatelessWidget {
+  const _LocalizationScreenshotShell({
+    required this.boundaryKey,
+    required this.scenario,
+  });
+
+  final Key boundaryKey;
+  final _LocalizationScreenshotScenario scenario;
+
+  @override
+  Widget build(BuildContext context) {
+    const seedColor = Color(0xff2563eb);
+    return RepaintBoundary(
+      key: boundaryKey,
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        localizationsDelegates: FxDesktopLocalizations.localizationsDelegates,
+        supportedLocales: FxDesktopLocalizations.supportedLocales,
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: seedColor),
+          fontFamily: scenario.fontFamily,
+          scaffoldBackgroundColor: const Color(0xfff6f7f9),
+          extensions: const [
+            FxTheme(
+              gridLineColor: Color(0xffcbd5e1),
+              headerBackground: Color(0xffe8eef8),
+              alternatingRowBackground: Color(0xfff8fafc),
+              selectionBackground: Color(0xffdbeafe),
+            ),
+          ],
+        ),
+        home: Scaffold(
+          body: Center(
+            child: SizedBox(
+              width: 1280,
+              height: 1020,
+              child: Directionality(
+                textDirection: scenario.direction,
+                child: FxLocalizationGallery(initialLocale: scenario.locale),
               ),
             ),
           ),

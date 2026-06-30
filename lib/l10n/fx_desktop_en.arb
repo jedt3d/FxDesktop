@@ -1,0 +1,347 @@
+{
+  "@@locale": "en",
+  "datePickerEmptyHint": "Select date",
+  "@datePickerEmptyHint": {
+    "description": "Empty prompt shown by FxDateTimePicker in date mode.",
+    "context": "date_time_picker.empty_hint.date"
+  },
+  "timePickerEmptyHint": "Select time",
+  "@timePickerEmptyHint": {
+    "description": "Empty prompt shown by FxDateTimePicker in time mode.",
+    "context": "date_time_picker.empty_hint.time"
+  },
+  "dateTimePickerEmptyHint": "Select date and time",
+  "@dateTimePickerEmptyHint": {
+    "description": "Empty prompt shown by FxDateTimePicker in date-time mode.",
+    "context": "date_time_picker.empty_hint.date_time"
+  },
+  "popupMenuNoOptions": "No options",
+  "@popupMenuNoOptions": {
+    "description": "Fallback hint shown when FxPopupMenu has no selectable options.",
+    "context": "popup_menu.no_options"
+  },
+  "lookupNoOptionsFound": "No options found",
+  "@lookupNoOptionsFound": {
+    "description": "Empty result message shown by the hosted lookup combo overlay.",
+    "context": "lookup.overlay.no_options_found"
+  },
+  "colorPickerNoColorButton": "No Color",
+  "@colorPickerNoColorButton": {
+    "description": "Dialog action button that clears a nullable color value.",
+    "context": "color_picker.no_color_button"
+  },
+  "colorPickerNoColorValue": "No color",
+  "@colorPickerNoColorValue": {
+    "description": "Value text shown when a nullable color picker has no selected color.",
+    "context": "color_picker.no_color_value"
+  },
+  "colorPickerPreviewLabel": "Preview: {color}",
+  "@colorPickerPreviewLabel": {
+    "description": "Preview label in the color picker dialog.",
+    "context": "color_picker.preview_label",
+    "placeholders": {
+      "color": {
+        "type": "String",
+        "example": "#3B82F6"
+      }
+    }
+  },
+  "colorPickerHueLabel": "Hue",
+  "@colorPickerHueLabel": {
+    "description": "Hue slider label in the color picker dialog.",
+    "context": "color_picker.hue_label"
+  },
+  "colorPickerSaturationLabel": "Saturation",
+  "@colorPickerSaturationLabel": {
+    "description": "Saturation slider label in the color picker dialog.",
+    "context": "color_picker.saturation_label"
+  },
+  "colorPickerValueLabel": "Value",
+  "@colorPickerValueLabel": {
+    "description": "Brightness/value slider label in the color picker dialog.",
+    "context": "color_picker.value_label"
+  },
+  "colorPickerRgbHexLabel": "RGB #RRGGBB",
+  "@colorPickerRgbHexLabel": {
+    "description": "Hex RGB input label in the color picker dialog.",
+    "context": "color_picker.rgb_hex_label"
+  },
+  "colorPickerHexError": "Enter a color as #RRGGBB.",
+  "@colorPickerHexError": {
+    "description": "Validation error shown when the RGB hex value is invalid.",
+    "context": "color_picker.hex_error"
+  },
+  "colorPickerCancelButton": "Cancel",
+  "@colorPickerCancelButton": {
+    "description": "Cancel action in the color picker dialog.",
+    "context": "color_picker.cancel_button"
+  },
+  "colorPickerApplyButton": "Apply",
+  "@colorPickerApplyButton": {
+    "description": "Apply action in the color picker dialog.",
+    "context": "color_picker.apply_button"
+  },
+  "tableNoRecords": "No records to display",
+  "@tableNoRecords": {
+    "description": "Empty state message shown by FxListBox and FxGrid.",
+    "context": "table.state.no_records"
+  },
+  "tableLoadError": "An error occurred loading data",
+  "@tableLoadError": {
+    "description": "Default error message shown by FxListBox and FxGrid when no custom error text is supplied.",
+    "context": "table.state.load_error"
+  },
+  "tableEditUndoLabel": "Edit {column}",
+  "@tableEditUndoLabel": {
+    "description": "Undo stack label for editing one table cell.",
+    "context": "table.undo.edit_cell",
+    "placeholders": {
+      "column": {
+        "type": "String",
+        "example": "Status"
+      }
+    }
+  },
+  "tablePasteValuesUndoLabel": "Paste Values",
+  "@tablePasteValuesUndoLabel": {
+    "description": "Undo stack label for a paste operation that edits several cells.",
+    "context": "table.undo.paste_values"
+  },
+  "tableAutoFitUndoLabel": "Auto-fit {column}",
+  "@tableAutoFitUndoLabel": {
+    "description": "Undo stack label for auto-fitting a table column.",
+    "context": "table.undo.auto_fit_column",
+    "placeholders": {
+      "column": {
+        "type": "String",
+        "example": "Customer"
+      }
+    }
+  },
+  "tableMovingRowFeedback": "Moving Row {row}",
+  "@tableMovingRowFeedback": {
+    "description": "Drag feedback shown while a table row is being reordered.",
+    "context": "table.drag.moving_row_feedback",
+    "placeholders": {
+      "row": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "tableBooleanChecked": "checked",
+  "@tableBooleanChecked": {
+    "description": "Accessible value for a checked boolean table cell.",
+    "context": "table.semantics.boolean_checked"
+  },
+  "tableBooleanUnchecked": "unchecked",
+  "@tableBooleanUnchecked": {
+    "description": "Accessible value for an unchecked boolean table cell.",
+    "context": "table.semantics.boolean_unchecked"
+  },
+  "tableCellSemantics": "Row {row}, Column {column}: {value}",
+  "@tableCellSemantics": {
+    "description": "Accessible label for a table cell.",
+    "context": "table.semantics.cell",
+    "placeholders": {
+      "row": {
+        "type": "int",
+        "example": "2"
+      },
+      "column": {
+        "type": "String",
+        "example": "Status"
+      },
+      "value": {
+        "type": "String",
+        "example": "Open"
+      }
+    }
+  },
+  "tableValidationErrorSuffix": "validation error: {error}",
+  "@tableValidationErrorSuffix": {
+    "description": "Accessible suffix appended to a table cell semantic label when the cell has a validation error.",
+    "context": "table.semantics.validation_error_suffix",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "example": "Required"
+      }
+    }
+  },
+  "gridContextMenuCopySelection": "Copy",
+  "@gridContextMenuCopySelection": {
+    "description": "Context menu action that copies the selected grid or list rows.",
+    "context": "grid.context_menu.copy_selection"
+  },
+  "designerEditMenuCopyItem": "Copy",
+  "@designerEditMenuCopyItem": {
+    "description": "Designer edit-menu command that copies the selected component.",
+    "context": "designer.edit_menu.copy_item"
+  },
+  "galleryTitle": "FxDesktop Localization Gallery",
+  "@galleryTitle": {
+    "description": "Title for the one-window localization gallery.",
+    "context": "gallery.title"
+  },
+  "gallerySubtitle": "One desktop surface for switching FxDesktop-owned component text across supported locales.",
+  "@gallerySubtitle": {
+    "description": "Subtitle for the one-window localization gallery.",
+    "context": "gallery.subtitle"
+  },
+  "galleryLanguageEnglish": "English",
+  "@galleryLanguageEnglish": {
+    "description": "Language name shown in the gallery language switcher.",
+    "context": "gallery.language.english"
+  },
+  "galleryLanguageThai": "Thai",
+  "@galleryLanguageThai": {
+    "description": "Language name shown in the gallery language switcher.",
+    "context": "gallery.language.thai"
+  },
+  "galleryLanguageJapanese": "Japanese",
+  "@galleryLanguageJapanese": {
+    "description": "Language name shown in the gallery language switcher.",
+    "context": "gallery.language.japanese"
+  },
+  "galleryLanguageNepali": "Nepali",
+  "@galleryLanguageNepali": {
+    "description": "Language name shown in the gallery language switcher.",
+    "context": "gallery.language.nepali"
+  },
+  "galleryLocaleLabel": "Locale",
+  "@galleryLocaleLabel": {
+    "description": "Label for the active locale code in the localization gallery.",
+    "context": "gallery.locale_label"
+  },
+  "galleryDirectionLabel": "Direction",
+  "@galleryDirectionLabel": {
+    "description": "Label for the active text direction in the localization gallery.",
+    "context": "gallery.direction_label"
+  },
+  "galleryFormSection": "Form controls",
+  "@galleryFormSection": {
+    "description": "Section heading for localized form control examples.",
+    "context": "gallery.section.form_controls"
+  },
+  "galleryChoiceSection": "Choice controls",
+  "@galleryChoiceSection": {
+    "description": "Section heading for localized choice control examples.",
+    "context": "gallery.section.choice_controls"
+  },
+  "galleryNavigationSection": "Navigation controls",
+  "@galleryNavigationSection": {
+    "description": "Section heading for localized navigation control examples.",
+    "context": "gallery.section.navigation_controls"
+  },
+  "galleryDateTimeColorSection": "Date, time, and color",
+  "@galleryDateTimeColorSection": {
+    "description": "Section heading for localized date/time and color examples.",
+    "context": "gallery.section.date_time_color"
+  },
+  "galleryTableSection": "ListBox and Grid",
+  "@galleryTableSection": {
+    "description": "Section heading for localized table examples.",
+    "context": "gallery.section.table"
+  },
+  "galleryStateSection": "States and validation",
+  "@galleryStateSection": {
+    "description": "Section heading for localized component states.",
+    "context": "gallery.section.states"
+  },
+  "galleryPoSection": "PO bridge",
+  "@galleryPoSection": {
+    "description": "Section heading for PO import/export proof in the gallery.",
+    "context": "gallery.section.po_bridge"
+  },
+  "galleryCustomerLabel": "Customer",
+  "@galleryCustomerLabel": {
+    "description": "Localized sample form field label in the gallery.",
+    "context": "gallery.sample.customer_label"
+  },
+  "galleryCustomerHint": "Company or person name",
+  "@galleryCustomerHint": {
+    "description": "Localized sample form field hint in the gallery.",
+    "context": "gallery.sample.customer_hint"
+  },
+  "galleryStatusLabel": "Status",
+  "@galleryStatusLabel": {
+    "description": "Localized sample status field label in the gallery.",
+    "context": "gallery.sample.status_label"
+  },
+  "galleryPriorityLabel": "Priority",
+  "@galleryPriorityLabel": {
+    "description": "Localized sample priority field label in the gallery.",
+    "context": "gallery.sample.priority_label"
+  },
+  "galleryEnabledLabel": "Enabled",
+  "@galleryEnabledLabel": {
+    "description": "Localized enabled checkbox label in the gallery.",
+    "context": "gallery.sample.enabled_label"
+  },
+  "gallerySelectedLabel": "Selected",
+  "@gallerySelectedLabel": {
+    "description": "Localized selected radio button label in the gallery.",
+    "context": "gallery.sample.selected_label"
+  },
+  "galleryCompactLabel": "Compact",
+  "@galleryCompactLabel": {
+    "description": "Localized compact segmented-control label in the gallery.",
+    "context": "gallery.sample.compact_label"
+  },
+  "galleryDetailedLabel": "Detailed",
+  "@galleryDetailedLabel": {
+    "description": "Localized detailed segmented-control label in the gallery.",
+    "context": "gallery.sample.detailed_label"
+  },
+  "gallerySummaryTab": "Summary",
+  "@gallerySummaryTab": {
+    "description": "Localized summary tab label in the gallery.",
+    "context": "gallery.sample.summary_tab"
+  },
+  "galleryAuditTab": "Audit",
+  "@galleryAuditTab": {
+    "description": "Localized audit tab label in the gallery.",
+    "context": "gallery.sample.audit_tab"
+  },
+  "galleryStartDateLabel": "Start date",
+  "@galleryStartDateLabel": {
+    "description": "Localized start date label in the gallery.",
+    "context": "gallery.sample.start_date_label"
+  },
+  "galleryAccentColorLabel": "Accent color",
+  "@galleryAccentColorLabel": {
+    "description": "Localized color picker label in the gallery.",
+    "context": "gallery.sample.accent_color_label"
+  },
+  "galleryOrderColumn": "Order",
+  "@galleryOrderColumn": {
+    "description": "Localized order column caption in the gallery.",
+    "context": "gallery.sample.order_column"
+  },
+  "galleryOwnerColumn": "Owner",
+  "@galleryOwnerColumn": {
+    "description": "Localized owner column caption in the gallery.",
+    "context": "gallery.sample.owner_column"
+  },
+  "galleryStateColumn": "State",
+  "@galleryStateColumn": {
+    "description": "Localized state column caption in the gallery.",
+    "context": "gallery.sample.state_column"
+  },
+  "galleryOpenStatus": "Open",
+  "@galleryOpenStatus": {
+    "description": "Localized sample status value in the gallery.",
+    "context": "gallery.sample.open_status"
+  },
+  "galleryClosedStatus": "Closed",
+  "@galleryClosedStatus": {
+    "description": "Localized sample status value in the gallery.",
+    "context": "gallery.sample.closed_status"
+  },
+  "galleryPoStatus": "ARB remains the runtime source; PO and POT are translator bridge files.",
+  "@galleryPoStatus": {
+    "description": "Short proof text explaining PO bridge status in the localization gallery.",
+    "context": "gallery.po_bridge.status"
+  }
+}

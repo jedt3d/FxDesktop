@@ -4,6 +4,7 @@ import 'package:two_dimensional_scrollables/two_dimensional_scrollables.dart'
     as table;
 
 import 'fx_lookup_provider.dart';
+import 'fx_localizations.dart';
 import 'fx_theme.dart';
 import 'fx_undo.dart';
 
@@ -583,7 +584,7 @@ class _FxListBoxState extends State<FxListBox> {
       final colLabel = col.caption.isNotEmpty ? col.caption : col.id;
       undoController.commit(
         FxUndoAction(
-          label: 'Edit $colLabel',
+          label: fxDesktopLocalizationsOf(context).tableEditUndoLabel(colLabel),
           apply: () => widget.onCellEdited?.call(rowId, columnId, newValue),
           revert: () => widget.onCellEdited?.call(rowId, columnId, oldValue),
         ),
@@ -675,7 +676,9 @@ class _FxListBoxState extends State<FxListBox> {
           final colLabel = col.caption.isNotEmpty ? col.caption : col.id;
           actions.add(
             FxUndoAction(
-              label: 'Edit $colLabel',
+              label: fxDesktopLocalizationsOf(
+                context,
+              ).tableEditUndoLabel(colLabel),
               apply: () => widget.onCellEdited?.call(row.id, col.id, newValue),
               revert: () => widget.onCellEdited?.call(row.id, col.id, oldValue),
             ),
@@ -688,7 +691,10 @@ class _FxListBoxState extends State<FxListBox> {
 
     final undoController = FxUndoScope.maybeOf(context);
     if (undoController != null) {
-      undoController.commitBatch('Paste Values', actions);
+      undoController.commitBatch(
+        fxDesktopLocalizationsOf(context).tablePasteValuesUndoLabel,
+        actions,
+      );
     } else {
       for (final action in actions) {
         action.apply();
@@ -1008,7 +1014,7 @@ class _FxListBoxState extends State<FxListBox> {
       case FxTableState.empty:
         return widget.emptyPlaceholder ??
             Text(
-              'No records to display',
+              fxDesktopLocalizationsOf(context).tableNoRecords,
               style: TextStyle(color: Theme.of(context).disabledColor),
             );
       case FxTableState.error:
@@ -1025,7 +1031,8 @@ class _FxListBoxState extends State<FxListBox> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    widget.errorText ?? 'An error occurred loading data',
+                    widget.errorText ??
+                        fxDesktopLocalizationsOf(context).tableLoadError,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.error,
@@ -1146,7 +1153,7 @@ class _FxListBoxState extends State<FxListBox> {
       final label = column.caption.isNotEmpty ? column.caption : column.id;
       undoController.commit(
         FxUndoAction(
-          label: 'Auto-fit $label',
+          label: fxDesktopLocalizationsOf(context).tableAutoFitUndoLabel(label),
           apply: () {
             setState(() {
               _columnWidths[column.id] = targetWidth;
@@ -1386,7 +1393,9 @@ class _FxListBoxState extends State<FxListBox> {
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
-                                  'Moving Row ${vicinity.row}',
+                                  fxDesktopLocalizationsOf(
+                                    context,
+                                  ).tableMovingRowFeedback(vicinity.row),
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 12,
@@ -1781,7 +1790,13 @@ class _FxListBoxState extends State<FxListBox> {
                       final cellVal = row.cells[column.id];
                       final String valueText;
                       if (column.type is FxBooleanCellType) {
-                        valueText = (cellVal == true) ? 'checked' : 'unchecked';
+                        valueText = (cellVal == true)
+                            ? fxDesktopLocalizationsOf(
+                                context,
+                              ).tableBooleanChecked
+                            : fxDesktopLocalizationsOf(
+                                context,
+                              ).tableBooleanUnchecked;
                       } else {
                         valueText = cellVal?.toString() ?? '';
                       }
@@ -1789,8 +1804,12 @@ class _FxListBoxState extends State<FxListBox> {
                       final cellSemantics = Semantics(
                         selected: isSelected,
                         enabled: row.enabled,
-                        label:
-                            'Row ${vicinity.row}, Column ${column.caption}: $valueText',
+                        label: fxDesktopLocalizationsOf(context)
+                            .tableCellSemantics(
+                              vicinity.row,
+                              column.caption,
+                              valueText,
+                            ),
                         child: MouseRegion(
                           onEnter: (_) {
                             if (row.enabled) {
@@ -2211,7 +2230,7 @@ class _FxGridState extends State<FxGrid> {
       final colLabel = col.caption ?? col.id;
       undoController.commit(
         FxUndoAction(
-          label: 'Edit $colLabel',
+          label: fxDesktopLocalizationsOf(context).tableEditUndoLabel(colLabel),
           apply: () => widget.onCellEdited?.call(rowId, columnId, newValue),
           revert: () => widget.onCellEdited?.call(rowId, columnId, oldValue),
         ),
@@ -2334,7 +2353,9 @@ class _FxGridState extends State<FxGrid> {
           final colLabel = col.caption ?? col.id;
           actions.add(
             FxUndoAction(
-              label: 'Edit $colLabel',
+              label: fxDesktopLocalizationsOf(
+                context,
+              ).tableEditUndoLabel(colLabel),
               apply: () => widget.onCellEdited?.call(row.id, col.id, newValue),
               revert: () => widget.onCellEdited?.call(row.id, col.id, oldValue),
             ),
@@ -2347,7 +2368,10 @@ class _FxGridState extends State<FxGrid> {
 
     final undoController = FxUndoScope.maybeOf(context);
     if (undoController != null) {
-      undoController.commitBatch('Paste Values', actions);
+      undoController.commitBatch(
+        fxDesktopLocalizationsOf(context).tablePasteValuesUndoLabel,
+        actions,
+      );
     } else {
       for (final action in actions) {
         action.apply();
@@ -2721,7 +2745,7 @@ class _FxGridState extends State<FxGrid> {
       case FxTableState.empty:
         return widget.emptyPlaceholder ??
             Text(
-              'No records to display',
+              fxDesktopLocalizationsOf(context).tableNoRecords,
               style: TextStyle(color: Theme.of(context).disabledColor),
             );
       case FxTableState.error:
@@ -2738,7 +2762,8 @@ class _FxGridState extends State<FxGrid> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    widget.errorText ?? 'An error occurred loading data',
+                    widget.errorText ??
+                        fxDesktopLocalizationsOf(context).tableLoadError,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.error,
@@ -2859,7 +2884,9 @@ class _FxGridState extends State<FxGrid> {
     if (undoController != null) {
       undoController.commit(
         FxUndoAction(
-          label: 'Auto-fit $captionText',
+          label: fxDesktopLocalizationsOf(
+            context,
+          ).tableAutoFitUndoLabel(captionText),
           apply: () {
             setState(() {
               _columnWidths[column.id] = targetWidth;
@@ -3115,7 +3142,11 @@ class _FxGridState extends State<FxGrid> {
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
-                                  'Moving Row ${vicinity.row - rowOffset + 1}',
+                                  fxDesktopLocalizationsOf(
+                                    context,
+                                  ).tableMovingRowFeedback(
+                                    vicinity.row - rowOffset + 1,
+                                  ),
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 12,
@@ -3560,7 +3591,13 @@ class _FxGridState extends State<FxGrid> {
                       final cellVal = row.cells[column.id];
                       final String valueText;
                       if (column.type is FxBooleanCellType) {
-                        valueText = (cellVal == true) ? 'checked' : 'unchecked';
+                        valueText = (cellVal == true)
+                            ? fxDesktopLocalizationsOf(
+                                context,
+                              ).tableBooleanChecked
+                            : fxDesktopLocalizationsOf(
+                                context,
+                              ).tableBooleanUnchecked;
                       } else {
                         valueText = cellVal?.toString() ?? '';
                       }
@@ -3568,15 +3605,19 @@ class _FxGridState extends State<FxGrid> {
                       final errorMsg =
                           widget.validationErrors?[row.id]?[column.id];
                       final String errorSuffix = errorMsg != null
-                          ? ', validation error: $errorMsg'
+                          ? ', ${fxDesktopLocalizationsOf(context).tableValidationErrorSuffix(errorMsg)}'
                           : '';
                       final colLabel = column.caption ?? column.id;
 
                       final cellSemantics = Semantics(
                         selected: selected,
                         enabled: row.enabled,
-                        label:
-                            'Row ${vicinity.row}, Column $colLabel: $valueText$errorSuffix',
+                        label: fxDesktopLocalizationsOf(context)
+                            .tableCellSemantics(
+                              vicinity.row,
+                              colLabel,
+                              '$valueText$errorSuffix',
+                            ),
                         child: MouseRegion(
                           onEnter: (_) {
                             if (row.enabled) {
@@ -4267,11 +4308,16 @@ class _FxLookupComboBoxState<K> extends State<FxLookupComboBox<K>> {
                         ),
                       )
                     : _options.isEmpty
-                    ? const Padding(
-                        padding: EdgeInsets.all(12.0),
+                    ? Padding(
+                        padding: const EdgeInsets.all(12.0),
                         child: Text(
-                          'No options found',
-                          style: TextStyle(fontSize: 13, color: Colors.grey),
+                          fxDesktopLocalizationsOf(
+                            context,
+                          ).lookupNoOptionsFound,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey,
+                          ),
                         ),
                       )
                     : isMultiColumn

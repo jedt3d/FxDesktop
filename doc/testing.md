@@ -24,6 +24,7 @@ flutter analyze
 flutter test
 dart doc
 flutter pub publish --dry-run
+dart run tool/fx_l10n.dart audit
 ```
 
 The example app can be checked separately:
@@ -52,6 +53,18 @@ and undo/redo integration.
 Release screenshot evidence belongs under `doc/screenshots/vX.Y.Z/`. Prefer a
 deterministic Flutter screenshot or golden harness for table states when manual
 scrolling is unreliable.
+
+Localization-specific checks:
+
+```bash
+flutter gen-l10n
+dart run tool/fx_l10n.dart audit
+flutter test test/fx_localizations_test.dart test/fx_l10n_po_bridge_test.dart
+flutter test --update-goldens test/release_screenshot_test.dart
+```
+
+The `v0.4.0` localization screenshot set covers English, Thai, Japanese,
+Nepali, and an RTL smoke view under `doc/screenshots/v0.4.0/localization/`.
 
 ## Public API Policy
 

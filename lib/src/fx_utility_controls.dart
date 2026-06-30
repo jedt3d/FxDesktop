@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'fx_localizations.dart';
 import 'fx_theme.dart';
 
 /// Shows a color picker and returns the selected color.
@@ -69,7 +70,7 @@ class FxColorPicker extends StatelessWidget {
     final foregroundColor = enabled
         ? colorScheme.onSurface
         : colorScheme.onSurface.withValues(alpha: 0.38);
-    final valueText = _formatColor(value);
+    final valueText = _formatColor(context, value);
 
     return Semantics(
       button: true,
@@ -188,6 +189,7 @@ class _FxColorPickerDialogState extends State<_FxColorPickerDialog> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final localizations = fxDesktopLocalizationsOf(context);
 
     return AlertDialog(
       title: Text(widget.label),
@@ -215,14 +217,16 @@ class _FxColorPickerDialogState extends State<_FxColorPickerDialog> {
                 _FxColorSwatch(color: _selectedColor, enabled: true),
                 const SizedBox(width: 8),
                 Text(
-                  'Preview: ${_formatColor(_selectedColor)}',
+                  localizations.colorPickerPreviewLabel(
+                    _formatColor(context, _selectedColor),
+                  ),
                   style: theme.textTheme.bodySmall,
                 ),
               ],
             ),
             const SizedBox(height: 12),
             _FxColorSlider(
-              label: 'Hue',
+              label: localizations.colorPickerHueLabel,
               value: _hsvColor.hue,
               min: 0,
               max: 360,
@@ -231,7 +235,7 @@ class _FxColorPickerDialogState extends State<_FxColorPickerDialog> {
               },
             ),
             _FxColorSlider(
-              label: 'Saturation',
+              label: localizations.colorPickerSaturationLabel,
               value: _hsvColor.saturation,
               min: 0,
               max: 1,
@@ -240,7 +244,7 @@ class _FxColorPickerDialogState extends State<_FxColorPickerDialog> {
               },
             ),
             _FxColorSlider(
-              label: 'Value',
+              label: localizations.colorPickerValueLabel,
               value: _hsvColor.value,
               min: 0,
               max: 1,
@@ -252,7 +256,7 @@ class _FxColorPickerDialogState extends State<_FxColorPickerDialog> {
             TextField(
               controller: _hexController,
               decoration: InputDecoration(
-                labelText: 'RGB #RRGGBB',
+                labelText: localizations.colorPickerRgbHexLabel,
                 errorText: _hexErrorText,
                 isDense: true,
               ),
@@ -267,13 +271,13 @@ class _FxColorPickerDialogState extends State<_FxColorPickerDialog> {
           onPressed: () {
             Navigator.of(context).pop(const _FxColorPickerResult(null));
           },
-          child: const Text('No Color'),
+          child: Text(localizations.colorPickerNoColorButton),
         ),
         TextButton(
           onPressed: () {
             Navigator.of(context).pop();
           },
-          child: const Text('Cancel'),
+          child: Text(localizations.colorPickerCancelButton),
         ),
         FilledButton(
           onPressed: _hexErrorText == null
@@ -283,7 +287,7 @@ class _FxColorPickerDialogState extends State<_FxColorPickerDialog> {
                   ).pop(_FxColorPickerResult(_selectedColor));
                 }
               : null,
-          child: const Text('Apply'),
+          child: Text(localizations.colorPickerApplyButton),
         ),
       ],
     );
@@ -306,7 +310,7 @@ class _FxColorPickerDialogState extends State<_FxColorPickerDialog> {
     final color = _parseRgbHexColor(value);
     setState(() {
       if (color == null) {
-        _hexErrorText = 'Enter a color as #RRGGBB.';
+        _hexErrorText = fxDesktopLocalizationsOf(context).colorPickerHexError;
         return;
       }
 
@@ -585,7 +589,7 @@ class _FxPaletteButton extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Tooltip(
-      message: _formatColor(color),
+      message: _formatColor(context, color),
       child: InkWell(
         borderRadius: BorderRadius.circular(4),
         onTap: onTap,
@@ -625,9 +629,9 @@ const _defaultPalette = <Color>[
   Color(0xffa855f7),
 ];
 
-String _formatColor(Color? color) {
+String _formatColor(BuildContext context, Color? color) {
   if (color == null) {
-    return 'No color';
+    return fxDesktopLocalizationsOf(context).colorPickerNoColorValue;
   }
 
   final argb = color.toARGB32();

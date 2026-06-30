@@ -94,17 +94,19 @@ new table work, update `CHANGELOG.md`, `doc/milestone-3-listbox-grid.md`,
 `doc/xojo-component-map.md`, `doc/milestone-6-advanced-grid-features.md` when
 advanced editor behavior changes, and the `listbox_demo/` gallery docs.
 
-For Milestone 4 localization work, follow `doc/milestone-4-localization.md`.
-Use Flutter's native localization stack as the primary path: ARB files,
-`gen_l10n`, `flutter_localizations`, `intl`, `LocalizationsDelegate`, and
+Milestone 4 localization is delivered in `v0.4.0`; keep
+`doc/milestone-4-localization.md` as the acceptance map and
+`doc/localization.md` as the implementation guide. Use Flutter's native
+localization stack as the primary path: ARB files, `gen_l10n`,
+`flutter_localizations`, `intl`, `LocalizationsDelegate`, and
 `Localizations.override` for tests/previews. Treat `.po` and `.pot` as
-translator import/export bridge formats, not the runtime source of truth.
-Do not deduplicate localization keys only because English text matches; repeated
-words need context-specific keys and PO `msgctxt` so translations can differ by
-component, command, validation, or designer context. Milestone 4 must cover
-English, Thai, Japanese, and Nepali, include PO import examples, and provide a
-one-window localization gallery that can switch all existing FxDesktop component
-families between those four locales.
+translator import/export bridge formats, not the runtime source of truth. Do not
+deduplicate localization keys only because English text matches; repeated words
+need context-specific keys and PO `msgctxt` so translations can differ by
+component, command, validation, or designer context. New framework-owned strings
+must update all four bundled locales, regenerate localizations, run
+`dart run tool/fx_l10n.dart audit`, update `FxLocalizationGallery` when useful,
+and keep ribbon/designer work on the same localization foundation.
 
 For Milestone 5 ribbon work, follow
 `doc/milestone-5-ribbon-toolbar-designer.md`. Keep the implementation scoped to

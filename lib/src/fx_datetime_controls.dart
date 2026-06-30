@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'fx_input_decoration.dart';
+import 'fx_localizations.dart';
 
 /// Display and selection mode for [FxDateTimePicker].
 enum FxDateTimePickerMode {
@@ -118,7 +119,7 @@ class FxDateTimePicker extends StatelessWidget {
     final hasValue = value != null;
     final colorScheme = Theme.of(context).colorScheme;
     final displayValue = _formatValue(context);
-    final emptyHint = _emptyHint();
+    final emptyHint = _emptyHint(context);
 
     return Semantics(
       button: true,
@@ -279,7 +280,7 @@ class FxDateTimePicker extends StatelessWidget {
   String _formatValue(BuildContext context) {
     final selectedValue = value;
     if (selectedValue == null) {
-      return _emptyHint();
+      return _emptyHint(context);
     }
 
     final localizations = MaterialLocalizations.of(context);
@@ -295,11 +296,12 @@ class FxDateTimePicker extends StatelessWidget {
     };
   }
 
-  String _emptyHint() {
+  String _emptyHint(BuildContext context) {
+    final localizations = fxDesktopLocalizationsOf(context);
     return switch (mode) {
-      FxDateTimePickerMode.date => 'Select date',
-      FxDateTimePickerMode.time => 'Select time',
-      FxDateTimePickerMode.dateTime => 'Select date and time',
+      FxDateTimePickerMode.date => localizations.datePickerEmptyHint,
+      FxDateTimePickerMode.time => localizations.timePickerEmptyHint,
+      FxDateTimePickerMode.dateTime => localizations.dateTimePickerEmptyHint,
     };
   }
 

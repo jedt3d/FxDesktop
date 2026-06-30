@@ -1,9 +1,9 @@
 # FxDesktop
 
-[![Pub](https://img.shields.io/badge/pub-0.3.7-blue)](https://pub.dev/packages/fx_desktop)
-[![Release](https://img.shields.io/badge/release-v0.3.7-blue)](https://github.com/jedt3d/FxDesktop/releases/tag/v0.3.7)
+[![Pub](https://img.shields.io/badge/pub-0.4.0-blue)](https://pub.dev/packages/fx_desktop)
+[![Release](https://img.shields.io/badge/release-v0.4.0-blue)](https://github.com/jedt3d/FxDesktop/releases/tag/v0.4.0)
 [![CI](https://github.com/jedt3d/FxDesktop/actions/workflows/ci.yml/badge.svg)](https://github.com/jedt3d/FxDesktop/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](https://github.com/jedt3d/FxDesktop/blob/main/LICENSE)
 
 FxDesktop is a desktop-first Flutter component and layout library for building
 Xojo-style UI design tools, previews, and generators.
@@ -16,6 +16,8 @@ It provides:
 - Xojo-first custom controls such as `FxListBox` and `FxGrid`
 - Serializable layout contracts for AI agents, JinjaX, and Xojo generation
 - App-level semantic undo primitives for desktop workflows
+- Flutter-native localization with ARB source files, four bundled locales, and
+  `.po`/`.pot` translator bridge tooling
 
 FxDesktop is not a mobile design-system wrapper. Flutter already has strong
 mobile and tablet layout primitives. Responsive features are added here only
@@ -26,7 +28,7 @@ multi-size desktop workflows.
 
 ```yaml
 dependencies:
-  fx_desktop: ^0.3.7
+  fx_desktop: ^0.4.0
 ```
 
 ## Quick Start
@@ -104,6 +106,7 @@ class OrderPanel extends StatelessWidget {
 | `FxSeparator` | `DesktopSeparator` | generation/custom |
 | `FxStyledLabel` | styled label pattern | generation/custom |
 | `FxGroupBox` | `DesktopGroupBox` | custom/group container |
+| `FxLocalizationGallery` | localization preview window | generation/custom |
 
 `FxGridLayout` is a CSS Grid-like layout manager. `FxGrid` is a data/cell grid
 control comparable to Xojo `DesktopGrid`.
@@ -111,8 +114,8 @@ control comparable to Xojo `DesktopGrid`.
 Milestone 3 introduces deep `FxListBox` and `FxGrid` controls (refined in `v0.3.3` through `v0.3.6`). This includes selection models, keyboard navigation/traversal, sorting, column sizing/visibility policies, capped auto-fit resizing, editable cell types (text, number, boolean, options) with validation, database-grade multi-column lookups, input masking, ellipsis cell action buttons, background-saturation row/column highlights, clipboard operations (TSV copy/paste), layout undo/redo integration, performance virtualization (up to 10k+ rows and 100+ columns), and rich accessibility support via `Semantics`.
 Milestone 3 is delivered through `v0.3.6`; the original plan remains in the
 milestone document as the acceptance map, and the delivered release history is
-now tracked there. See [Milestone 3: ListBox And Grid Depth](doc/milestone-3-listbox-grid.md)
-and [Advanced Grid Features (v0.3.6)](doc/milestone-6-advanced-grid-features.md).
+now tracked there. See [Milestone 3: ListBox And Grid Depth](https://github.com/jedt3d/FxDesktop/blob/main/doc/milestone-3-listbox-grid.md)
+and [Advanced Grid Features (v0.3.6)](https://github.com/jedt3d/FxDesktop/blob/main/doc/milestone-6-advanced-grid-features.md).
 
 ## ListBox And Grid
 
@@ -122,11 +125,33 @@ models, inline editing, validation, TSV clipboard operations, undo/redo
 integration, custom renderers, hosted lookup editors, input masks, cell action
 buttons, and accessibility semantics.
 
-![FxDesktop lookup cells and custom renderers](https://raw.githubusercontent.com/jedt3d/FxDesktop/v0.3.7/doc/screenshots/v0.3.6/fxdesktop-v0.3.6-lookup-renderers.png)
+![FxDesktop lookup cells and custom renderers](https://raw.githubusercontent.com/jedt3d/FxDesktop/v0.4.0/doc/screenshots/v0.3.6/fxdesktop-v0.3.6-lookup-renderers.png)
 
-![FxDesktop hosted multi-column database lookup overlay](https://raw.githubusercontent.com/jedt3d/FxDesktop/v0.3.7/doc/screenshots/v0.3.6/fxdesktop-v0.3.6-db-lookup-overlay.png)
+![FxDesktop hosted multi-column database lookup overlay](https://raw.githubusercontent.com/jedt3d/FxDesktop/v0.4.0/doc/screenshots/v0.3.6/fxdesktop-v0.3.6-db-lookup-overlay.png)
 
-![FxDesktop masked editor and cell action button](https://raw.githubusercontent.com/jedt3d/FxDesktop/v0.3.7/doc/screenshots/v0.3.6/fxdesktop-v0.3.6-masked-action-editor.png)
+![FxDesktop masked editor and cell action button](https://raw.githubusercontent.com/jedt3d/FxDesktop/v0.4.0/doc/screenshots/v0.3.6/fxdesktop-v0.3.6-masked-action-editor.png)
+
+## Localization
+
+FxDesktop uses Flutter's standard localization flow. Apps can add
+`FxDesktopLocalizations.localizationsDelegates` and
+`FxDesktopLocalizations.supportedLocales` to `MaterialApp`, then switch locale
+the same way they would for other Flutter widgets.
+
+```dart
+MaterialApp(
+  localizationsDelegates: FxDesktopLocalizations.localizationsDelegates,
+  supportedLocales: FxDesktopLocalizations.supportedLocales,
+  locale: const Locale('th'),
+  home: const FxLocalizationGallery(),
+);
+```
+
+Bundled package strings cover English, Thai, Japanese, and Nepali. ARB files
+are the runtime source of truth; `.po` and `.pot` files are import/export
+formats for translators.
+
+![FxDesktop localization gallery in Thai](https://raw.githubusercontent.com/jedt3d/FxDesktop/v0.4.0/doc/screenshots/v0.4.0/localization/fxdesktop-localized-th.png)
 
 ## Text Input Constraints
 

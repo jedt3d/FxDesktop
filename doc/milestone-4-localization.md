@@ -1,10 +1,17 @@
 # Milestone 4: Localization Foundation
 
+Status: delivered in `v0.4.0`.
+
 Milestone 4 adds a suite-wide localization foundation before the ribbon toolbar
 and visual designer work begins. The goal is to make FxDesktop components,
 examples, validation messages, semantics, and future designer surfaces
 multi-language ready without creating a localization system that fights
 Flutter.
+
+The implementation guide is [Localization](localization.md). The delivered
+surface includes `FxDesktopLocalizations`, `FxLocalizedText`,
+`FxLocalizationGallery`, four ARB locales, PO/POT bridge tooling, PO examples,
+and English, Thai, Japanese, Nepali, and RTL smoke screenshots.
 
 Recommended implementation branch:
 

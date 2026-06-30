@@ -1,6 +1,6 @@
 name: fx_desktop
 description: Desktop-first Flutter components and CSS-like layout contracts for Xojo-style UI design.
-version: 0.3.7
+version: 0.4.0
 homepage: https://github.com/jedt3d/FxDesktop
 repository: https://github.com/jedt3d/FxDesktop
 issue_tracker: https://github.com/jedt3d/FxDesktop/issues
@@ -22,6 +22,16 @@ topics:
   - xojo
 
 screenshots:
+  - description: "FxDesktop localization gallery in English."
+    path: doc/screenshots/v0.4.0/localization/fxdesktop-localized-en.png
+  - description: "FxDesktop localization gallery in Thai."
+    path: doc/screenshots/v0.4.0/localization/fxdesktop-localized-th.png
+  - description: "FxDesktop localization gallery in Japanese."
+    path: doc/screenshots/v0.4.0/localization/fxdesktop-localized-ja.png
+  - description: "FxDesktop localization gallery in Nepali."
+    path: doc/screenshots/v0.4.0/localization/fxdesktop-localized-ne.png
+  - description: "FxDesktop localization gallery right-to-left layout smoke view."
+    path: doc/screenshots/v0.4.0/localization/fxdesktop-localized-rtl-smoke.png
   - description: "FxDesktop ListBox/Grid lookup cells with custom renderers."
     path: doc/screenshots/v0.3.6/fxdesktop-v0.3.6-lookup-renderers.png
   - description: "FxDesktop hosted multi-column database lookup overlay."
@@ -33,7 +43,10 @@ dependencies:
   flexiblebox: ^1.0.4
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   flutter_layout_grid: ^2.0.8
+  intl: ^0.20.2
   two_dimensional_scrollables: ^0.5.2
 
 dev_dependencies:
@@ -43,3 +56,4 @@ dev_dependencies:
   dartdoc: ^9.0.2
 
 flutter:
+  generate: true

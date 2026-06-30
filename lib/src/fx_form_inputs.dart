@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'fx_localizations.dart';
 import 'fx_input_decoration.dart';
 
 /// A plain label comparable to Xojo's DesktopLabel.
@@ -60,7 +61,7 @@ class FxPopupMenu extends StatelessWidget {
     this.helpText,
     this.errorText,
     this.reserveSupportingTextSpace = false,
-    this.emptyText = 'No options',
+    this.emptyText,
   });
 
   /// Fixed option captions available to select.
@@ -92,7 +93,7 @@ class FxPopupMenu extends StatelessWidget {
   final bool reserveSupportingTextSpace;
 
   /// Text shown when the menu has no options.
-  final String emptyText;
+  final String? emptyText;
 
   @override
   Widget build(BuildContext context) {
@@ -115,7 +116,11 @@ class FxPopupMenu extends StatelessWidget {
         isDense: true,
         labelText: label,
       ),
-      hint: Text(hasOptions ? hintText ?? '' : emptyText),
+      hint: Text(
+        hasOptions
+            ? hintText ?? ''
+            : emptyText ?? fxDesktopLocalizationsOf(context).popupMenuNoOptions,
+      ),
       initialValue: effectiveValue,
       items: [
         for (final option in options)

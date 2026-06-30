@@ -1,0 +1,7 @@
+arb-dir: lib/l10n
+template-arb-file: fx_desktop_en.arb
+output-dir: lib/src/l10n
+output-localization-file: fx_desktop_localizations.dart
+output-class: FxDesktopLocalizations
+nullable-getter: false
+untranslated-messages-file: doc/localization/untranslated_messages.json

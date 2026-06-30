@@ -311,6 +311,26 @@
   FxListBoxRow member final String id
   FxListBoxRow member final bool enabled
   FxListBoxRow member final double? height
+  FxLocalizationGallery constructor const FxLocalizationGallery(
+  FxLocalizationGallery member final List<Locale> locales
+  FxLocalizationGallery member final Locale initialLocale
+  FxLocalizationIssue constructor const FxLocalizationIssue(
+  FxLocalizationIssue member Map<String, Object?> toTemplateMap()
+  FxLocalizationIssue member final FxLocalizationIssueCode code
+  FxLocalizationIssue member final FxLocalizationKey? key
+  FxLocalizationIssue member final Locale? locale
+  FxLocalizationIssue member final String message
+  FxLocalizationKey constructor const FxLocalizationKey(this.name, this.context})
+  FxLocalizationKey member Map<String, Object?> toTemplateMap()
+  FxLocalizationKey member final String name
+  FxLocalizationKey member final String? context
+  FxLocalizedText constructor const FxLocalizedText(required this.fallback, this.values = const }})
+  FxLocalizedText constructor factory FxLocalizedText.fromJson(Map<String, Object?> json)
+  FxLocalizedText member Map<String, Object?> toJson()
+  FxLocalizedText member Map<String, Object?> toTemplateMap()
+  FxLocalizedText member String resolve(Locale locale)
+  FxLocalizedText member final Map<String, String> values
+  FxLocalizedText member final String fallback
   FxLookupCellType constructor const FxLookupCellType(this.provider)
   FxLookupCellType member Map<String, Object?> toJson()
   FxLookupCellType member final FxLookupProvider provider
@@ -340,7 +360,7 @@
   FxPopupMenu constructor const FxPopupMenu(
   FxPopupMenu member Widget build(BuildContext context)
   FxPopupMenu member final List<String> options
-  FxPopupMenu member final String emptyText
+  FxPopupMenu member final String? emptyText
   FxPopupMenu member final String? errorText
   FxPopupMenu member final String? helpText
   FxPopupMenu member final String? hintText
@@ -571,6 +591,10 @@ class class FxLayoutSpec
 class class FxListBox extends StatefulWidget
 class class FxListBoxColumn
 class class FxListBoxRow
+class class FxLocalizationGallery extends StatefulWidget
+class class FxLocalizationIssue
+class class FxLocalizationKey
+class class FxLocalizedText
 class class FxLookupCellType extends FxCellType
 class class FxLookupComboBox<K> extends StatefulWidget
 class class FxLookupItem<K>
@@ -615,6 +639,7 @@ enum enum FxJustifyContent
 enum enum FxLayoutKind
 enum enum FxLayoutOverflow
 enum enum FxListBoxSelectionMode
+enum enum FxLocalizationIssueCode
 enum enum FxSeparatorOrientation
 enum enum FxTableState
 enum enum FxTextInputConstraintKind

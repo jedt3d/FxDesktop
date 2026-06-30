@@ -31,6 +31,7 @@ is semantic and generation-oriented, not a native-control equivalence.
 | `FxGridLayout` | layout/generation contract | layout/generation contract | Custom bridge |
 | `FxListBox` | `DesktopListBox` | `WebListBox` | Custom |
 | `FxGrid` | `DesktopGrid` | future/custom | Custom |
+| `FxLocalizationGallery` | localization preview window | generation/custom | Custom |
 | `FxRibbonToolbar` | `XjRibbon` / `DesktopCanvas` ribbon | `XjRibbon` / `WebCanvas` ribbon | Planned |
 | `FxRibbonDesigner` | `XjRibbon Designer` | embeddable Flutter web/desktop designer | Planned |
 
@@ -109,20 +110,21 @@ See [Milestone 3: ListBox And Grid Depth](milestone-3-listbox-grid.md) for the
 delivered release history and [Advanced Grid Features (v0.3.6)](milestone-6-advanced-grid-features.md)
 for the latest cell-editing features.
 
-## Milestone 4 Planned Localization Foundation
+## Milestone 4 Delivered Localization Foundation
 
-Milestone 4 plans suite-wide localization before the next major component
-surface. The source of truth should be Flutter-native ARB localization with
-generated localizations, while `.po` and `.pot` files are supported as
-translator bridge formats. Duplicate English labels stay as separate keys when
-their component or workflow context differs, matching the way Xojo projects can
-need different translations for identical source words in different controls.
-The first localization set covers English, Thai, Japanese, and Nepali, plus a
-one-window gallery that switches existing FxDesktop component families between
-those languages.
+Milestone 4 is delivered in `v0.4.0` before the next major component surface.
+The source of truth is Flutter-native ARB localization with checked-in generated
+localizations, while `.po` and `.pot` files are supported as translator bridge
+formats. Duplicate English labels stay as separate keys when their component or
+workflow context differs, matching the way Xojo projects can need different
+translations for identical source words in different controls. The first
+localization set covers English, Thai, Japanese, and Nepali, plus
+`FxLocalizationGallery`, a one-window gallery that switches existing FxDesktop
+component families between those languages.
 
-See [Milestone 4: Localization Foundation](milestone-4-localization.md) for the
-implementation plan.
+See [Localization](localization.md) for the implementation guide and
+[Milestone 4: Localization Foundation](milestone-4-localization.md) for the
+acceptance map.
 
 ## Milestone 5 Planned Ribbon Surface
 

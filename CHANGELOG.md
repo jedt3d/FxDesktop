@@ -2,6 +2,33 @@
 
 ## Unreleased
 
+## 0.4.0
+
+Version `0.4.0` delivers the Milestone 4 localization foundation before ribbon
+toolbar work begins.
+
+### Added
+- Added Flutter-native generated `FxDesktopLocalizations` coverage for English,
+  Thai, Japanese, and Nepali.
+- Added `FxLocalizedText` for serializable model-owned localized strings.
+- Added localization diagnostics metadata types for tooling and future
+  designer/ribbon validation.
+- Added `FxLocalizationGallery`, a one-window desktop gallery that switches
+  FxDesktop-owned component chrome across all four bundled locales.
+- Added `tool/fx_l10n.dart` with ARB audit, POT export, PO export, and
+  context-preserving PO import commands.
+- Added Thai, Japanese, and Nepali PO import examples plus a generated POT
+  template under `doc/localization/`.
+
+### Changed
+- Localized FxDesktop-owned default strings in popup empty states, date/time
+  prompts, color picker chrome, table empty/error states, table undo labels,
+  table accessibility values, and lookup empty states.
+- Kept app-authored labels, table values, option captions, and validation text
+  caller-owned unless a model explicitly carries localized values.
+- Added `flutter_localizations` and `intl` so package localization follows the
+  normal Flutter delegate/supported-locale pattern.
+
 ### Documentation
 - Added the Milestone 4 localization foundation plan, making Flutter-native ARB
   localization the source of truth, `.po`/`.pot` files translator bridge
@@ -13,6 +40,8 @@
   build on the localization foundation, while preserving the Flutter
   theme/style-sheet strategy, 1024 px and 1280 px viewport targets, autonomous
   implementation cycles, screenshot cadence, and unattended-run guardrails.
+- Added `doc/localization.md`, README integration guidance, localization
+  release screenshots, and testing/release notes for ARB and PO workflows.
 
 ## 0.3.7
 
