@@ -33,7 +33,7 @@ void _checkPackageVersion(
   final suppliedTag =
       _optionValue(args, '--tag') ??
       Platform.environment['RELEASE_TAG'] ??
-      Platform.environment['GITHUB_REF_NAME'] ??
+      _githubTagRef() ??
       _gitExactTag();
   final normalizedTag = suppliedTag?.replaceFirst('refs/tags/', '');
 
@@ -92,6 +92,12 @@ void _checkPackageVersion(
   for (final path in screenshotPaths) {
     _checkScreenshot(failures, path);
   }
+}
+
+String? _githubTagRef() {
+  final ref = Platform.environment['GITHUB_REF'];
+  if (ref == null || !ref.startsWith('refs/tags/')) return null;
+  return ref.substring('refs/tags/'.length);
 }
 
 String? _optionValue(List<String> args, String name) {
