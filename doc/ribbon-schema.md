@@ -67,12 +67,20 @@ language fallback, then the default `caption`.
 | JSON value | Dart value | Behavior |
 |---|---|---|
 | `large` | `FxRibbonItemType.large` | Large icon and caption command. |
+| `medium` | `FxRibbonItemType.medium` | Medium row command with icon before caption. |
 | `small` | `FxRibbonItemType.small` | Small row command, normally stacked. |
 | `dropdown` | `FxRibbonItemType.dropdown` | Whole item opens a menu. |
 | `splitbutton` | `FxRibbonItemType.splitButton` | Body fires command; arrow opens menu. |
+| `mediumdropdown` | `FxRibbonItemType.mediumDropdown` | Medium row command where the whole row opens a menu. |
+| `mediumsplitbutton` | `FxRibbonItemType.mediumSplitButton` | Medium row command with separate body and arrow zones. |
+| `gallery` | `FxRibbonItemType.gallery` | Embedded ribbon gallery backed by menu-style items. |
 | `toggle` | `FxRibbonItemType.toggle` | Persistent on/off command. |
 | `checkbox` | `FxRibbonItemType.checkBox` | Checkbox-style persistent command. |
 | `separator` | `FxRibbonItemType.separator` | Non-interactive divider. |
+| `columnbreak` | `FxRibbonItemType.columnBreak` | Invisible layout break that starts a new command column. |
+
+The importer also maps the Jaspr token `inribbongallery` to
+`FxRibbonItemType.gallery`.
 
 Example item:
 
@@ -100,9 +108,10 @@ Example item:
 `tag` is the stable command identifier emitted in `FxRibbonEvent`. Do not use a
 translated caption as application logic.
 
-## Menus
+## Menus And Galleries
 
-Dropdowns and split buttons use `menuItems`:
+Dropdowns, split buttons, medium dropdowns, medium split buttons, and embedded
+galleries use `menuItems`:
 
 ```json
 {
@@ -118,6 +127,25 @@ Dropdowns and split buttons use `menuItems`:
 ```
 
 Menu item captions and semantic labels can also carry localized maps.
+
+Embedded galleries can set `selectedMenuItemTag` to mark the current choice:
+
+```json
+{
+  "caption": "Layout",
+  "tag": "view.layout",
+  "itemType": "gallery",
+  "selectedMenuItemTag": "view.layout.details",
+  "menuItems": [
+    {"caption": "Extra large icons", "tag": "view.layout.extraLarge"},
+    {"caption": "Large icons", "tag": "view.layout.large"},
+    {"caption": "Details", "tag": "view.layout.details"}
+  ]
+}
+```
+
+Use `columnbreak` between items when a group needs a new vertical command
+column without drawing an extra separator.
 
 ## Icons
 

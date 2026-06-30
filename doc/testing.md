@@ -73,8 +73,9 @@ flutter test test/fx_ribbon_models_test.dart test/fx_ribbon_layout_test.dart tes
 flutter test --update-goldens test/release_screenshot_test.dart
 ```
 
-The `v0.5.0` ribbon screenshot set covers a 1280 px toolbar and designer proof
-surface under `doc/screenshots/v0.5.0/ribbon/`.
+The `v0.5.1` ribbon screenshot set covers a 1280 px Explorer-style toolbar
+presentation, individual Home/Share/View tab states, a dropdown menu proof, and
+designer proof surface under `doc/screenshots/v0.5.1/ribbon/`.
 
 ## Public API Policy
 

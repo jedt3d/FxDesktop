@@ -214,13 +214,11 @@ class FxRibbonIconView extends StatelessWidget {
         package: iconSource.package,
         width: size,
         height: size,
-        colorFilter: ColorFilter.mode(foreground, BlendMode.srcIn),
       ),
       FxRibbonIconKind.svgString => SvgPicture.string(
         iconSource!.svgString!,
         width: size,
         height: size,
-        colorFilter: ColorFilter.mode(foreground, BlendMode.srcIn),
       ),
       FxRibbonIconKind.pngAsset => Image.asset(
         iconSource!.assetName!,
@@ -252,9 +250,12 @@ class FxRibbonIconView extends StatelessWidget {
       ),
     };
 
-    return SizedBox.square(
-      dimension: size,
-      child: Center(child: child),
+    return Opacity(
+      opacity: opacity,
+      child: SizedBox.square(
+        dimension: size,
+        child: Center(child: child),
+      ),
     );
   }
 }

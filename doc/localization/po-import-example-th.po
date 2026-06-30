@@ -472,17 +472,47 @@ msgctxt "ribbon.item_type.checkbox"
 msgid "Checkbox"
 msgstr "เช็กบ็อกซ์"
 
+#. ARB key: ribbonItemTypeColumnBreak
+#. Description: Ribbon item type name.
+msgctxt "ribbon.item_type.column_break"
+msgid "Column break"
+msgstr "แบ่งคอลัมน์"
+
 #. ARB key: ribbonItemTypeDropdown
 #. Description: Ribbon item type name.
 msgctxt "ribbon.item_type.dropdown"
 msgid "Dropdown"
 msgstr "ดรอปดาวน์"
 
+#. ARB key: ribbonItemTypeGallery
+#. Description: Ribbon item type name.
+msgctxt "ribbon.item_type.gallery"
+msgid "Gallery"
+msgstr "แกลเลอรี"
+
 #. ARB key: ribbonItemTypeLarge
 #. Description: Ribbon item type name.
 msgctxt "ribbon.item_type.large"
 msgid "Large button"
 msgstr "ปุ่มใหญ่"
+
+#. ARB key: ribbonItemTypeMedium
+#. Description: Ribbon item type name.
+msgctxt "ribbon.item_type.medium"
+msgid "Medium button"
+msgstr "ปุ่มขนาดกลาง"
+
+#. ARB key: ribbonItemTypeMediumDropdown
+#. Description: Ribbon item type name.
+msgctxt "ribbon.item_type.medium_dropdown"
+msgid "Medium dropdown"
+msgstr "ดรอปดาวน์ขนาดกลาง"
+
+#. ARB key: ribbonItemTypeMediumSplitButton
+#. Description: Ribbon item type name.
+msgctxt "ribbon.item_type.medium_split_button"
+msgid "Medium split button"
+msgstr "ปุ่มแยกขนาดกลาง"
 
 #. ARB key: ribbonItemTypeSeparator
 #. Description: Ribbon item type name.

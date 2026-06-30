@@ -46,7 +46,7 @@ void main() {
         home: Scaffold(
           body: FxRibbonToolbar(
             definition: FxRibbonSamples.explorer(),
-            activeTabIndex: 1,
+            activeTabIndex: 2,
             onDefinitionChanged: (definition) => changed = definition,
           ),
         ),

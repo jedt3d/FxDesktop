@@ -209,21 +209,12 @@ void main() {
     });
   }
 
-  testWidgets('v0.5.0 ribbon toolbar release screenshot', (tester) async {
+  testWidgets('v0.5.1 ribbon toolbar Explorer presentation', (tester) async {
     _setReleaseScreenshotSurface(const Size(1280, 620));
 
-    const rootKey = ValueKey('v050_ribbon_toolbar_en');
+    const rootKey = ValueKey('v051_ribbon_toolbar_explorer');
     await tester.pumpWidget(
-      _RibbonScreenshotShell(
-        boundaryKey: rootKey,
-        title: 'FxDesktop v0.5.0 - Ribbon Toolbar',
-        subtitle:
-            'Widget-native ribbon with localized command models, SVG icons, split menus, toggles, contextual tabs, keytips, and desktop/touch interaction modes.',
-        child: FxRibbonToolbar(
-          definition: FxRibbonSamples.explorer(),
-          visibleContextGroups: {'picture'},
-        ),
-      ),
+      const _RibbonExplorerPresentationShell(boundaryKey: rootKey),
     );
     await tester.pumpAndSettle();
 
@@ -231,14 +222,59 @@ void main() {
       tester,
       boundaryKey: rootKey,
       goldenPath:
-          '../doc/screenshots/v0.5.0/ribbon/fxdesktop-ribbon-toolbar-en.png',
+          '../doc/screenshots/v0.5.1/ribbon/fxdesktop-ribbon-toolbar-explorer.png',
     );
   });
 
-  testWidgets('v0.5.0 ribbon designer release screenshot', (tester) async {
+  for (final tab in const [
+    _RibbonTabScreenshot('home', 0),
+    _RibbonTabScreenshot('share', 1),
+    _RibbonTabScreenshot('view', 2),
+  ]) {
+    testWidgets('v0.5.1 ribbon toolbar ${tab.name} tab', (tester) async {
+      _setReleaseScreenshotSurface(const Size(1280, 180));
+
+      final rootKey = ValueKey('v051_ribbon_toolbar_${tab.name}');
+      await tester.pumpWidget(
+        _RibbonExplorerSingleShell(
+          boundaryKey: rootKey,
+          activeTabIndex: tab.activeTabIndex,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await _expectReleaseScreenshot(
+        tester,
+        boundaryKey: rootKey,
+        goldenPath:
+            '../doc/screenshots/v0.5.1/ribbon/fxdesktop-ribbon-toolbar-${tab.name}.png',
+      );
+    });
+  }
+
+  testWidgets('v0.5.1 ribbon toolbar dropdown menu screenshot', (tester) async {
+    _setReleaseScreenshotSurface(const Size(1280, 360));
+
+    const rootKey = ValueKey('v051_ribbon_toolbar_menu');
+    await tester.pumpWidget(
+      const _RibbonExplorerSingleShell(boundaryKey: rootKey, activeTabIndex: 2),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Options'));
+    await tester.pumpAndSettle();
+
+    await _expectReleaseScreenshot(
+      tester,
+      boundaryKey: rootKey,
+      goldenPath:
+          '../doc/screenshots/v0.5.1/ribbon/fxdesktop-ribbon-toolbar-menu-en.png',
+    );
+  });
+
+  testWidgets('v0.5.1 ribbon designer release screenshot', (tester) async {
     _setReleaseScreenshotSurface(const Size(1360, 920));
 
-    const rootKey = ValueKey('v050_ribbon_designer_ja');
+    const rootKey = ValueKey('v051_ribbon_designer_ja');
     await tester.pumpWidget(
       _RibbonDesignerScreenshotShell(
         boundaryKey: rootKey,
@@ -253,7 +289,7 @@ void main() {
       tester,
       boundaryKey: rootKey,
       goldenPath:
-          '../doc/screenshots/v0.5.0/ribbon/fxdesktop-ribbon-designer-ja.png',
+          '../doc/screenshots/v0.5.1/ribbon/fxdesktop-ribbon-designer-ja.png',
     );
   });
 }
@@ -414,90 +450,36 @@ class _LocalizationScreenshotShell extends StatelessWidget {
   }
 }
 
-class _RibbonScreenshotShell extends StatelessWidget {
-  const _RibbonScreenshotShell({
-    required this.boundaryKey,
-    required this.title,
-    required this.subtitle,
-    required this.child,
-  });
+class _RibbonTabScreenshot {
+  const _RibbonTabScreenshot(this.name, this.activeTabIndex);
+
+  final String name;
+  final int activeTabIndex;
+}
+
+class _RibbonExplorerPresentationShell extends StatelessWidget {
+  const _RibbonExplorerPresentationShell({required this.boundaryKey});
 
   final Key boundaryKey;
-  final String title;
-  final String subtitle;
-  final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    const seedColor = Color(0xff2563eb);
     return RepaintBoundary(
       key: boundaryKey,
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        localizationsDelegates: FxDesktopLocalizations.localizationsDelegates,
-        supportedLocales: FxDesktopLocalizations.supportedLocales,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: seedColor),
-          fontFamily: 'Roboto',
-          scaffoldBackgroundColor: const Color(0xfff6f7f9),
-          extensions: const [
-            FxTheme(
-              gridLineColor: Color(0xffcbd5e1),
-              headerBackground: Color(0xffe8eef8),
-              alternatingRowBackground: Color(0xfff8fafc),
-              selectionBackground: Color(0xffdbeafe),
-            ),
-            FxRibbonThemeData(
-              density: FxRibbonDensity.regular,
-              backgroundColor: Color(0xfffbfdff),
-              tabStripColor: Color(0xffeef4fb),
-              activeTabColor: Colors.white,
-              groupBackgroundColor: Color(0xffffffff),
-              hoverColor: Color(0xffdbeafe),
-              pressedColor: Color(0xffbfdbfe),
-              keyTipBackgroundColor: Color(0xff111827),
-              keyTipForegroundColor: Colors.white,
-            ),
-          ],
-        ),
-        home: Scaffold(
+      child: _RibbonMaterialApp(
+        child: Scaffold(
           body: Center(
             child: SizedBox(
               width: 1200,
-              height: 560,
+              height: 420,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xff0f172a),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  SizedBox(
-                    width: 920,
-                    child: Text(
-                      subtitle,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        height: 1.35,
-                        color: Color(0xff475569),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      border: Border.all(color: const Color(0xffd9e2ef)),
-                    ),
-                    child: child,
-                  ),
-                  const SizedBox(height: 18),
-                  Expanded(child: _RibbonReleaseDetails()),
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  _RibbonToolbarFrame(activeTabIndex: 0),
+                  SizedBox(height: 16),
+                  _RibbonToolbarFrame(activeTabIndex: 1),
+                  SizedBox(height: 16),
+                  _RibbonToolbarFrame(activeTabIndex: 2),
                 ],
               ),
             ),
@@ -508,60 +490,92 @@ class _RibbonScreenshotShell extends StatelessWidget {
   }
 }
 
-class _RibbonReleaseDetails extends StatelessWidget {
-  const _RibbonReleaseDetails();
+class _RibbonExplorerSingleShell extends StatelessWidget {
+  const _RibbonExplorerSingleShell({
+    required this.boundaryKey,
+    required this.activeTabIndex,
+  });
+
+  final Key boundaryKey;
+  final int activeTabIndex;
 
   @override
   Widget build(BuildContext context) {
-    const items = [
-      ('Model', 'Tabs, groups, menu items, localized text maps'),
-      ('Icons', 'SVG strings, SVG assets, PNG, Material, placeholders'),
-      ('Input', 'Mouse, keyboard, touch target mode, split-button regions'),
-      ('Designer', 'Live preview, structure, JSON, inspector, export'),
-    ];
-    return GridView.count(
-      crossAxisCount: 4,
-      childAspectRatio: 2.4,
-      mainAxisSpacing: 10,
-      crossAxisSpacing: 10,
-      physics: const NeverScrollableScrollPhysics(),
-      children: [
-        for (final item in items)
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border.all(color: const Color(0xffd9e2ef)),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    item.$1,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xff0f172a),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    item.$2,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      height: 1.25,
-                      color: Color(0xff475569),
-                    ),
-                  ),
-                ],
-              ),
+    return RepaintBoundary(
+      key: boundaryKey,
+      child: _RibbonMaterialApp(
+        child: Scaffold(
+          body: Center(
+            child: SizedBox(
+              width: 1200,
+              height: 118,
+              child: _RibbonToolbarFrame(activeTabIndex: activeTabIndex),
             ),
           ),
-      ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RibbonToolbarFrame extends StatelessWidget {
+  const _RibbonToolbarFrame({required this.activeTabIndex});
+
+  final int activeTabIndex;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: const Color(0xffd6d6d6)),
+      ),
+      child: FxRibbonToolbar(
+        definition: FxRibbonSamples.explorer(),
+        activeTabIndex: activeTabIndex,
+        interactionMode: FxRibbonInteractionMode.mouse,
+      ),
+    );
+  }
+}
+
+class _RibbonMaterialApp extends StatelessWidget {
+  const _RibbonMaterialApp({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    const seedColor = Color(0xff0078d7);
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      localizationsDelegates: FxDesktopLocalizations.localizationsDelegates,
+      supportedLocales: FxDesktopLocalizations.supportedLocales,
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: seedColor),
+        fontFamily: 'Roboto',
+        scaffoldBackgroundColor: const Color(0xfff5f5f5),
+        extensions: const [
+          FxTheme(
+            gridLineColor: Color(0xffcbd5e1),
+            headerBackground: Color(0xffe8eef8),
+            alternatingRowBackground: Color(0xfff8fafc),
+            selectionBackground: Color(0xffdbeafe),
+          ),
+          FxRibbonThemeData(
+            density: FxRibbonDensity.regular,
+            backgroundColor: Color(0xfff7f7f7),
+            tabStripColor: Color(0xffffffff),
+            activeTabColor: Color(0xffffffff),
+            groupBackgroundColor: Color(0xfff7f7f7),
+            hoverColor: Color(0xffdbeafe),
+            pressedColor: Color(0xffcfe8ff),
+            keyTipBackgroundColor: Color(0xff111827),
+            keyTipForegroundColor: Colors.white,
+          ),
+        ],
+      ),
+      home: child,
     );
   }
 }

@@ -38,6 +38,12 @@ The designer has five main regions:
 
 The status row reports validation state from `FxRibbonValidator`.
 
+The `v0.5.1` ribbon refresh extends the item type selector with medium row
+commands, medium dropdowns, medium split buttons, embedded galleries, and
+invisible column breaks. Menu and gallery entries still round-trip through the
+JSON preview; the built-in visual editor for nested menu items remains a later
+`0.5.x` task.
+
 ## Localization
 
 The designer uses `FxDesktopLocalizations` for its own chrome. Apps should wire
@@ -96,6 +102,14 @@ Delivered in `v0.5.0`:
 - switch preview locale
 - export JSON through callback
 - show validation state
+
+Added in `v0.5.1`:
+
+- Explorer-style toolbar preview with application button, flat command bands,
+  equal-width command columns, embedded gallery rendering, and preserved
+  colored SVG icons
+- designer support for the added item types in the structure tree, inspector
+  selector, JSON preview, validation, and export path
 
 Deferred to later `0.5.x` work:
 

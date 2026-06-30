@@ -108,7 +108,8 @@ must update all four bundled locales, regenerate localizations, run
 `dart run tool/fx_l10n.dart audit`, update `FxLocalizationGallery` when useful,
 and keep ribbon/designer work on the same localization foundation.
 
-Milestone 5 ribbon/designer is delivered in `v0.5.0`. Follow
+Milestone 5 ribbon/designer is delivered in `v0.5.0`, with the Explorer-style
+visual refresh delivered in `v0.5.1`. Follow
 `doc/milestone-5-ribbon-toolbar-designer.md`, `doc/ribbon-schema.md`, and
 `doc/ribbon-designer.md` before changing this surface. Keep the implementation
 scoped to FxDesktop; use `jaspr-ribbon-toolbar` as Dart architecture source
@@ -119,7 +120,9 @@ actions, semantics, menus, overlays, themes, and pointer-kind handling instead
 of a canvas-only port. The toolbar must support mouse, keyboard, and touch on
 large desktop/web screens; it must not become a mobile-phone navigation system.
 Keep icon support behind the `iconKey` registry with SVG, PNG, Material, and
-placeholder sources. Use Flutter `ThemeExtension`/`ThemeData` as the ribbon
+placeholder sources. Preserve the flat command-band layout, application button,
+equal-width row columns, embedded galleries, and divider-separated groups in
+the Explorer sample. Use Flutter `ThemeExtension`/`ThemeData` as the ribbon
 style-sheet surface, with `FxRibbonThemeData` only for ribbon-specific tokens.
 Consume the Milestone 4 localization foundation instead of creating a
 ribbon-only translation system; ribbon and designer strings must use the same

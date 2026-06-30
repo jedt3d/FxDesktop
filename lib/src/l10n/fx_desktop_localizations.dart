@@ -672,6 +672,12 @@ abstract class FxDesktopLocalizations {
   /// Ribbon item type name.
   ///
   /// In en, this message translates to:
+  /// **'Medium button'**
+  String get ribbonItemTypeMedium;
+
+  /// Ribbon item type name.
+  ///
+  /// In en, this message translates to:
   /// **'Dropdown'**
   String get ribbonItemTypeDropdown;
 
@@ -680,6 +686,24 @@ abstract class FxDesktopLocalizations {
   /// In en, this message translates to:
   /// **'Split button'**
   String get ribbonItemTypeSplitButton;
+
+  /// Ribbon item type name.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium dropdown'**
+  String get ribbonItemTypeMediumDropdown;
+
+  /// Ribbon item type name.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium split button'**
+  String get ribbonItemTypeMediumSplitButton;
+
+  /// Ribbon item type name.
+  ///
+  /// In en, this message translates to:
+  /// **'Gallery'**
+  String get ribbonItemTypeGallery;
 
   /// Ribbon item type name.
   ///
@@ -698,6 +722,12 @@ abstract class FxDesktopLocalizations {
   /// In en, this message translates to:
   /// **'Separator'**
   String get ribbonItemTypeSeparator;
+
+  /// Ribbon item type name.
+  ///
+  /// In en, this message translates to:
+  /// **'Column break'**
+  String get ribbonItemTypeColumnBreak;
 }
 
 class _FxDesktopLocalizationsDelegate

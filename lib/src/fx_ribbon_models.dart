@@ -13,6 +13,9 @@ enum FxRibbonItemType {
   /// Large button with icon above caption.
   large('large'),
 
+  /// Medium row button with icon before caption.
+  medium('medium'),
+
   /// Small row button, usually stacked three per column.
   small('small'),
 
@@ -22,6 +25,15 @@ enum FxRibbonItemType {
   /// Body fires a command and arrow opens a menu.
   splitButton('splitbutton'),
 
+  /// Medium row button where the whole row opens a menu.
+  mediumDropdown('mediumdropdown'),
+
+  /// Medium row split button with separate body and arrow zones.
+  mediumSplitButton('mediumsplitbutton'),
+
+  /// Embedded scrollable ribbon gallery.
+  gallery('gallery'),
+
   /// Persistent on/off command.
   toggle('toggle'),
 
@@ -29,7 +41,10 @@ enum FxRibbonItemType {
   checkBox('checkbox'),
 
   /// Non-interactive divider.
-  separator('separator');
+  separator('separator'),
+
+  /// Invisible layout break that starts a new command column.
+  columnBreak('columnbreak');
 
   const FxRibbonItemType(this.jsonValue);
 
@@ -39,11 +54,17 @@ enum FxRibbonItemType {
   /// Whether this item has no command behavior.
   bool get isSeparator => this == FxRibbonItemType.separator;
 
+  /// Whether this item starts a new layout column without drawing a divider.
+  bool get isColumnBreak => this == FxRibbonItemType.columnBreak;
+
   /// Parses a Jaspr/FxDesktop item type token.
   static FxRibbonItemType parse(Object? value) {
     final normalized = value?.toString().toLowerCase();
+    if (normalized == 'inribbongallery') {
+      return FxRibbonItemType.gallery;
+    }
     return FxRibbonItemType.values.firstWhere(
-      (type) => type.jsonValue == normalized,
+      (type) => type.jsonValue == normalized || type.name == normalized,
       orElse: () => FxRibbonItemType.large,
     );
   }
@@ -255,6 +276,7 @@ class FxRibbonItem {
     this.iconKey,
     this.keyTip,
     this.menuItems = const [],
+    this.selectedMenuItemTag,
     this.semanticLabel,
     this.localizedCaptions = const {},
     this.localizedTooltips = const {},
@@ -284,6 +306,34 @@ class FxRibbonItem {
       iconKey: iconKey,
       keyTip: keyTip,
       menuItems: menuItems,
+      semanticLabel: semanticLabel,
+      localizedCaptions: localizedCaptions,
+      localizedTooltips: localizedTooltips,
+      localizedSemanticLabels: localizedSemanticLabels,
+    );
+  }
+
+  /// Creates a medium row command button.
+  factory FxRibbonItem.medium({
+    required String caption,
+    required String tag,
+    String? tooltipText,
+    String? iconKey,
+    String? keyTip,
+    bool isEnabled = true,
+    String? semanticLabel,
+    Map<String, String> localizedCaptions = const {},
+    Map<String, String> localizedTooltips = const {},
+    Map<String, String> localizedSemanticLabels = const {},
+  }) {
+    return FxRibbonItem(
+      caption: caption,
+      tag: tag,
+      itemType: FxRibbonItemType.medium,
+      isEnabled: isEnabled,
+      tooltipText: tooltipText,
+      iconKey: iconKey,
+      keyTip: keyTip,
       semanticLabel: semanticLabel,
       localizedCaptions: localizedCaptions,
       localizedTooltips: localizedTooltips,
@@ -379,6 +429,98 @@ class FxRibbonItem {
     );
   }
 
+  /// Creates a medium row dropdown command.
+  factory FxRibbonItem.mediumDropdown({
+    required String caption,
+    required String tag,
+    String? tooltipText,
+    String? iconKey,
+    String? keyTip,
+    bool isEnabled = true,
+    List<FxRibbonMenuItem> menuItems = const [],
+    String? semanticLabel,
+    Map<String, String> localizedCaptions = const {},
+    Map<String, String> localizedTooltips = const {},
+    Map<String, String> localizedSemanticLabels = const {},
+  }) {
+    return FxRibbonItem(
+      caption: caption,
+      tag: tag,
+      itemType: FxRibbonItemType.mediumDropdown,
+      isEnabled: isEnabled,
+      tooltipText: tooltipText,
+      iconKey: iconKey,
+      keyTip: keyTip,
+      menuItems: menuItems,
+      semanticLabel: semanticLabel,
+      localizedCaptions: localizedCaptions,
+      localizedTooltips: localizedTooltips,
+      localizedSemanticLabels: localizedSemanticLabels,
+    );
+  }
+
+  /// Creates a medium row split button.
+  factory FxRibbonItem.mediumSplitButton({
+    required String caption,
+    required String tag,
+    String? tooltipText,
+    String? iconKey,
+    String? keyTip,
+    bool isEnabled = true,
+    List<FxRibbonMenuItem> menuItems = const [],
+    String? semanticLabel,
+    Map<String, String> localizedCaptions = const {},
+    Map<String, String> localizedTooltips = const {},
+    Map<String, String> localizedSemanticLabels = const {},
+  }) {
+    return FxRibbonItem(
+      caption: caption,
+      tag: tag,
+      itemType: FxRibbonItemType.mediumSplitButton,
+      isEnabled: isEnabled,
+      tooltipText: tooltipText,
+      iconKey: iconKey,
+      keyTip: keyTip,
+      menuItems: menuItems,
+      semanticLabel: semanticLabel,
+      localizedCaptions: localizedCaptions,
+      localizedTooltips: localizedTooltips,
+      localizedSemanticLabels: localizedSemanticLabels,
+    );
+  }
+
+  /// Creates an embedded ribbon gallery.
+  factory FxRibbonItem.gallery({
+    required String caption,
+    required String tag,
+    required List<FxRibbonMenuItem> items,
+    String? selectedMenuItemTag,
+    String? tooltipText,
+    String? iconKey,
+    String? keyTip,
+    bool isEnabled = true,
+    String? semanticLabel,
+    Map<String, String> localizedCaptions = const {},
+    Map<String, String> localizedTooltips = const {},
+    Map<String, String> localizedSemanticLabels = const {},
+  }) {
+    return FxRibbonItem(
+      caption: caption,
+      tag: tag,
+      itemType: FxRibbonItemType.gallery,
+      isEnabled: isEnabled,
+      tooltipText: tooltipText,
+      iconKey: iconKey,
+      keyTip: keyTip,
+      menuItems: items,
+      selectedMenuItemTag: selectedMenuItemTag,
+      semanticLabel: semanticLabel,
+      localizedCaptions: localizedCaptions,
+      localizedTooltips: localizedTooltips,
+      localizedSemanticLabels: localizedSemanticLabels,
+    );
+  }
+
   /// Creates a toggle command.
   factory FxRibbonItem.toggle({
     required String caption,
@@ -448,6 +590,24 @@ class FxRibbonItem {
       iconKey = null,
       keyTip = null,
       menuItems = const [],
+      selectedMenuItemTag = null,
+      semanticLabel = null,
+      localizedCaptions = const {},
+      localizedTooltips = const {},
+      localizedSemanticLabels = const {};
+
+  /// Creates an invisible command-column break.
+  const FxRibbonItem.columnBreak()
+    : caption = '',
+      tag = '',
+      itemType = FxRibbonItemType.columnBreak,
+      isEnabled = false,
+      isToggleActive = false,
+      tooltipText = null,
+      iconKey = null,
+      keyTip = null,
+      menuItems = const [],
+      selectedMenuItemTag = null,
       semanticLabel = null,
       localizedCaptions = const {},
       localizedTooltips = const {},
@@ -458,6 +618,9 @@ class FxRibbonItem {
     final type = FxRibbonItemType.parse(json['itemType']);
     if (type.isSeparator) {
       return const FxRibbonItem.separator();
+    }
+    if (type.isColumnBreak) {
+      return const FxRibbonItem.columnBreak();
     }
     final caption = (json['caption'] ?? '').toString();
     final tag = (json['tag'] ?? '').toString();
@@ -476,6 +639,7 @@ class FxRibbonItem {
       iconKey: (json['iconKey'] ?? json['icon']) as String?,
       keyTip: json['keyTip'] as String?,
       menuItems: menuItems,
+      selectedMenuItemTag: json['selectedMenuItemTag'] as String?,
       semanticLabel: json['semanticLabel'] as String?,
       localizedCaptions: _stringMap(json['localizedCaptions']),
       localizedTooltips: _stringMap(json['localizedTooltips']),
@@ -510,6 +674,9 @@ class FxRibbonItem {
   /// Dropdown or split-button menu entries.
   final List<FxRibbonMenuItem> menuItems;
 
+  /// Selected menu item tag for embedded gallery-style controls.
+  final String? selectedMenuItemTag;
+
   /// Optional fallback semantic label.
   final String? semanticLabel;
 
@@ -525,10 +692,16 @@ class FxRibbonItem {
   /// Whether this item is a group separator.
   bool get isSeparator => itemType.isSeparator;
 
+  /// Whether this item is an invisible layout column break.
+  bool get isColumnBreak => itemType.isColumnBreak;
+
   /// Whether this item is a dropdown or split button.
   bool get hasMenu =>
       itemType == FxRibbonItemType.dropdown ||
-      itemType == FxRibbonItemType.splitButton;
+      itemType == FxRibbonItemType.splitButton ||
+      itemType == FxRibbonItemType.mediumDropdown ||
+      itemType == FxRibbonItemType.mediumSplitButton ||
+      itemType == FxRibbonItemType.gallery;
 
   /// Whether this item has persistent on/off state.
   bool get isToggleLike =>
@@ -564,7 +737,7 @@ class FxRibbonItem {
 
   /// Converts this item to JSON.
   Map<String, Object?> toJson() {
-    if (isSeparator) {
+    if (isSeparator || isColumnBreak) {
       return {'itemType': itemType.jsonValue};
     }
     return {
@@ -578,6 +751,8 @@ class FxRibbonItem {
       if (keyTip != null) 'keyTip': keyTip,
       if (menuItems.isNotEmpty)
         'menuItems': menuItems.map((item) => item.toJson()).toList(),
+      if (selectedMenuItemTag != null)
+        'selectedMenuItemTag': selectedMenuItemTag,
       if (semanticLabel != null) 'semanticLabel': semanticLabel,
       if (localizedCaptions.isNotEmpty) 'localizedCaptions': localizedCaptions,
       if (localizedTooltips.isNotEmpty) 'localizedTooltips': localizedTooltips,
@@ -597,12 +772,13 @@ class FxRibbonItem {
     Object? iconKey = _sentinel,
     Object? keyTip = _sentinel,
     List<FxRibbonMenuItem>? menuItems,
+    Object? selectedMenuItemTag = _sentinel,
     Object? semanticLabel = _sentinel,
     Map<String, String>? localizedCaptions,
     Map<String, String>? localizedTooltips,
     Map<String, String>? localizedSemanticLabels,
   }) {
-    if (isSeparator) {
+    if (isSeparator || isColumnBreak) {
       return this;
     }
     return FxRibbonItem(
@@ -619,6 +795,9 @@ class FxRibbonItem {
           : iconKey as String?,
       keyTip: identical(keyTip, _sentinel) ? this.keyTip : keyTip as String?,
       menuItems: menuItems ?? this.menuItems,
+      selectedMenuItemTag: identical(selectedMenuItemTag, _sentinel)
+          ? this.selectedMenuItemTag
+          : selectedMenuItemTag as String?,
       semanticLabel: identical(semanticLabel, _sentinel)
           ? this.semanticLabel
           : semanticLabel as String?,
@@ -644,6 +823,7 @@ class FxRibbonItem {
         other.iconKey == iconKey &&
         other.keyTip == keyTip &&
         listEquals(other.menuItems, menuItems) &&
+        other.selectedMenuItemTag == selectedMenuItemTag &&
         other.semanticLabel == semanticLabel &&
         mapEquals(other.localizedCaptions, localizedCaptions) &&
         mapEquals(other.localizedTooltips, localizedTooltips) &&
@@ -661,6 +841,7 @@ class FxRibbonItem {
     iconKey,
     keyTip,
     Object.hashAll(menuItems),
+    selectedMenuItemTag,
     semanticLabel,
     Object.hashAllUnordered(localizedCaptions.entries),
     Object.hashAllUnordered(localizedTooltips.entries),
@@ -1552,7 +1733,7 @@ class FxRibbonValidator {
     Iterable<String> iconKeys,
     List<FxRibbonValidationIssue> issues,
   ) {
-    if (item.isSeparator) {
+    if (item.isSeparator || item.isColumnBreak) {
       return;
     }
     if (item.caption.trim().isEmpty) {
@@ -1684,25 +1865,10 @@ class FxRibbonSamples {
         'ne': 'एक्सप्लोरर रिबन',
       },
       metadata: const {
-        'source': 'jaspr-ribbon-toolbar examples/explorer.ribbon',
+        'source': 'Windows File Explorer ribbon reference',
+        'applicationButtonLabel': 'File',
       },
-      icons: const {
-        'paste': FxRibbonEmbeddedIcon(
-          kind: FxRibbonEmbeddedIconKind.svg,
-          data:
-              '<svg viewBox="0 0 24 24"><path d="M8 4h8v3h3v14H5V7h3V4zm2 2v3h4V6h-4zm-3 5v8h10V9H7z"/></svg>',
-        ),
-        'copy': FxRibbonEmbeddedIcon(
-          kind: FxRibbonEmbeddedIconKind.svg,
-          data:
-              '<svg viewBox="0 0 24 24"><path d="M8 7h10v13H8V7zm-3-3h10v2H7v11H5V4z"/></svg>',
-        ),
-        'delete': FxRibbonEmbeddedIcon(
-          kind: FxRibbonEmbeddedIconKind.svg,
-          data:
-              '<svg viewBox="0 0 24 24"><path d="M9 3h6l1 2h5v2H3V5h5l1-2zm-3 6h12l-1 12H7L6 9z"/></svg>',
-        ),
-      },
+      icons: _explorerRibbonIcons(),
       tabs: [
         FxRibbonTab(
           caption: 'Home',
@@ -1717,6 +1883,22 @@ class FxRibbonSamples {
                 'ne': 'क्लिपबोर्ड',
               },
               items: [
+                FxRibbonItem.large(
+                  caption: 'Pin to Quick\naccess',
+                  tag: 'clipboard.pin_quick_access',
+                  iconKey: 'pin',
+                ),
+                FxRibbonItem.small(
+                  caption: 'Copy',
+                  tag: 'clipboard.copy',
+                  iconKey: 'copy',
+                  keyTip: 'C',
+                  localizedCaptions: const {
+                    'th': 'คัดลอก',
+                    'ja': 'コピー',
+                    'ne': 'प्रतिलिपि',
+                  },
+                ),
                 FxRibbonItem.large(
                   caption: 'Paste',
                   tag: 'clipboard.paste',
@@ -1737,7 +1919,7 @@ class FxRibbonSamples {
                 FxRibbonItem.small(
                   caption: 'Cut',
                   tag: 'clipboard.cut',
-                  iconKey: 'copy',
+                  iconKey: 'cut',
                   keyTip: 'X',
                   localizedCaptions: const {
                     'th': 'ตัด',
@@ -1746,25 +1928,19 @@ class FxRibbonSamples {
                   },
                 ),
                 FxRibbonItem.small(
-                  caption: 'Copy',
-                  tag: 'clipboard.copy',
-                  iconKey: 'copy',
-                  keyTip: 'C',
-                  localizedCaptions: const {
-                    'th': 'คัดลอก',
-                    'ja': 'コピー',
-                    'ne': 'प्रतिलिपि',
-                  },
-                ),
-                FxRibbonItem.small(
                   caption: 'Copy path',
                   tag: 'clipboard.copy_path',
-                  iconKey: 'copy',
+                  iconKey: 'copy_path',
                   localizedCaptions: const {
                     'th': 'คัดลอกเส้นทาง',
                     'ja': 'パスをコピー',
                     'ne': 'पथ प्रतिलिपि',
                   },
+                ),
+                FxRibbonItem.small(
+                  caption: 'Paste shortcut',
+                  tag: 'clipboard.paste_shortcut',
+                  iconKey: 'paste_shortcut',
                 ),
               ],
             ),
@@ -1776,7 +1952,20 @@ class FxRibbonSamples {
                 'ne': 'व्यवस्थित',
               },
               items: [
-                FxRibbonItem.splitButton(
+                FxRibbonItem.mediumSplitButton(
+                  caption: 'Move to',
+                  tag: 'organize.move_to',
+                  iconKey: 'move_to',
+                  menuItems: _locationMenu('organize.move_to'),
+                ),
+                FxRibbonItem.mediumSplitButton(
+                  caption: 'Copy to',
+                  tag: 'organize.copy_to',
+                  iconKey: 'copy_to',
+                  menuItems: _locationMenu('organize.copy_to'),
+                ),
+                const FxRibbonItem.columnBreak(),
+                FxRibbonItem.mediumSplitButton(
                   caption: 'Delete',
                   tag: 'organize.delete',
                   iconKey: 'delete',
@@ -1807,15 +1996,198 @@ class FxRibbonSamples {
                     ),
                   ],
                 ),
-                FxRibbonItem.small(
+                FxRibbonItem.medium(
                   caption: 'Rename',
                   tag: 'organize.rename',
-                  iconKey: 'copy',
+                  iconKey: 'rename',
                   localizedCaptions: const {
                     'th': 'เปลี่ยนชื่อ',
                     'ja': '名前を変更',
                     'ne': 'नाम परिवर्तन',
                   },
+                ),
+              ],
+            ),
+            FxRibbonGroup(
+              caption: 'New',
+              localizedCaptions: const {'th': 'ใหม่', 'ja': '新規', 'ne': 'नयाँ'},
+              items: [
+                FxRibbonItem.large(
+                  caption: 'New\nfolder',
+                  tag: 'new.folder',
+                  iconKey: 'new_folder',
+                  localizedCaptions: const {
+                    'th': 'โฟลเดอร์ใหม่',
+                    'ja': '新しいフォルダー',
+                    'ne': 'नयाँ फोल्डर',
+                  },
+                ),
+                FxRibbonItem.small(
+                  caption: 'New item',
+                  tag: 'new.item',
+                  iconKey: 'new_item',
+                ),
+                FxRibbonItem.mediumDropdown(
+                  caption: 'Easy access',
+                  tag: 'new.easy_access',
+                  iconKey: 'easy_access',
+                  menuItems: const [
+                    FxRibbonMenuItem(caption: 'Folder', tag: 'new.item.folder'),
+                    FxRibbonMenuItem(
+                      caption: 'Shortcut',
+                      tag: 'new.item.shortcut',
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            FxRibbonGroup(
+              caption: 'Open',
+              localizedCaptions: const {
+                'th': 'เปิด',
+                'ja': '開く',
+                'ne': 'खोल्नुहोस्',
+              },
+              items: [
+                FxRibbonItem.splitButton(
+                  caption: 'Properties',
+                  tag: 'open.properties',
+                  iconKey: 'properties',
+                  menuItems: const [
+                    FxRibbonMenuItem(
+                      caption: 'Properties',
+                      tag: 'open.properties.dialog',
+                    ),
+                    FxRibbonMenuItem(
+                      caption: 'Remove properties',
+                      tag: 'open.properties.remove',
+                    ),
+                  ],
+                ),
+                FxRibbonItem.mediumSplitButton(
+                  caption: 'Open',
+                  tag: 'open.open',
+                  iconKey: 'open',
+                  menuItems: const [
+                    FxRibbonMenuItem(caption: 'Open', tag: 'open.default'),
+                    FxRibbonMenuItem(
+                      caption: 'Open with',
+                      tag: 'open.open_with',
+                    ),
+                  ],
+                ),
+                FxRibbonItem.medium(
+                  caption: 'Edit',
+                  tag: 'open.edit',
+                  iconKey: 'edit',
+                ),
+                FxRibbonItem.medium(
+                  caption: 'History',
+                  tag: 'open.history',
+                  iconKey: 'history',
+                ),
+              ],
+            ),
+            FxRibbonGroup(
+              caption: 'Select',
+              localizedCaptions: const {'th': 'เลือก', 'ja': '選択', 'ne': 'चयन'},
+              items: [
+                FxRibbonItem.small(
+                  caption: 'Select all',
+                  tag: 'select.all',
+                  iconKey: 'select_all',
+                ),
+                FxRibbonItem.small(
+                  caption: 'Select none',
+                  tag: 'select.none',
+                  iconKey: 'select_none',
+                ),
+                FxRibbonItem.small(
+                  caption: 'Invert selection',
+                  tag: 'select.invert',
+                  iconKey: 'invert_selection',
+                ),
+              ],
+            ),
+          ],
+        ),
+        FxRibbonTab(
+          caption: 'Share',
+          localizedCaptions: const {'th': 'แชร์', 'ja': '共有', 'ne': 'साझा'},
+          keyTip: 'S',
+          groups: [
+            FxRibbonGroup(
+              caption: 'Send',
+              items: [
+                FxRibbonItem.large(
+                  caption: 'Share',
+                  tag: 'share.share',
+                  iconKey: 'share',
+                ),
+                FxRibbonItem.small(
+                  caption: 'Email',
+                  tag: 'share.email',
+                  iconKey: 'email',
+                ),
+                FxRibbonItem.small(
+                  caption: 'Zip',
+                  tag: 'share.zip',
+                  iconKey: 'zip',
+                ),
+              ],
+            ),
+            FxRibbonGroup(
+              caption: 'Share with',
+              items: [
+                FxRibbonItem.small(
+                  caption: 'Burn to disc',
+                  tag: 'share.burn',
+                  iconKey: 'burn',
+                ),
+                FxRibbonItem.small(
+                  caption: 'Print',
+                  tag: 'share.print',
+                  iconKey: 'print',
+                ),
+                FxRibbonItem.small(
+                  caption: 'Fax',
+                  tag: 'share.fax',
+                  iconKey: 'fax',
+                ),
+                FxRibbonItem.medium(
+                  caption: 'Create or join a homegroup',
+                  tag: 'share.homegroup',
+                  iconKey: 'people',
+                ),
+                FxRibbonItem.medium(
+                  caption: 'Barticus',
+                  tag: 'share.barticus',
+                  iconKey: 'user',
+                ),
+                FxRibbonItem.medium(
+                  caption: 'Specific people...',
+                  tag: 'share.specific_people',
+                  iconKey: 'people',
+                ),
+              ],
+            ),
+            FxRibbonGroup(
+              caption: 'Permissions',
+              items: [
+                FxRibbonItem.large(
+                  caption: 'Stop\nsharing',
+                  tag: 'share.stop',
+                  iconKey: 'stop_sharing',
+                ),
+                FxRibbonItem.dropdown(
+                  caption: 'Advanced\nsecurity',
+                  tag: 'share.advanced_security',
+                  iconKey: 'security',
+                  menuItems: _simpleMenu('share.security', const [
+                    'Properties',
+                    'Edit permissions',
+                    'Effective access',
+                  ]),
                 ),
               ],
             ),
@@ -1835,9 +2207,9 @@ class FxRibbonSamples {
               },
               items: [
                 FxRibbonItem.splitButton(
-                  caption: 'Navigation pane',
+                  caption: 'Navigation\npane',
                   tag: 'view.nav',
-                  iconKey: 'copy',
+                  iconKey: 'nav_pane',
                   localizedCaptions: const {
                     'th': 'แถบนำทาง',
                     'ja': 'ナビゲーション ペイン',
@@ -1852,12 +2224,20 @@ class FxRibbonSamples {
                       caption: 'Expand to open folder',
                       tag: 'view.nav.expand',
                     ),
+                    FxRibbonMenuItem(
+                      caption: 'Show all folders',
+                      tag: 'view.nav.all_folders',
+                    ),
+                    FxRibbonMenuItem(
+                      caption: 'Show libraries',
+                      tag: 'view.nav.libraries',
+                    ),
                   ],
                 ),
                 FxRibbonItem.toggle(
                   caption: 'Preview pane',
                   tag: 'view.preview',
-                  iconKey: 'copy',
+                  iconKey: 'pane',
                   localizedCaptions: const {
                     'th': 'พาเนลตัวอย่าง',
                     'ja': 'プレビュー ペイン',
@@ -1867,12 +2247,101 @@ class FxRibbonSamples {
                 FxRibbonItem.toggle(
                   caption: 'Details pane',
                   tag: 'view.details',
-                  iconKey: 'copy',
+                  iconKey: 'pane',
                   localizedCaptions: const {
                     'th': 'พาเนลรายละเอียด',
                     'ja': '詳細ペイン',
                     'ne': 'विवरण फलक',
                   },
+                ),
+              ],
+            ),
+            FxRibbonGroup(
+              caption: 'Layout',
+              localizedCaptions: const {
+                'th': 'เค้าโครง',
+                'ja': 'レイアウト',
+                'ne': 'लेआउट',
+              },
+              items: [
+                FxRibbonItem.gallery(
+                  caption: 'View layout',
+                  tag: 'view.layout',
+                  selectedMenuItemTag: 'view.layout.details',
+                  items: const [
+                    FxRibbonMenuItem(
+                      caption: 'Extra large icons',
+                      tag: 'view.layout.extra_large',
+                    ),
+                    FxRibbonMenuItem(
+                      caption: 'Large icons',
+                      tag: 'view.layout.large',
+                    ),
+                    FxRibbonMenuItem(
+                      caption: 'Medium icons',
+                      tag: 'view.layout.medium',
+                    ),
+                    FxRibbonMenuItem(
+                      caption: 'Small icons',
+                      tag: 'view.layout.small',
+                    ),
+                    FxRibbonMenuItem(caption: 'List', tag: 'view.layout.list'),
+                    FxRibbonMenuItem(
+                      caption: 'Details',
+                      tag: 'view.layout.details',
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            FxRibbonGroup(
+              caption: 'Current view',
+              localizedCaptions: const {
+                'th': 'มุมมองปัจจุบัน',
+                'ja': '現在のビュー',
+                'ne': 'हालको दृश्य',
+              },
+              items: [
+                FxRibbonItem.dropdown(
+                  caption: 'Sort\nby',
+                  tag: 'view.sort_by',
+                  iconKey: 'sort',
+                  menuItems: _simpleMenu('view.sort', const [
+                    'Name',
+                    'Date modified',
+                    'Type',
+                    'Size',
+                    'Ascending',
+                  ]),
+                ),
+                FxRibbonItem.mediumDropdown(
+                  caption: 'Group by',
+                  tag: 'view.group_by',
+                  iconKey: 'group',
+                  menuItems: _simpleMenu('view.group', const [
+                    'Name',
+                    'Date modified',
+                    'Type',
+                    'Size',
+                    '(None)',
+                  ]),
+                ),
+                FxRibbonItem.mediumDropdown(
+                  caption: 'Add columns',
+                  tag: 'view.add_columns',
+                  iconKey: 'columns',
+                  menuItems: _simpleMenu('view.columns', const [
+                    'Name',
+                    'Date modified',
+                    'Type',
+                    'Size',
+                    'More...',
+                  ]),
+                ),
+                FxRibbonItem.medium(
+                  caption: 'Size all columns to fit',
+                  tag: 'view.fit_columns',
+                  iconKey: 'fit_columns',
                 ),
               ],
             ),
@@ -1884,6 +2353,10 @@ class FxRibbonSamples {
                 'ne': 'देखाउनु/लुकाउनु',
               },
               items: [
+                FxRibbonItem.checkBox(
+                  caption: 'Item check boxes',
+                  tag: 'view.checkboxes',
+                ),
                 FxRibbonItem.checkBox(
                   caption: 'File name extensions',
                   tag: 'view.ext',
@@ -1903,16 +2376,26 @@ class FxRibbonSamples {
                     'ne': 'लुकेका वस्तुहरू',
                   },
                 ),
-                const FxRibbonItem.separator(),
-                FxRibbonItem.small(
+                const FxRibbonItem.columnBreak(),
+                FxRibbonItem.medium(
                   caption: 'Hide selected items',
                   tag: 'view.hide',
-                  iconKey: 'copy',
+                  iconKey: 'hide',
                   localizedCaptions: const {
                     'th': 'ซ่อนรายการที่เลือก',
                     'ja': '選択項目を非表示',
                     'ne': 'चयनित वस्तु लुकाउनुहोस्',
                   },
+                ),
+                FxRibbonItem.dropdown(
+                  caption: 'Options',
+                  tag: 'view.options',
+                  iconKey: 'options',
+                  menuItems: _simpleMenu('view.options', const [
+                    'Change folder and search options',
+                    'Open Folder Options',
+                    'Restore defaults',
+                  ]),
                 ),
               ],
             ),
@@ -1941,7 +2424,7 @@ class FxRibbonSamples {
                 FxRibbonItem.large(
                   caption: 'Crop',
                   tag: 'pic.crop',
-                  iconKey: 'copy',
+                  iconKey: 'crop',
                   localizedCaptions: const {
                     'th': 'ครอบตัด',
                     'ja': 'トリミング',
@@ -1955,6 +2438,157 @@ class FxRibbonSamples {
       ],
     );
   }
+}
+
+Map<String, FxRibbonEmbeddedIcon> _explorerRibbonIcons() {
+  return {
+    'pin': _explorerSvg(
+      '<path fill="#9fb8d3" d="M12 2l5 5-3 3 5 5-3 3-5-5-5 5-1-1 5-5-5-5 3-3 4-2z"/>',
+    ),
+    'copy': _explorerSvg(
+      '<path fill="#b7cbe1" d="M7 5h9v12H7z"/><path fill="#eaf3fb" d="M9 7h9v12H9z"/><path fill="#6b8dad" d="M7 5h9v2H7zm2 2h9v2H9z"/>',
+    ),
+    'paste': _explorerSvg(
+      '<path fill="#d3af70" d="M7 5h10v16H7z"/><path fill="#f2d083" d="M9 3h6v4H9z"/><path fill="#edf5fb" d="M10 10h7v9h-7z"/>',
+    ),
+    'cut': _explorerSvg(
+      '<circle fill="#8aaed1" cx="7" cy="17" r="3"/><circle fill="#8aaed1" cx="17" cy="17" r="3"/><path stroke="#6f8faa" stroke-width="2" d="M8 15L17 4M16 15L7 4"/>',
+    ),
+    'copy_path': _explorerSvg(
+      '<path fill="#eaf3fb" d="M4 5h16v14H4z"/><path fill="#8aaed1" d="M6 8h12v2H6zm0 4h8v2H6z"/><path fill="#6b8dad" d="M4 5h16v2H4z"/>',
+    ),
+    'paste_shortcut': _explorerSvg(
+      '<path fill="#d3af70" d="M7 5h10v16H7z"/><path fill="#eaf3fb" d="M10 10h6v7h-6z"/><path fill="#2f7dd1" d="M13 18h6v-3l4 4-4 4v-3h-6z"/>',
+    ),
+    'move_to': _folderSvg('#b7cbe1', '#6b8dad'),
+    'copy_to': _folderSvg('#d9e8f7', '#6b8dad'),
+    'delete': _explorerSvg(
+      '<path fill="#9aa9b7" d="M8 6h8l1 2h5v2H2V8h5z"/><path fill="#b9c4cd" d="M6 11h12l-1 10H7z"/><path stroke="#6b7480" stroke-width="1.5" d="M9 13v6m3-6v6m3-6v6"/>',
+    ),
+    'rename': _explorerSvg(
+      '<path fill="#eaf3fb" d="M4 6h16v12H4z"/><path fill="#7fa6c9" d="M6 9h9v2H6zm0 4h6v2H6z"/><path fill="#2f7dd1" d="M17 8h2v8h-2z"/>',
+    ),
+    'new_folder': _folderSvg('#c9d9ea', '#7c9fbd'),
+    'new_item': _explorerSvg(
+      '<path fill="#eaf3fb" d="M7 3h8l4 4v14H7z"/><path fill="#b7cbe1" d="M15 3v5h4"/><path fill="#2f7dd1" d="M4 11h5v2H4zm2-2h2v6H6z"/>',
+    ),
+    'easy_access': _explorerSvg(
+      '<path fill="#eaf3fb" d="M5 5h10v14H5z"/><path fill="#7fa6c9" d="M7 8h6v2H7zm0 4h6v2H7z"/><path fill="#2f7dd1" d="M16 8l4 4-4 4z"/>',
+    ),
+    'properties': _explorerSvg(
+      '<path fill="#eaf3fb" d="M6 3h12v18H6z"/><path fill="#7fa6c9" d="M8 7h8v2H8zm0 4h8v2H8zm0 4h5v2H8z"/><path fill="#2f7dd1" d="M17 4l3 3-8 8-3 1 1-3z"/>',
+    ),
+    'open': _folderSvg('#d9e8f7', '#7c9fbd'),
+    'edit': _explorerSvg(
+      '<path fill="#eaf3fb" d="M5 5h11v14H5z"/><path fill="#2f7dd1" d="M15 4l4 4-8 8-5 1 1-5z"/>',
+    ),
+    'history': _explorerSvg(
+      '<path fill="#d9e8f7" d="M12 4a8 8 0 108 8h-2a6 6 0 11-2-4.5L13 10h7V3l-2.5 2.5A8 8 0 0012 4z"/>',
+    ),
+    'select_all': _selectSvg('#2f7dd1'),
+    'select_none': _selectSvg('#9fb8d3'),
+    'invert_selection': _selectSvg('#5aa4dc'),
+    'share': _explorerSvg(
+      '<circle fill="#39a5dc" cx="8" cy="12" r="5"/><circle fill="#4abf6a" cx="16" cy="8" r="4"/><circle fill="#2f7dd1" cx="16" cy="17" r="4"/>',
+    ),
+    'email': _explorerSvg(
+      '<path fill="#d9e8f7" d="M3 6h18v12H3z"/><path fill="#7fa6c9" d="M3 6l9 7 9-7v2l-9 7-9-7z"/>',
+    ),
+    'zip': _folderSvg('#f0c15a', '#d5962d'),
+    'burn': _explorerSvg(
+      '<circle fill="#d9e8f7" cx="12" cy="12" r="8"/><circle fill="#8aaed1" cx="12" cy="12" r="3"/><path fill="#f36b4f" d="M13 3c4 3 2 5 5 8-4-1-6-3-5-8z"/>',
+    ),
+    'print': _explorerSvg(
+      '<path fill="#d9e8f7" d="M7 3h10v6H7z"/><path fill="#8aaed1" d="M5 9h14v8H5z"/><path fill="#eaf3fb" d="M8 14h8v7H8z"/>',
+    ),
+    'fax': _explorerSvg(
+      '<path fill="#d9e8f7" d="M6 4h12v16H6z"/><path fill="#8aaed1" d="M8 7h8v3H8zm0 5h2v2H8zm4 0h2v2h-2zm4 0h2v2h-2z"/>',
+    ),
+    'people': _peopleSvg('#2f7dd1'),
+    'user': _peopleSvg('#666666'),
+    'stop_sharing': _explorerSvg(
+      '<path fill="#c49b38" d="M7 11V8a5 5 0 0110 0v3h-2V8a3 3 0 00-6 0v3z"/><path fill="#d9b24a" d="M5 11h14v10H5z"/>',
+    ),
+    'security': _explorerSvg(
+      '<path fill="#d9e8f7" d="M12 3l8 3v6c0 5-4 8-8 9-4-1-8-4-8-9V6z"/><path fill="#2f7dd1" d="M11 8h2v6h-2zm0 8h2v2h-2z"/>',
+    ),
+    'nav_pane': _panelSvg('#2f7dd1'),
+    'pane': _panelSvg('#7fa6c9'),
+    'sort': _explorerSvg(
+      '<path fill="#7fa6c9" d="M6 4h4v16H6zM13 4h5v3h-5zm0 5h4v3h-4zm0 5h3v3h-3z"/>',
+    ),
+    'group': _explorerSvg(
+      '<path fill="#d9e8f7" d="M4 5h16v5H4zm0 9h16v5H4z"/><path fill="#7fa6c9" d="M6 7h5v1H6zm0 9h8v1H6z"/>',
+    ),
+    'columns': _explorerSvg(
+      '<path fill="#d9e8f7" d="M4 5h16v14H4z"/><path fill="#7fa6c9" d="M9 5h1v14H9zm5 0h1v14h-1z"/>',
+    ),
+    'fit_columns': _explorerSvg(
+      '<path fill="#d9e8f7" d="M4 6h16v12H4z"/><path stroke="#2f7dd1" stroke-width="2" d="M8 4v16M16 4v16M6 12h12"/><path fill="#2f7dd1" d="M6 12l3-3v6zm12 0l-3-3v6z"/>',
+    ),
+    'hide': _explorerSvg(
+      '<path fill="#eaf3fb" d="M6 3h10l4 4v14H6z"/><path fill="#9fb8d3" d="M16 3v5h4"/><path stroke="#2f7dd1" stroke-width="2" d="M5 19L19 5"/>',
+    ),
+    'options': _explorerSvg(
+      '<path fill="#d9e8f7" d="M5 5h14v14H5z"/><path fill="#2f7dd1" d="M8 8h8v2H8zm0 4h8v2H8zm0 4h5v2H8z"/>',
+    ),
+    'crop': _explorerSvg(
+      '<path fill="none" stroke="#2f7dd1" stroke-width="2" d="M7 3v14h14M3 7h14v14"/>',
+    ),
+  };
+}
+
+List<FxRibbonMenuItem> _locationMenu(String prefix) {
+  return [
+    FxRibbonMenuItem(caption: 'Documents', tag: '$prefix.documents'),
+    FxRibbonMenuItem(caption: 'Pictures', tag: '$prefix.pictures'),
+    FxRibbonMenuItem(caption: 'Desktop', tag: '$prefix.desktop'),
+    const FxRibbonMenuItem.separator(),
+    FxRibbonMenuItem(caption: 'Choose location...', tag: '$prefix.choose'),
+  ];
+}
+
+List<FxRibbonMenuItem> _simpleMenu(String prefix, List<String> labels) {
+  return [
+    for (final label in labels)
+      FxRibbonMenuItem(
+        caption: label,
+        tag:
+            '$prefix.${label.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '_').replaceAll(RegExp(r'^_|_$'), '')}',
+      ),
+  ];
+}
+
+FxRibbonEmbeddedIcon _explorerSvg(String body) {
+  return FxRibbonEmbeddedIcon(
+    kind: FxRibbonEmbeddedIconKind.svg,
+    data:
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">$body</svg>',
+  );
+}
+
+FxRibbonEmbeddedIcon _folderSvg(String fill, String stroke) {
+  return _explorerSvg(
+    '<path fill="$fill" d="M3 7h7l2 2h9v10H3z"/><path fill="$stroke" d="M3 7h7l2 2h9v2H3z"/>',
+  );
+}
+
+FxRibbonEmbeddedIcon _selectSvg(String fill) {
+  return _explorerSvg(
+    '<path fill="$fill" d="M4 4h7v7H4zm9 0h7v7h-7zM4 13h7v7H4zm9 0h7v7h-7z"/><path fill="#ffffff" d="M6 6h3v3H6zm9 0h3v3h-3zM6 15h3v3H6zm9 0h3v3h-3z"/>',
+  );
+}
+
+FxRibbonEmbeddedIcon _peopleSvg(String fill) {
+  return _explorerSvg(
+    '<circle fill="$fill" cx="9" cy="8" r="3"/><path fill="$fill" d="M3 19a6 6 0 0112 0z"/><circle fill="#7fa6c9" cx="16" cy="9" r="2.5"/><path fill="#7fa6c9" d="M13 19a5 5 0 017 0z"/>',
+  );
+}
+
+FxRibbonEmbeddedIcon _panelSvg(String fill) {
+  return _explorerSvg(
+    '<path fill="#eaf3fb" d="M3 5h18v14H3z"/><path fill="$fill" d="M4 6h6v12H4z"/><path fill="#7fa6c9" d="M12 8h7v2h-7zm0 4h7v2h-7z"/>',
+  );
 }
 
 final _localeTagPattern = RegExp(r'^[a-z]{2,3}(-[A-Za-z0-9]{2,8})*$');

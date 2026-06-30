@@ -1,6 +1,6 @@
 name: fx_desktop
 description: Desktop-first Flutter components and CSS-like layout contracts for Xojo-style UI design.
-version: 0.5.0
+version: 0.5.1
 homepage: https://github.com/jedt3d/FxDesktop
 repository: https://github.com/jedt3d/FxDesktop
 issue_tracker: https://github.com/jedt3d/FxDesktop/issues
@@ -22,10 +22,10 @@ topics:
   - xojo
 
 screenshots:
-  - description: "FxDesktop ribbon toolbar with localized SVG commands."
-    path: doc/screenshots/v0.5.0/ribbon/fxdesktop-ribbon-toolbar-en.png
+  - description: "FxDesktop Explorer-style ribbon toolbar with Home, Share, and View tabs."
+    path: doc/screenshots/v0.5.1/ribbon/fxdesktop-ribbon-toolbar-explorer.png
   - description: "FxDesktop visual ribbon designer with live preview and JSON inspector."
-    path: doc/screenshots/v0.5.0/ribbon/fxdesktop-ribbon-designer-ja.png
+    path: doc/screenshots/v0.5.1/ribbon/fxdesktop-ribbon-designer-ja.png
   - description: "FxDesktop localization gallery in English."
     path: doc/screenshots/v0.4.0/localization/fxdesktop-localized-en.png
   - description: "FxDesktop localization gallery in Thai."

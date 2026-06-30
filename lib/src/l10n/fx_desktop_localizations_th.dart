@@ -307,10 +307,22 @@ class FxDesktopLocalizationsTh extends FxDesktopLocalizations {
   String get ribbonItemTypeSmall => 'ปุ่มเล็ก';
 
   @override
+  String get ribbonItemTypeMedium => 'ปุ่มขนาดกลาง';
+
+  @override
   String get ribbonItemTypeDropdown => 'ดรอปดาวน์';
 
   @override
   String get ribbonItemTypeSplitButton => 'ปุ่มแยก';
+
+  @override
+  String get ribbonItemTypeMediumDropdown => 'ดรอปดาวน์ขนาดกลาง';
+
+  @override
+  String get ribbonItemTypeMediumSplitButton => 'ปุ่มแยกขนาดกลาง';
+
+  @override
+  String get ribbonItemTypeGallery => 'แกลเลอรี';
 
   @override
   String get ribbonItemTypeToggle => 'สลับ';
@@ -320,4 +332,7 @@ class FxDesktopLocalizationsTh extends FxDesktopLocalizations {
 
   @override
   String get ribbonItemTypeSeparator => 'ตัวคั่น';
+
+  @override
+  String get ribbonItemTypeColumnBreak => 'แบ่งคอลัมน์';
 }

@@ -94,9 +94,14 @@
   "ribbonDesignerLocalizedCaptions": "คำบรรยายหลายภาษา",
   "ribbonItemTypeLarge": "ปุ่มใหญ่",
   "ribbonItemTypeSmall": "ปุ่มเล็ก",
+  "ribbonItemTypeMedium": "ปุ่มขนาดกลาง",
   "ribbonItemTypeDropdown": "ดรอปดาวน์",
   "ribbonItemTypeSplitButton": "ปุ่มแยก",
+  "ribbonItemTypeMediumDropdown": "ดรอปดาวน์ขนาดกลาง",
+  "ribbonItemTypeMediumSplitButton": "ปุ่มแยกขนาดกลาง",
+  "ribbonItemTypeGallery": "แกลเลอรี",
   "ribbonItemTypeToggle": "สลับ",
   "ribbonItemTypeCheckBox": "เช็กบ็อกซ์",
-  "ribbonItemTypeSeparator": "ตัวคั่น"
+  "ribbonItemTypeSeparator": "ตัวคั่น",
+  "ribbonItemTypeColumnBreak": "แบ่งคอลัมน์"
 }

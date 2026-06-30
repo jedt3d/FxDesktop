@@ -94,9 +94,14 @@
   "ribbonDesignerLocalizedCaptions": "स्थानीयकृत क्याप्सन",
   "ribbonItemTypeLarge": "ठूलो बटन",
   "ribbonItemTypeSmall": "सानो बटन",
+  "ribbonItemTypeMedium": "मध्यम बटन",
   "ribbonItemTypeDropdown": "ड्रपडाउन",
   "ribbonItemTypeSplitButton": "स्प्लिट बटन",
+  "ribbonItemTypeMediumDropdown": "मध्यम ड्रपडाउन",
+  "ribbonItemTypeMediumSplitButton": "मध्यम स्प्लिट बटन",
+  "ribbonItemTypeGallery": "ग्यालरी",
   "ribbonItemTypeToggle": "टगल",
   "ribbonItemTypeCheckBox": "चेकबक्स",
-  "ribbonItemTypeSeparator": "विभाजक"
+  "ribbonItemTypeSeparator": "विभाजक",
+  "ribbonItemTypeColumnBreak": "स्तम्भ ब्रेक"
 }

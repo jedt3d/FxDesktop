@@ -122,7 +122,10 @@ Key rules:
 
 Milestone 5 is delivered in `v0.5.0` with a large-screen
 `FxRibbonToolbar`, `FxRibbonDesigner`, serializable ribbon model, icon
-registry, theme extension, and four-locale built-in strings. Follow
+registry, theme extension, and four-locale built-in strings. `v0.5.1` refreshes
+the toolbar presentation toward the Explorer-style reference with compact
+command bands, equal row columns, medium row command types, embedded galleries,
+and release screenshots. Follow
 `doc/ribbon-schema.md`, `doc/ribbon-designer.md`, and
 `doc/milestone-5-ribbon-toolbar-designer.md` before extending this surface.
 
@@ -133,6 +136,8 @@ Key rules:
 - Use `iconKey` plus a registry for SVG/PNG/Material/placeholder icons.
 - Prefer Flutter widget primitives for semantics, focus, actions, menus,
   overlays, tooltips, pointer handling, and theming.
+- Keep desktop ribbon groups visually organized as flat bands with aligned
+  columns; do not regress to uneven card-like clusters for grouped commands.
 - Treat Flutter `ThemeData` plus `FxRibbonThemeData` as the style-sheet layer;
   avoid a parallel CSS-like styling system for the first release.
 - Support mouse, keyboard, and touch on desktop/web large screens.

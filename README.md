@@ -1,7 +1,7 @@
 # FxDesktop
 
-[![Pub](https://img.shields.io/badge/pub-0.5.0-blue)](https://pub.dev/packages/fx_desktop)
-[![Release](https://img.shields.io/badge/release-v0.5.0-blue)](https://github.com/jedt3d/FxDesktop/releases/tag/v0.5.0)
+[![Pub](https://img.shields.io/badge/pub-0.5.1-blue)](https://pub.dev/packages/fx_desktop)
+[![Release](https://img.shields.io/badge/release-v0.5.1-blue)](https://github.com/jedt3d/FxDesktop/releases/tag/v0.5.1)
 [![CI](https://github.com/jedt3d/FxDesktop/actions/workflows/ci.yml/badge.svg)](https://github.com/jedt3d/FxDesktop/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](https://github.com/jedt3d/FxDesktop/blob/main/LICENSE)
 
@@ -29,7 +29,7 @@ multi-size desktop workflows.
 
 ```yaml
 dependencies:
-  fx_desktop: ^0.5.0
+  fx_desktop: ^0.5.1
 ```
 
 ## Quick Start
@@ -123,10 +123,13 @@ and [Advanced Grid Features (v0.3.6)](https://github.com/jedt3d/FxDesktop/blob/m
 ## Ribbon Toolbar And Designer
 
 `FxRibbonToolbar` is a widget-native ribbon for Flutter desktop and web. It
-uses a serializable `FxRibbonDefinition` model with tabs, groups, large and
-small commands, dropdowns, split buttons, toggles, checkboxes, contextual tabs,
-collapse behavior, SVG/PNG/Material icon sources, keytips, mouse interaction,
-keyboard shortcuts, touch hit targets, and localized command text.
+uses a serializable `FxRibbonDefinition` model with tabs, groups, large,
+medium, and small commands, dropdowns, split buttons, embedded galleries,
+column breaks, toggles, checkboxes, contextual tabs, collapse behavior,
+SVG/PNG/Material icon sources, keytips, mouse interaction, keyboard shortcuts,
+touch hit targets, and localized command text. The default Explorer sample is
+organized as an application-button ribbon with divider-separated groups and
+equal-width command columns for large desktop and web windows.
 
 `FxRibbonDesigner` is an embeddable visual designer for the same model. It
 shows a live toolbar preview, structure tree, JSON preview, inspector, localized
@@ -142,9 +145,11 @@ MaterialApp(
 );
 ```
 
-![FxDesktop ribbon toolbar](https://raw.githubusercontent.com/jedt3d/FxDesktop/v0.5.0/doc/screenshots/v0.5.0/ribbon/fxdesktop-ribbon-toolbar-en.png)
+![FxDesktop Explorer-style ribbon toolbar](https://raw.githubusercontent.com/jedt3d/FxDesktop/v0.5.1/doc/screenshots/v0.5.1/ribbon/fxdesktop-ribbon-toolbar-explorer.png)
 
-![FxDesktop ribbon designer](https://raw.githubusercontent.com/jedt3d/FxDesktop/v0.5.0/doc/screenshots/v0.5.0/ribbon/fxdesktop-ribbon-designer-ja.png)
+![FxDesktop ribbon dropdown menu](https://raw.githubusercontent.com/jedt3d/FxDesktop/v0.5.1/doc/screenshots/v0.5.1/ribbon/fxdesktop-ribbon-toolbar-menu-en.png)
+
+![FxDesktop ribbon designer](https://raw.githubusercontent.com/jedt3d/FxDesktop/v0.5.1/doc/screenshots/v0.5.1/ribbon/fxdesktop-ribbon-designer-ja.png)
 
 See [Ribbon Schema](https://github.com/jedt3d/FxDesktop/blob/main/doc/ribbon-schema.md)
 and [Ribbon Designer](https://github.com/jedt3d/FxDesktop/blob/main/doc/ribbon-designer.md).
@@ -157,11 +162,11 @@ models, inline editing, validation, TSV clipboard operations, undo/redo
 integration, custom renderers, hosted lookup editors, input masks, cell action
 buttons, and accessibility semantics.
 
-![FxDesktop lookup cells and custom renderers](https://raw.githubusercontent.com/jedt3d/FxDesktop/v0.5.0/doc/screenshots/v0.3.6/fxdesktop-v0.3.6-lookup-renderers.png)
+![FxDesktop lookup cells and custom renderers](https://raw.githubusercontent.com/jedt3d/FxDesktop/v0.5.1/doc/screenshots/v0.3.6/fxdesktop-v0.3.6-lookup-renderers.png)
 
-![FxDesktop hosted multi-column database lookup overlay](https://raw.githubusercontent.com/jedt3d/FxDesktop/v0.5.0/doc/screenshots/v0.3.6/fxdesktop-v0.3.6-db-lookup-overlay.png)
+![FxDesktop hosted multi-column database lookup overlay](https://raw.githubusercontent.com/jedt3d/FxDesktop/v0.5.1/doc/screenshots/v0.3.6/fxdesktop-v0.3.6-db-lookup-overlay.png)
 
-![FxDesktop masked editor and cell action button](https://raw.githubusercontent.com/jedt3d/FxDesktop/v0.5.0/doc/screenshots/v0.3.6/fxdesktop-v0.3.6-masked-action-editor.png)
+![FxDesktop masked editor and cell action button](https://raw.githubusercontent.com/jedt3d/FxDesktop/v0.5.1/doc/screenshots/v0.3.6/fxdesktop-v0.3.6-masked-action-editor.png)
 
 ## Localization
 
@@ -183,7 +188,7 @@ Bundled package strings cover English, Thai, Japanese, and Nepali. ARB files
 are the runtime source of truth; `.po` and `.pot` files are import/export
 formats for translators.
 
-![FxDesktop localization gallery in Thai](https://raw.githubusercontent.com/jedt3d/FxDesktop/v0.5.0/doc/screenshots/v0.4.0/localization/fxdesktop-localized-th.png)
+![FxDesktop localization gallery in Thai](https://raw.githubusercontent.com/jedt3d/FxDesktop/v0.5.1/doc/screenshots/v0.4.0/localization/fxdesktop-localized-th.png)
 
 ## Text Input Constraints
 

@@ -94,17 +94,17 @@ class FxRibbonLayoutMetrics {
         : density.minTargetHeight;
     return FxRibbonLayoutMetrics(
       tabStripHeight: touch ? 42 : density.collapsedHeight,
-      contentPadding: touch ? 8 : 6,
-      groupLabelHeight: touch ? 22 : 18,
-      groupPadding: touch ? 10 : 8,
-      groupGap: touch ? 10 : 8,
-      itemGap: touch ? 6 : 4,
-      largeButtonWidth: touch ? 76 : 64,
-      largeButtonHeight: touch ? 78 : 68,
+      contentPadding: touch ? 8 : 4,
+      groupLabelHeight: touch ? 22 : 17,
+      groupPadding: touch ? 10 : 6,
+      groupGap: touch ? 10 : 0,
+      itemGap: touch ? 6 : 3,
+      largeButtonWidth: touch ? 76 : 56,
+      largeButtonHeight: touch ? 78 : 66,
       smallButtonHeight: target,
-      smallButtonMinWidth: touch ? 96 : 72,
-      arrowZoneWidth: touch ? 28 : 22,
-      collapseButtonSize: touch ? 32 : 26,
+      smallButtonMinWidth: touch ? 96 : 78,
+      arrowZoneWidth: touch ? 28 : 18,
+      collapseButtonSize: touch ? 32 : 22,
     );
   }
 
@@ -234,12 +234,11 @@ class FxRibbonLayout {
       var index = 0;
       while (index < group.items.length) {
         final item = group.items[index];
-        if (item.itemType == FxRibbonItemType.small ||
-            item.itemType == FxRibbonItemType.checkBox) {
+        if (_isRibbonRowItem(item)) {
           final batch = <FxRibbonItem>[];
           var maxText = 0.0;
           while (index < group.items.length &&
-              group.items[index].itemType == item.itemType &&
+              _isRibbonRowItem(group.items[index]) &&
               batch.length < 3) {
             final candidate = group.items[index];
             maxText = math.max(maxText, _textWidth(candidate.caption, 12));
@@ -248,7 +247,7 @@ class FxRibbonLayout {
           }
           final columnWidth = math.max(
             metrics.smallButtonMinWidth,
-            maxText + (item.itemType == FxRibbonItemType.checkBox ? 42 : 46),
+            maxText + (item.itemType == FxRibbonItemType.checkBox ? 36 : 42),
           );
           final totalHeight = batch.length * metrics.smallButtonHeight;
           final startY = contentTop + (itemAreaHeight - totalHeight) / 2;
@@ -273,9 +272,15 @@ class FxRibbonLayout {
           index++;
           continue;
         }
+        if (item.isColumnBreak) {
+          index++;
+          continue;
+        }
 
-        final captionWidth = _textWidth(item.caption, 12) + 18;
-        var buttonWidth = math.max(metrics.largeButtonWidth, captionWidth);
+        final captionWidth = _textWidth(item.caption, 12) + 16;
+        var buttonWidth = item.itemType == FxRibbonItemType.gallery
+            ? 236.0
+            : math.max(metrics.largeButtonWidth, captionWidth);
         if (item.itemType == FxRibbonItemType.splitButton) {
           buttonWidth += metrics.arrowZoneWidth;
         }
@@ -289,7 +294,7 @@ class FxRibbonLayout {
           FxRibbonLaidItem(
             item: item,
             rect: rect,
-            bodyRect: item.itemType == FxRibbonItemType.splitButton
+            bodyRect: _isSplitButton(item)
                 ? Rect.fromLTWH(
                     rect.left,
                     rect.top,
@@ -297,7 +302,7 @@ class FxRibbonLayout {
                     rect.height,
                   )
                 : null,
-            arrowRect: item.itemType == FxRibbonItemType.splitButton
+            arrowRect: _isSplitButton(item)
                 ? Rect.fromLTWH(
                     rect.right - metrics.arrowZoneWidth,
                     rect.top,
@@ -342,4 +347,18 @@ double _textWidth(String text, double fontSize) {
       .split('\n')
       .fold<int>(0, (maxLength, line) => math.max(maxLength, line.length));
   return longest * fontSize * 0.58;
+}
+
+bool _isRibbonRowItem(FxRibbonItem item) {
+  return item.itemType == FxRibbonItemType.small ||
+      item.itemType == FxRibbonItemType.medium ||
+      item.itemType == FxRibbonItemType.mediumDropdown ||
+      item.itemType == FxRibbonItemType.mediumSplitButton ||
+      item.itemType == FxRibbonItemType.toggle ||
+      item.itemType == FxRibbonItemType.checkBox;
+}
+
+bool _isSplitButton(FxRibbonItem item) {
+  return item.itemType == FxRibbonItemType.splitButton ||
+      item.itemType == FxRibbonItemType.mediumSplitButton;
 }

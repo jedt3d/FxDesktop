@@ -100,7 +100,11 @@ void main() {
 
     await tester.tap(find.widgetWithText(ListTile, 'Paste'));
     await tester.pump();
-    expect(selection?.itemIndex, 0);
+    final selectedItem = changed!
+        .tabs[selection!.tabIndex]
+        .groups[selection!.groupIndex!]
+        .items[selection!.itemIndex!];
+    expect(selectedItem.tag, 'clipboard.paste');
 
     await tester.enterText(find.byType(TextField).first, 'Paste all');
     await tester.enterText(find.byType(TextField).at(1), 'clipboard.pasteAll');

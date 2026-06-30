@@ -2,6 +2,37 @@
 
 ## Unreleased
 
+## 0.5.1
+
+Version `0.5.1` corrects the ribbon presentation after the first public ribbon
+release. The toolbar now follows the Windows File Explorer-style reference more
+closely, with a flatter command band, an application button, divider-separated
+groups, equal-width row command columns, and screenshot proof for Home, Share,
+View, dropdown menus, and the visual designer.
+
+### Added
+- Added medium row commands, medium dropdowns, medium split buttons, embedded
+  ribbon galleries, invisible column breaks, and gallery selection metadata to
+  `FxRibbonItem` and the shared JSON schema.
+- Expanded `FxRibbonSamples.explorer()` into a Home/Share/View Explorer-style
+  sample with grouped commands, embedded colored SVG icons, layout gallery
+  options, and menu fixtures for dropdown proof screenshots.
+- Added `v0.5.1` release screenshots for the combined Explorer presentation,
+  individual Home/Share/View tabs, dropdown menu behavior, and the designer.
+
+### Changed
+- Reworked `FxRibbonToolbar` rendering so ribbon groups are compact bands with
+  aligned command columns instead of uneven card-like clusters.
+- Preserved embedded SVG colors in `FxRibbonIconView`, so sample icons can use
+  distinct folder, document, selection, and panel colors.
+- Tightened ribbon density defaults for desktop/web command bands while keeping
+  mouse and touch interaction modes available.
+
+### Documentation
+- Updated README, pub.dev screenshots, ribbon schema docs, designer docs,
+  testing notes, release-versioning notes, generated localization bridge files,
+  and release QA notes for the `v0.5.1` ribbon refresh.
+
 ## 0.5.0
 
 Version `0.5.0` delivers Milestone 5: the Flutter-native ribbon toolbar and

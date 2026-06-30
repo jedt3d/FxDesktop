@@ -308,10 +308,22 @@ class FxDesktopLocalizationsNe extends FxDesktopLocalizations {
   String get ribbonItemTypeSmall => 'सानो बटन';
 
   @override
+  String get ribbonItemTypeMedium => 'मध्यम बटन';
+
+  @override
   String get ribbonItemTypeDropdown => 'ड्रपडाउन';
 
   @override
   String get ribbonItemTypeSplitButton => 'स्प्लिट बटन';
+
+  @override
+  String get ribbonItemTypeMediumDropdown => 'मध्यम ड्रपडाउन';
+
+  @override
+  String get ribbonItemTypeMediumSplitButton => 'मध्यम स्प्लिट बटन';
+
+  @override
+  String get ribbonItemTypeGallery => 'ग्यालरी';
 
   @override
   String get ribbonItemTypeToggle => 'टगल';
@@ -321,4 +333,7 @@ class FxDesktopLocalizationsNe extends FxDesktopLocalizations {
 
   @override
   String get ribbonItemTypeSeparator => 'विभाजक';
+
+  @override
+  String get ribbonItemTypeColumnBreak => 'स्तम्भ ब्रेक';
 }

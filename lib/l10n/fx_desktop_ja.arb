@@ -94,9 +94,14 @@
   "ribbonDesignerLocalizedCaptions": "ローカライズ済みキャプション",
   "ribbonItemTypeLarge": "大ボタン",
   "ribbonItemTypeSmall": "小ボタン",
+  "ribbonItemTypeMedium": "中ボタン",
   "ribbonItemTypeDropdown": "ドロップダウン",
   "ribbonItemTypeSplitButton": "分割ボタン",
+  "ribbonItemTypeMediumDropdown": "中ドロップダウン",
+  "ribbonItemTypeMediumSplitButton": "中分割ボタン",
+  "ribbonItemTypeGallery": "ギャラリー",
   "ribbonItemTypeToggle": "トグル",
   "ribbonItemTypeCheckBox": "チェックボックス",
-  "ribbonItemTypeSeparator": "区切り"
+  "ribbonItemTypeSeparator": "区切り",
+  "ribbonItemTypeColumnBreak": "列区切り"
 }

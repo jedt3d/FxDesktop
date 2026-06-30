@@ -307,10 +307,22 @@ class FxDesktopLocalizationsEn extends FxDesktopLocalizations {
   String get ribbonItemTypeSmall => 'Small button';
 
   @override
+  String get ribbonItemTypeMedium => 'Medium button';
+
+  @override
   String get ribbonItemTypeDropdown => 'Dropdown';
 
   @override
   String get ribbonItemTypeSplitButton => 'Split button';
+
+  @override
+  String get ribbonItemTypeMediumDropdown => 'Medium dropdown';
+
+  @override
+  String get ribbonItemTypeMediumSplitButton => 'Medium split button';
+
+  @override
+  String get ribbonItemTypeGallery => 'Gallery';
 
   @override
   String get ribbonItemTypeToggle => 'Toggle';
@@ -320,4 +332,7 @@ class FxDesktopLocalizationsEn extends FxDesktopLocalizations {
 
   @override
   String get ribbonItemTypeSeparator => 'Separator';
+
+  @override
+  String get ribbonItemTypeColumnBreak => 'Column break';
 }

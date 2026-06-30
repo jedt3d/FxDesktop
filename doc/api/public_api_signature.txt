@@ -486,11 +486,16 @@
   FxRibbonItem constructor FxRibbonItem copyWith(
   FxRibbonItem constructor FxRibbonItem toggled()
   FxRibbonItem constructor const FxRibbonItem(
+  FxRibbonItem constructor const FxRibbonItem.columnBreak()
   FxRibbonItem constructor const FxRibbonItem.separator()
   FxRibbonItem constructor factory FxRibbonItem.checkBox(
   FxRibbonItem constructor factory FxRibbonItem.dropdown(
   FxRibbonItem constructor factory FxRibbonItem.fromJson(Map<String, Object?> json)
+  FxRibbonItem constructor factory FxRibbonItem.gallery(
   FxRibbonItem constructor factory FxRibbonItem.large(
+  FxRibbonItem constructor factory FxRibbonItem.medium(
+  FxRibbonItem constructor factory FxRibbonItem.mediumDropdown(
+  FxRibbonItem constructor factory FxRibbonItem.mediumSplitButton(
   FxRibbonItem constructor factory FxRibbonItem.small(
   FxRibbonItem constructor factory FxRibbonItem.splitButton(
   FxRibbonItem constructor factory FxRibbonItem.toggle(
@@ -508,6 +513,7 @@
   FxRibbonItem member final String tag
   FxRibbonItem member final String? iconKey
   FxRibbonItem member final String? keyTip
+  FxRibbonItem member final String? selectedMenuItemTag
   FxRibbonItem member final String? semanticLabel
   FxRibbonItem member final String? tooltipText
   FxRibbonItem member final bool isEnabled

@@ -146,7 +146,7 @@ smoke view.
 Ribbon release screenshots live under:
 
 ```text
-doc/screenshots/v0.5.0/ribbon/
+doc/screenshots/v0.5.1/ribbon/
 ```
 
 The ribbon sample includes English, Thai, Japanese, and Nepali command captions

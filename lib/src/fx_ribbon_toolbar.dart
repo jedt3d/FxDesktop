@@ -237,12 +237,17 @@ class _FxRibbonToolbarState extends State<FxRibbonToolbar> {
           },
           child: Row(
             children: [
+              _ApplicationRibbonButton(
+                label:
+                    _definition.metadata['applicationButtonLabel']
+                        ?.toString() ??
+                    'File',
+              ),
               Expanded(
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: [
-                      const SizedBox(width: 8),
                       for (var index = 0; index < visibleTabs.length; index++)
                         _RibbonTabButton(
                           tab: visibleTabs[index],
@@ -262,16 +267,24 @@ class _FxRibbonToolbarState extends State<FxRibbonToolbar> {
                 message: _collapsed
                     ? localizations.ribbonExpand
                     : localizations.ribbonCollapse,
-                child: IconButton(
-                  visualDensity: VisualDensity.compact,
-                  iconSize: 18,
-                  onPressed: _toggleCollapsed,
-                  icon: Icon(
-                    _collapsed
-                        ? Icons.keyboard_arrow_down
-                        : Icons.keyboard_arrow_up,
+                child: SizedBox.square(
+                  dimension: 24,
+                  child: IconButton(
+                    padding: EdgeInsets.zero,
+                    visualDensity: VisualDensity.compact,
+                    iconSize: 17,
+                    onPressed: _toggleCollapsed,
+                    icon: Icon(
+                      _collapsed
+                          ? Icons.keyboard_arrow_down
+                          : Icons.keyboard_arrow_up,
+                    ),
                   ),
                 ),
+              ),
+              const Padding(
+                padding: EdgeInsetsDirectional.only(end: 4),
+                child: Icon(Icons.help, size: 16, color: Color(0xff0067b8)),
               ),
               const SizedBox(width: 4),
             ],
@@ -293,37 +306,25 @@ class _FxRibbonToolbarState extends State<FxRibbonToolbar> {
     final icons = embeddedIcons.merge(widget.icons);
     final locale = _effectiveLocale(context);
 
-    return Scrollbar(
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(8, 8, 8, 6),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              for (
-                var groupIndex = 0;
-                groupIndex < tab.groups.length;
-                groupIndex++
-              )
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(end: 8),
-                  child: _RibbonGroupView(
-                    group: tab.groups[groupIndex],
-                    icons: icons,
-                    locale: locale,
-                    density: density,
-                    interactionMode: interactionMode,
-                    ribbonTheme: ribbonTheme,
-                    colorScheme: colorScheme,
-                    showKeyTips: _showKeyTips,
-                    onPressed: _handleItemPressed,
-                    onMenuItemPressed: _handleMenuItemPressed,
-                  ),
-                ),
-            ],
-          ),
-        ),
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (var groupIndex = 0; groupIndex < tab.groups.length; groupIndex++)
+            _RibbonGroupView(
+              group: tab.groups[groupIndex],
+              icons: icons,
+              locale: locale,
+              density: density,
+              interactionMode: interactionMode,
+              ribbonTheme: ribbonTheme,
+              colorScheme: colorScheme,
+              showKeyTips: _showKeyTips,
+              onPressed: _handleItemPressed,
+              onMenuItemPressed: _handleMenuItemPressed,
+            ),
+        ],
       ),
     );
   }
@@ -438,22 +439,25 @@ class _RibbonGroupView extends StatelessWidget {
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: ribbonTheme.resolvedGroupBackground(colorScheme),
-          border: Border.all(color: colorScheme.outlineVariant),
-          borderRadius: BorderRadius.circular(ribbonTheme.borderRadius),
+          border: BorderDirectional(
+            end: BorderSide(color: colorScheme.outlineVariant),
+          ),
         ),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(8, 7, 8, 4),
+          padding: const EdgeInsetsDirectional.fromSTEB(6, 4, 6, 2),
           child: Column(
             mainAxisSize: MainAxisSize.max,
             children: [
               Expanded(child: _buildItemFlow(context)),
-              const SizedBox(height: 4),
+              const SizedBox(height: 1),
               Text(
                 groupCaption,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
+                style: const TextStyle(
+                  color: Color(0xff7a7a7a),
+                  fontSize: 11,
+                  height: 1.0,
                 ),
               ),
             ],
@@ -471,7 +475,7 @@ class _RibbonGroupView extends StatelessWidget {
       if (item.isSeparator) {
         children.add(
           VerticalDivider(
-            width: 10,
+            width: 7,
             thickness: 1,
             color: colorScheme.outlineVariant,
           ),
@@ -479,35 +483,57 @@ class _RibbonGroupView extends StatelessWidget {
         index++;
         continue;
       }
-      if (item.itemType == FxRibbonItemType.small ||
-          item.itemType == FxRibbonItemType.checkBox) {
+      if (item.isColumnBreak) {
+        index++;
+        continue;
+      }
+      if (_isRowRibbonItem(item)) {
         final batch = <FxRibbonItem>[];
         while (index < group.items.length &&
-            group.items[index].itemType == item.itemType &&
+            _isRowRibbonItem(group.items[index]) &&
             batch.length < 3) {
           batch.add(group.items[index]);
           index++;
         }
+        final columnWidth = _rowColumnWidth(batch, locale);
         children.add(
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (final batched in batch)
-                _RibbonItemButton(
-                  item: batched,
-                  icon: icons[batched.iconKey],
-                  locale: locale,
-                  density: density,
-                  interactionMode: interactionMode,
-                  ribbonTheme: ribbonTheme,
-                  compact: true,
-                  showKeyTip: showKeyTips,
-                  onPressed: onPressed,
-                  onMenuItemPressed: onMenuItemPressed,
-                ),
-            ],
+          SizedBox(
+            width: columnWidth,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (final batched in batch)
+                  SizedBox(
+                    width: columnWidth,
+                    child: _RibbonItemButton(
+                      item: batched,
+                      icon: icons[batched.iconKey],
+                      locale: locale,
+                      density: density,
+                      interactionMode: interactionMode,
+                      ribbonTheme: ribbonTheme,
+                      compact: true,
+                      showKeyTip: showKeyTips,
+                      onPressed: onPressed,
+                      onMenuItemPressed: onMenuItemPressed,
+                    ),
+                  ),
+              ],
+            ),
           ),
         );
+        continue;
+      }
+      if (item.itemType == FxRibbonItemType.gallery) {
+        children.add(
+          _RibbonGalleryView(
+            item: item,
+            locale: locale,
+            showKeyTip: showKeyTips,
+            onMenuItemPressed: onMenuItemPressed,
+          ),
+        );
+        index++;
         continue;
       }
       children.add(
@@ -532,7 +558,7 @@ class _RibbonGroupView extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         for (var i = 0; i < children.length; i++) ...[
-          if (i > 0) const SizedBox(width: 5),
+          if (i > 0) const SizedBox(width: 3),
           children[i],
         ],
       ],
@@ -572,9 +598,9 @@ class _RibbonItemButton extends StatelessWidget {
     final tooltip = item.resolveTooltip(locale);
     final localizations = fxDesktopLocalizationsOf(context);
     final interactive = item.isEnabled;
-    final command = item.itemType == FxRibbonItemType.dropdown
+    final command = _isDropdownButton(item)
         ? _menuButton(context, caption)
-        : item.itemType == FxRibbonItemType.splitButton
+        : _isSplitButton(item)
         ? _splitButton(context, caption)
         : _commandButton(context, caption);
 
@@ -636,13 +662,67 @@ class _RibbonItemButton extends StatelessWidget {
     final minHeight = _minTargetHeight(density, interactionMode);
     final largeHeight = interactionMode == FxRibbonInteractionMode.touch
         ? 100.0
-        : 86.0;
+        : 68.0;
+    final arrowWidth = interactionMode == FxRibbonInteractionMode.touch
+        ? 30.0
+        : compact
+        ? 16.0
+        : 20.0;
+    if (compact) {
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          final width = constraints.maxWidth.isFinite
+              ? constraints.maxWidth
+              : _rowColumnWidth([item], locale);
+          return SizedBox(
+            width: width,
+            height: minHeight,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.transparent),
+                borderRadius: BorderRadius.circular(ribbonTheme.borderRadius),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _RibbonCommandChrome(
+                      caption: caption,
+                      item: item,
+                      icon: icon,
+                      locale: locale,
+                      density: density,
+                      interactionMode: interactionMode,
+                      ribbonTheme: ribbonTheme,
+                      compact: true,
+                      borderless: true,
+                      showKeyTip: showKeyTip,
+                      onPressed: item.isEnabled ? () => onPressed(item) : null,
+                    ),
+                  ),
+                  MenuAnchor(
+                    menuChildren: _menuChildren(context),
+                    builder: (context, controller, child) {
+                      return InkWell(
+                        onTap: item.isEnabled ? controller.open : null,
+                        child: SizedBox(
+                          width: arrowWidth,
+                          height: minHeight,
+                          child: const Icon(Icons.arrow_drop_down, size: 16),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    }
     return IntrinsicHeight(
       child: DecoratedBox(
         decoration: BoxDecoration(
-          border: Border.all(
-            color: Theme.of(context).colorScheme.outlineVariant,
-          ),
+          border: Border.all(color: Colors.transparent),
           borderRadius: BorderRadius.circular(ribbonTheme.borderRadius),
         ),
         child: Row(
@@ -667,9 +747,7 @@ class _RibbonItemButton extends StatelessWidget {
                 return InkWell(
                   onTap: item.isEnabled ? controller.open : null,
                   child: SizedBox(
-                    width: interactionMode == FxRibbonInteractionMode.touch
-                        ? 32
-                        : 24,
+                    width: arrowWidth,
                     height: compact ? minHeight : largeHeight,
                     child: const Icon(Icons.arrow_drop_down, size: 16),
                   ),
@@ -743,17 +821,20 @@ class _RibbonCommandChrome extends StatelessWidget {
     final minHeight = _minTargetHeight(density, interactionMode);
     final largeHeight = interactionMode == FxRibbonInteractionMode.touch
         ? 100.0
-        : 86.0;
+        : 68.0;
     final content = compact
         ? Row(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisSize: MainAxisSize.max,
             children: [
               if (item.itemType == FxRibbonItemType.checkBox)
-                Checkbox(
-                  value: item.isToggleActive,
-                  onChanged: enabled ? (_) => onPressed?.call() : null,
-                  visualDensity: VisualDensity.compact,
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                Transform.scale(
+                  scale: 0.78,
+                  child: Checkbox(
+                    value: item.isToggleActive,
+                    onChanged: enabled ? (_) => onPressed?.call() : null,
+                    visualDensity: VisualDensity.compact,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
                 )
               else
                 FxRibbonIconView(
@@ -762,14 +843,15 @@ class _RibbonCommandChrome extends StatelessWidget {
                   label: caption,
                   enabled: enabled,
                 ),
-              const SizedBox(width: 5),
-              ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 128),
+              const SizedBox(width: 3),
+              Expanded(
                 child: Text(
                   caption,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
+                    fontSize: 12,
+                    height: 1.0,
                     color: enabled
                         ? colorScheme.onSurface
                         : colorScheme.onSurface.withValues(alpha: 0.38),
@@ -788,22 +870,36 @@ class _RibbonCommandChrome extends StatelessWidget {
                 label: caption,
                 enabled: enabled,
               ),
-              const SizedBox(height: 5),
+              const SizedBox(height: 3),
               ConstrainedBox(
-                constraints: const BoxConstraints(minWidth: 58, maxWidth: 96),
-                child: Text(
-                  caption,
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: enabled
-                        ? colorScheme.onSurface
-                        : colorScheme.onSurface.withValues(alpha: 0.38),
-                  ),
+                constraints: const BoxConstraints(minWidth: 50, maxWidth: 86),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        caption,
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 11,
+                          height: 1.0,
+                          color: enabled
+                              ? colorScheme.onSurface
+                              : colorScheme.onSurface.withValues(alpha: 0.38),
+                        ),
+                      ),
+                    ),
+                    if (trailing != null)
+                      IconTheme.merge(
+                        data: const IconThemeData(size: 13),
+                        child: trailing!,
+                      ),
+                  ],
                 ),
               ),
-              ?trailing,
             ],
           );
 
@@ -817,15 +913,19 @@ class _RibbonCommandChrome extends StatelessWidget {
             onTap: onPressed,
             child: Container(
               height: compact ? minHeight : largeHeight,
-              constraints: BoxConstraints(minWidth: compact ? 92 : 64),
+              constraints: BoxConstraints(minWidth: compact ? 0 : 54),
               padding: EdgeInsets.symmetric(
-                horizontal: compact ? 7 : 6,
-                vertical: compact ? 0 : 5,
+                horizontal: compact ? 2 : 4,
+                vertical: compact ? 1 : 3,
               ),
               decoration: borderless
                   ? null
                   : BoxDecoration(
-                      border: Border.all(color: colorScheme.outlineVariant),
+                      border: Border.all(
+                        color: item.isToggleActive
+                            ? const Color(0xff6aa7d9)
+                            : Colors.transparent,
+                      ),
                       borderRadius: BorderRadius.circular(
                         ribbonTheme.borderRadius,
                       ),
@@ -880,44 +980,57 @@ class _RibbonTabButton extends StatelessWidget {
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          Padding(
-            padding: const EdgeInsetsDirectional.only(end: 2),
-            child: TextButton(
-              onPressed: onPressed,
-              style: ButtonStyle(
-                shape: WidgetStatePropertyAll(
-                  RoundedRectangleBorder(
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(theme.borderRadius),
+          Material(
+            color: selected
+                ? theme.resolvedActiveTab(colorScheme)
+                : Colors.transparent,
+            child: InkWell(
+              onTap: onPressed,
+              child: Container(
+                height: 25,
+                constraints: const BoxConstraints(minWidth: 58),
+                padding: const EdgeInsets.symmetric(horizontal: 13),
+                decoration: BoxDecoration(
+                  border: Border(
+                    left: BorderSide(
+                      color: selected
+                          ? colorScheme.outlineVariant
+                          : Colors.transparent,
+                    ),
+                    right: BorderSide(
+                      color: selected
+                          ? colorScheme.outlineVariant
+                          : Colors.transparent,
+                    ),
+                    top: BorderSide(
+                      color: selected
+                          ? colorScheme.outlineVariant
+                          : Colors.transparent,
+                    ),
+                    bottom: BorderSide(
+                      color: selected
+                          ? theme.resolvedActiveTab(colorScheme)
+                          : Colors.transparent,
                     ),
                   ),
                 ),
-                backgroundColor: WidgetStatePropertyAll(
-                  selected
-                      ? theme.resolvedActiveTab(colorScheme)
-                      : Colors.transparent,
-                ),
-                foregroundColor: WidgetStatePropertyAll(colorScheme.onSurface),
-                minimumSize: const WidgetStatePropertyAll(Size(64, 34)),
-                padding: const WidgetStatePropertyAll(
-                  EdgeInsets.symmetric(horizontal: 14),
-                ),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (accent != null)
-                    Container(
-                      height: 3,
-                      width: 42,
-                      margin: const EdgeInsets.only(bottom: 2),
-                      decoration: BoxDecoration(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (accent != null)
+                      Container(
+                        height: 2,
+                        width: 34,
+                        margin: const EdgeInsets.only(bottom: 1),
                         color: accent,
-                        borderRadius: BorderRadius.circular(2),
                       ),
+                    Text(
+                      caption,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 12, height: 1.0),
                     ),
-                  Text(caption, overflow: TextOverflow.ellipsis),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -928,6 +1041,184 @@ class _RibbonTabButton extends StatelessWidget {
               child: _KeyTipBadge(text: keyTip),
             ),
         ],
+      ),
+    );
+  }
+}
+
+class _ApplicationRibbonButton extends StatelessWidget {
+  const _ApplicationRibbonButton({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: const Color(0xff0078d7),
+      child: InkWell(
+        onTap: () {},
+        child: SizedBox(
+          width: 55,
+          height: 25,
+          child: Center(
+            child: Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                height: 1.0,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _RibbonGalleryView extends StatelessWidget {
+  const _RibbonGalleryView({
+    required this.item,
+    required this.locale,
+    required this.showKeyTip,
+    required this.onMenuItemPressed,
+  });
+
+  final FxRibbonItem item;
+  final Locale locale;
+  final bool showKeyTip;
+  final void Function(FxRibbonItem item, FxRibbonMenuItem menuItem)
+  onMenuItemPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final entries = item.menuItems
+        .where((entry) => !entry.isSeparator)
+        .toList();
+    final visible = entries.take(6).toList();
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        SizedBox(
+          width: 236,
+          height: 66,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(color: const Color(0xffc8d4e1)),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: GridView.count(
+                    padding: const EdgeInsets.fromLTRB(3, 3, 2, 3),
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisCount: 2,
+                    childAspectRatio: 5.35,
+                    mainAxisSpacing: 1,
+                    crossAxisSpacing: 2,
+                    children: [
+                      for (final entry in visible)
+                        _RibbonGalleryTile(
+                          item: item,
+                          menuItem: entry,
+                          locale: locale,
+                          selected: entry.tag == item.selectedMenuItemTag,
+                          onPressed: () => onMenuItemPressed(item, entry),
+                        ),
+                    ],
+                  ),
+                ),
+                const _RibbonGalleryScrollStrip(),
+              ],
+            ),
+          ),
+        ),
+        if (showKeyTip)
+          PositionedDirectional(
+            top: -5,
+            end: -3,
+            child: _KeyTipBadge(text: _keyTipForItem(item, item.caption)),
+          ),
+      ],
+    );
+  }
+}
+
+class _RibbonGalleryTile extends StatelessWidget {
+  const _RibbonGalleryTile({
+    required this.item,
+    required this.menuItem,
+    required this.locale,
+    required this.selected,
+    required this.onPressed,
+  });
+
+  final FxRibbonItem item;
+  final FxRibbonMenuItem menuItem;
+  final Locale locale;
+  final bool selected;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final caption = menuItem.resolveCaption(locale);
+    return Material(
+      color: selected ? const Color(0xffcfe8ff) : Colors.transparent,
+      child: InkWell(
+        onTap: item.isEnabled ? onPressed : null,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: selected ? const Color(0xff5aa4dc) : Colors.transparent,
+            ),
+          ),
+          child: Row(
+            children: [
+              const SizedBox(width: 2),
+              Icon(
+                selected ? Icons.view_list : Icons.crop_square,
+                size: 12,
+                color: const Color(0xff2f5f87),
+              ),
+              const SizedBox(width: 3),
+              Expanded(
+                child: Text(
+                  caption,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 11.5, height: 1.0),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _RibbonGalleryScrollStrip extends StatelessWidget {
+  const _RibbonGalleryScrollStrip();
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        color: Color(0xfff5f8fb),
+        border: Border(left: BorderSide(color: Color(0xffc8d4e1))),
+      ),
+      child: SizedBox(
+        width: 16,
+        child: Column(
+          children: const [
+            Expanded(child: Icon(Icons.keyboard_arrow_up, size: 13)),
+            Divider(height: 1, thickness: 1, color: Color(0xffc8d4e1)),
+            Expanded(child: Icon(Icons.keyboard_arrow_down, size: 13)),
+            Divider(height: 1, thickness: 1, color: Color(0xffc8d4e1)),
+            Expanded(child: Icon(Icons.arrow_drop_down, size: 13)),
+          ],
+        ),
       ),
     );
   }
@@ -977,6 +1268,42 @@ double _minTargetHeight(
   return interactionMode == FxRibbonInteractionMode.touch
       ? 44
       : density.minTargetHeight;
+}
+
+bool _isDropdownButton(FxRibbonItem item) {
+  return item.itemType == FxRibbonItemType.dropdown ||
+      item.itemType == FxRibbonItemType.mediumDropdown;
+}
+
+bool _isSplitButton(FxRibbonItem item) {
+  return item.itemType == FxRibbonItemType.splitButton ||
+      item.itemType == FxRibbonItemType.mediumSplitButton;
+}
+
+bool _isRowRibbonItem(FxRibbonItem item) {
+  return item.itemType == FxRibbonItemType.small ||
+      item.itemType == FxRibbonItemType.medium ||
+      item.itemType == FxRibbonItemType.mediumDropdown ||
+      item.itemType == FxRibbonItemType.mediumSplitButton ||
+      item.itemType == FxRibbonItemType.toggle ||
+      item.itemType == FxRibbonItemType.checkBox;
+}
+
+double _rowColumnWidth(List<FxRibbonItem> items, Locale locale) {
+  var width = 0.0;
+  for (final item in items) {
+    final caption = item.resolveCaption(locale);
+    final textWidth = caption.length * 6.2;
+    final base = switch (item.itemType) {
+      FxRibbonItemType.checkBox => 54,
+      FxRibbonItemType.mediumDropdown ||
+      FxRibbonItemType.mediumSplitButton => 62,
+      FxRibbonItemType.medium => 34,
+      _ => 28,
+    };
+    width = math.max(width, textWidth + base);
+  }
+  return width.clamp(58.0, 190.0);
 }
 
 String _keyTipForItem(FxRibbonItem item, String caption) {

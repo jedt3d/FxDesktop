@@ -118,6 +118,9 @@ venv/
 # Archives and generated packages
 *.zip
 *.tar
+
+# Local release/reference research inputs
+doc/screenshots-ribbon-references/
 *.tar.gz
 *.tgz
 *.dmg

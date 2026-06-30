@@ -130,15 +130,17 @@ acceptance map.
 ## Milestone 5 Delivered Ribbon Surface
 
 Milestone 5 is delivered in `v0.5.0` with an Office-style ribbon toolbar and
-visual designer for large Flutter desktop and web surfaces. It transfers the
-Dart model/schema lessons from `jaspr-ribbon-toolbar` and the original Xojo
-control semantics from `XjRibbon`, while adapting the renderer to Flutter
-widgets, semantics, focus, menus, pointer-kind handling, theming, and the
-Milestone 4 localization foundation.
+visual designer for large Flutter desktop and web surfaces. `v0.5.1` refines
+the toolbar into an Explorer-style command band with aligned row columns,
+embedded gallery support, medium row command types, and refreshed screenshots.
+It transfers the Dart model/schema lessons from `jaspr-ribbon-toolbar` and the
+original Xojo control semantics from `XjRibbon`, while adapting the renderer to
+Flutter widgets, semantics, focus, menus, pointer-kind handling, theming, and
+the Milestone 4 localization foundation.
 
 | FxDesktop | Source concept | Delivered direction |
 |---|---|---|
-| `FxRibbonToolbar` | `RibbonToolbar` / `XjRibbon` | Widget-first ribbon with tabs, groups, large/small commands, dropdowns, split buttons, toggles, checkboxes, separators, contextual tabs, collapse behavior, SVG/PNG/Material icons, keytips, mouse, keyboard, touch mode, semantic events, and localized captions. |
+| `FxRibbonToolbar` | `RibbonToolbar` / `XjRibbon` | Widget-first ribbon with tabs, groups, large/medium/small commands, dropdowns, split buttons, embedded galleries, column breaks, toggles, checkboxes, separators, contextual tabs, collapse behavior, SVG/PNG/Material icons, keytips, mouse, keyboard, touch mode, semantic events, and localized captions. |
 | `FxRibbonDesigner` | Jaspr/Xojo ribbon designers | Embeddable visual designer with hierarchy editing, inspector, live preview, validation, JSON export callback, localized caption editing, and shared model updates. |
 | `FxRibbonIconView` | Jaspr/Xojo icon renderer | Supporting public renderer for SVG, PNG, Material, image-provider, and placeholder icon sources. |
 

@@ -950,28 +950,44 @@ Map<String, String> _withLocale(
 IconData _iconForItem(FxRibbonItem item) {
   return switch (item.itemType) {
     FxRibbonItemType.large => Icons.crop_square,
+    FxRibbonItemType.medium => Icons.table_rows_outlined,
     FxRibbonItemType.small => Icons.short_text,
     FxRibbonItemType.dropdown => Icons.arrow_drop_down_circle_outlined,
     FxRibbonItemType.splitButton => Icons.call_split_outlined,
+    FxRibbonItemType.mediumDropdown => Icons.arrow_drop_down_outlined,
+    FxRibbonItemType.mediumSplitButton => Icons.splitscreen_outlined,
+    FxRibbonItemType.gallery => Icons.view_module_outlined,
     FxRibbonItemType.toggle => Icons.toggle_on_outlined,
     FxRibbonItemType.checkBox => Icons.check_box_outlined,
     FxRibbonItemType.separator => Icons.more_vert,
+    FxRibbonItemType.columnBreak => Icons.view_column_outlined,
   };
 }
 
 String _labelForItem(FxRibbonItem item) {
-  return item.isSeparator ? 'Separator' : item.caption;
+  if (item.isSeparator) {
+    return 'Separator';
+  }
+  if (item.isColumnBreak) {
+    return 'Column break';
+  }
+  return item.caption;
 }
 
 List<String> _itemTypeOptions(FxDesktopLocalizations localizations) {
   return [
     localizations.ribbonItemTypeLarge,
     localizations.ribbonItemTypeSmall,
+    localizations.ribbonItemTypeMedium,
     localizations.ribbonItemTypeDropdown,
     localizations.ribbonItemTypeSplitButton,
+    localizations.ribbonItemTypeMediumDropdown,
+    localizations.ribbonItemTypeMediumSplitButton,
+    localizations.ribbonItemTypeGallery,
     localizations.ribbonItemTypeToggle,
     localizations.ribbonItemTypeCheckBox,
     localizations.ribbonItemTypeSeparator,
+    localizations.ribbonItemTypeColumnBreak,
   ];
 }
 
@@ -982,11 +998,18 @@ String _itemTypeLabel(
   return switch (type) {
     FxRibbonItemType.large => localizations.ribbonItemTypeLarge,
     FxRibbonItemType.small => localizations.ribbonItemTypeSmall,
+    FxRibbonItemType.medium => localizations.ribbonItemTypeMedium,
     FxRibbonItemType.dropdown => localizations.ribbonItemTypeDropdown,
     FxRibbonItemType.splitButton => localizations.ribbonItemTypeSplitButton,
+    FxRibbonItemType.mediumDropdown =>
+      localizations.ribbonItemTypeMediumDropdown,
+    FxRibbonItemType.mediumSplitButton =>
+      localizations.ribbonItemTypeMediumSplitButton,
+    FxRibbonItemType.gallery => localizations.ribbonItemTypeGallery,
     FxRibbonItemType.toggle => localizations.ribbonItemTypeToggle,
     FxRibbonItemType.checkBox => localizations.ribbonItemTypeCheckBox,
     FxRibbonItemType.separator => localizations.ribbonItemTypeSeparator,
+    FxRibbonItemType.columnBreak => localizations.ribbonItemTypeColumnBreak,
   };
 }
 
@@ -997,11 +1020,23 @@ FxRibbonItemType _itemTypeFromLabel(
   if (label == localizations.ribbonItemTypeSmall) {
     return FxRibbonItemType.small;
   }
+  if (label == localizations.ribbonItemTypeMedium) {
+    return FxRibbonItemType.medium;
+  }
   if (label == localizations.ribbonItemTypeDropdown) {
     return FxRibbonItemType.dropdown;
   }
   if (label == localizations.ribbonItemTypeSplitButton) {
     return FxRibbonItemType.splitButton;
+  }
+  if (label == localizations.ribbonItemTypeMediumDropdown) {
+    return FxRibbonItemType.mediumDropdown;
+  }
+  if (label == localizations.ribbonItemTypeMediumSplitButton) {
+    return FxRibbonItemType.mediumSplitButton;
+  }
+  if (label == localizations.ribbonItemTypeGallery) {
+    return FxRibbonItemType.gallery;
   }
   if (label == localizations.ribbonItemTypeToggle) {
     return FxRibbonItemType.toggle;
@@ -1012,12 +1047,18 @@ FxRibbonItemType _itemTypeFromLabel(
   if (label == localizations.ribbonItemTypeSeparator) {
     return FxRibbonItemType.separator;
   }
+  if (label == localizations.ribbonItemTypeColumnBreak) {
+    return FxRibbonItemType.columnBreak;
+  }
   return FxRibbonItemType.large;
 }
 
 FxRibbonItem _rebuildItemAs(FxRibbonItem item, FxRibbonItemType type) {
   if (type == FxRibbonItemType.separator) {
     return const FxRibbonItem.separator();
+  }
+  if (type == FxRibbonItemType.columnBreak) {
+    return const FxRibbonItem.columnBreak();
   }
   return FxRibbonItem(
     caption: item.caption,
@@ -1030,9 +1071,15 @@ FxRibbonItem _rebuildItemAs(FxRibbonItem item, FxRibbonItemType type) {
     keyTip: item.keyTip,
     menuItems:
         type == FxRibbonItemType.dropdown ||
-            type == FxRibbonItemType.splitButton
+            type == FxRibbonItemType.splitButton ||
+            type == FxRibbonItemType.mediumDropdown ||
+            type == FxRibbonItemType.mediumSplitButton ||
+            type == FxRibbonItemType.gallery
         ? item.menuItems
         : const [],
+    selectedMenuItemTag: type == FxRibbonItemType.gallery
+        ? item.selectedMenuItemTag
+        : null,
     semanticLabel: item.semanticLabel,
     localizedCaptions: item.localizedCaptions,
     localizedTooltips: item.localizedTooltips,

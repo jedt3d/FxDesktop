@@ -122,9 +122,13 @@ class FxPopupMenu extends StatelessWidget {
             : emptyText ?? fxDesktopLocalizationsOf(context).popupMenuNoOptions,
       ),
       initialValue: effectiveValue,
+      isExpanded: true,
       items: [
         for (final option in options)
-          DropdownMenuItem<String>(value: option, child: Text(option)),
+          DropdownMenuItem<String>(
+            value: option,
+            child: Text(option, overflow: TextOverflow.ellipsis),
+          ),
       ],
       onChanged: isEnabled ? onChanged : null,
     );

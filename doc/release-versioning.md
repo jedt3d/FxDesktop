@@ -134,6 +134,10 @@ Milestone 5 uses the `0.5.x` release line:
   registry, `FxRibbonThemeData`, mouse/touch/keyboard interaction support,
   four-locale ribbon/designer strings, PO/POT bridge updates, and ribbon
   release screenshots.
+- `v0.5.1`: Explorer-style ribbon visual refresh, application button,
+  divider-separated command bands, medium row command types, embedded gallery
+  rendering, column breaks, preserved embedded SVG colors, and refreshed
+  toolbar/menu/designer release screenshots.
 
 Future `0.5.x` updates should keep ribbon schema docs, designer docs, ARB
 files, generated localizations, PO fixtures, screenshots, public API docs, and

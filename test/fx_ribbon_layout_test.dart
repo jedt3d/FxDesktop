@@ -13,14 +13,18 @@ void main() {
       density: FxRibbonDensity.regular,
       interactionMode: FxRibbonInteractionMode.mouse,
     );
-    expect(hiddenContext.tabs.map((tab) => tab.tab.caption), ['Home', 'View']);
-    expect(hiddenContext.groups, hasLength(2));
-    expect(hiddenContext.groups.first.items, hasLength(4));
+    expect(hiddenContext.tabs.map((tab) => tab.tab.caption), [
+      'Home',
+      'Share',
+      'View',
+    ]);
+    expect(hiddenContext.groups, hasLength(5));
+    expect(hiddenContext.groups.first.items, hasLength(6));
 
     final visibleContext = FxRibbonLayout.compute(
       definition: definition,
       width: 1280,
-      activeTabIndex: 2,
+      activeTabIndex: 3,
       collapsed: false,
       density: FxRibbonDensity.regular,
       interactionMode: FxRibbonInteractionMode.mouse,
@@ -28,6 +32,7 @@ void main() {
     );
     expect(visibleContext.tabs.map((tab) => tab.tab.caption), [
       'Home',
+      'Share',
       'View',
       'Format',
     ]);

@@ -27,22 +27,22 @@ enum FxRibbonDensity {
 
   /// Minimum interactive target height.
   double get minTargetHeight => switch (this) {
-    FxRibbonDensity.compact => 24,
-    FxRibbonDensity.regular => 28,
+    FxRibbonDensity.compact => 22,
+    FxRibbonDensity.regular => 24,
     FxRibbonDensity.comfortable => 36,
   };
 
   /// Full ribbon height.
   double get expandedHeight => switch (this) {
-    FxRibbonDensity.compact => 166,
-    FxRibbonDensity.regular => 184,
+    FxRibbonDensity.compact => 108,
+    FxRibbonDensity.regular => 118,
     FxRibbonDensity.comfortable => 240,
   };
 
   /// Collapsed ribbon height.
   double get collapsedHeight => switch (this) {
-    FxRibbonDensity.compact => 34,
-    FxRibbonDensity.regular => 38,
+    FxRibbonDensity.compact => 24,
+    FxRibbonDensity.regular => 25,
     FxRibbonDensity.comfortable => 44,
   };
 }
@@ -64,7 +64,7 @@ class FxRibbonThemeData extends ThemeExtension<FxRibbonThemeData> {
   /// Creates ribbon theme data.
   const FxRibbonThemeData({
     this.density = FxRibbonDensity.regular,
-    this.borderRadius = 5,
+    this.borderRadius = 2,
     this.backgroundColor,
     this.tabStripColor,
     this.activeTabColor,

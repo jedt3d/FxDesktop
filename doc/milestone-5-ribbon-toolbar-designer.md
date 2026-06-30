@@ -24,6 +24,32 @@ Published release target:
 v0.5.0
 ```
 
+Visual refresh target:
+
+```bash
+v0.5.1
+```
+
+## Refined In v0.5.1
+
+`v0.5.1` keeps the same Milestone 5 public surface and focuses on visual
+quality, package screenshots, and schema coverage for the Explorer-style sample
+requested after the first ribbon release.
+
+- Reworked the toolbar presentation into a flatter File Explorer-style command
+  band with an application button, compact tab strip, divider-separated groups,
+  and aligned command columns.
+- Added medium row commands, medium dropdowns, medium split buttons, embedded
+  gallery items, invisible column breaks, and `selectedMenuItemTag` support to
+  the model/schema and designer item type path.
+- Expanded `FxRibbonSamples.explorer()` to include Home, Share, and View tabs
+  with dropdown menu fixtures and an embedded layout gallery.
+- Preserved colored embedded SVG icon rendering instead of forcing a single
+  icon tint.
+- Captured refreshed release screenshots under
+  `doc/screenshots/v0.5.1/ribbon/`, including combined Home/Share/View
+  presentation, individual tab states, dropdown menu proof, and designer proof.
+
 ## Delivered In v0.5.0
 
 - `FxRibbonToolbar`

@@ -5,6 +5,8 @@
 build/
 coverage/
 doc/api/
+doc/screenshots-ribbon-references/
+design-qa.md
 example/.dart_tool/
 example/build/
 **/.DS_Store

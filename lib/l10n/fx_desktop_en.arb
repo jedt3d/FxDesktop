@@ -520,6 +520,11 @@
     "description": "Ribbon item type name.",
     "context": "ribbon.item_type.small"
   },
+  "ribbonItemTypeMedium": "Medium button",
+  "@ribbonItemTypeMedium": {
+    "description": "Ribbon item type name.",
+    "context": "ribbon.item_type.medium"
+  },
   "ribbonItemTypeDropdown": "Dropdown",
   "@ribbonItemTypeDropdown": {
     "description": "Ribbon item type name.",
@@ -529,6 +534,21 @@
   "@ribbonItemTypeSplitButton": {
     "description": "Ribbon item type name.",
     "context": "ribbon.item_type.split_button"
+  },
+  "ribbonItemTypeMediumDropdown": "Medium dropdown",
+  "@ribbonItemTypeMediumDropdown": {
+    "description": "Ribbon item type name.",
+    "context": "ribbon.item_type.medium_dropdown"
+  },
+  "ribbonItemTypeMediumSplitButton": "Medium split button",
+  "@ribbonItemTypeMediumSplitButton": {
+    "description": "Ribbon item type name.",
+    "context": "ribbon.item_type.medium_split_button"
+  },
+  "ribbonItemTypeGallery": "Gallery",
+  "@ribbonItemTypeGallery": {
+    "description": "Ribbon item type name.",
+    "context": "ribbon.item_type.gallery"
   },
   "ribbonItemTypeToggle": "Toggle",
   "@ribbonItemTypeToggle": {
@@ -544,5 +564,10 @@
   "@ribbonItemTypeSeparator": {
     "description": "Ribbon item type name.",
     "context": "ribbon.item_type.separator"
+  },
+  "ribbonItemTypeColumnBreak": "Column break",
+  "@ribbonItemTypeColumnBreak": {
+    "description": "Ribbon item type name.",
+    "context": "ribbon.item_type.column_break"
   }
 }
