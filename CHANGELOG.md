@@ -6,7 +6,9 @@
 - Added the Milestone 4 localization foundation plan, making Flutter-native ARB
   localization the source of truth, `.po`/`.pot` files translator bridge
   formats, and context-specific duplicate text keys a requirement for safe
-  multi-language support.
+  multi-language support. The plan now requires English, Thai, Japanese, and
+  Nepali coverage, PO import examples, a one-window component localization
+  gallery, and framework-wide API/docs/component coverage verification.
 - Moved the ribbon toolbar and visual designer plan to Milestone 5 so it can
   build on the localization foundation, while preserving the Flutter
   theme/style-sheet strategy, 1024 px and 1280 px viewport targets, autonomous

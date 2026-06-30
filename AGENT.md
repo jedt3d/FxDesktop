@@ -101,7 +101,10 @@ Use Flutter's native localization stack as the primary path: ARB files,
 translator import/export bridge formats, not the runtime source of truth.
 Do not deduplicate localization keys only because English text matches; repeated
 words need context-specific keys and PO `msgctxt` so translations can differ by
-component, command, validation, or designer context.
+component, command, validation, or designer context. Milestone 4 must cover
+English, Thai, Japanese, and Nepali, include PO import examples, and provide a
+one-window localization gallery that can switch all existing FxDesktop component
+families between those four locales.
 
 For Milestone 5 ribbon work, follow
 `doc/milestone-5-ribbon-toolbar-designer.md`. Keep the implementation scoped to
@@ -120,7 +123,8 @@ feature through the documented cycle gates and, after Cycle 0 exists, use
 `dart run tool/ribbon_cycle.dart --all` or a targeted `--cycle` command for
 unattended progress, logs, tests, and screenshots at 1280 px primary and 1024 px
 minimum widths. Consume the Milestone 4 localization foundation instead of
-creating a ribbon-only translation system.
+creating a ribbon-only translation system; ribbon and designer strings must use
+the same four-locale, context-specific, PO-bridge workflow.
 
 ## Version And Release Rules
 

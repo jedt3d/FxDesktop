@@ -108,6 +108,11 @@ Key rules:
 - Use `.po`/`.pot` only as translator import/export bridge formats.
 - Keep duplicate English words as separate keys when context differs.
 - Preserve PO `msgctxt` so imports do not merge unrelated translations.
+- Support English, Thai, Japanese, and Nepali in the first localization
+  milestone.
+- Include PO import examples for Thai, Japanese, and Nepali.
+- Maintain a one-window localization gallery that can switch every existing
+  FxDesktop component family between the four supported locales.
 - Use `MaterialLocalizations` where Flutter already supplies localized text or
   formatting.
 - Keep app-authored labels and data caller-owned unless a component model
@@ -136,7 +141,8 @@ Key rules:
   `dart run tool/ribbon_cycle.dart --all` for unattended progress or
   `dart run tool/ribbon_cycle.dart --cycle N` for focused resumes.
 - Consume the Milestone 4 localization foundation for built-in strings,
-  context-specific duplicate text, and `.po`/`.pot` bridge behavior.
+  context-specific duplicate text, four-language coverage, and `.po`/`.pot`
+  bridge behavior.
 - Keep the designer embeddable and dependency-light; app shells can provide
   file picker or web download integrations through callbacks.
 

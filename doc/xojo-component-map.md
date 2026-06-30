@@ -117,6 +117,9 @@ generated localizations, while `.po` and `.pot` files are supported as
 translator bridge formats. Duplicate English labels stay as separate keys when
 their component or workflow context differs, matching the way Xojo projects can
 need different translations for identical source words in different controls.
+The first localization set covers English, Thai, Japanese, and Nepali, plus a
+one-window gallery that switches existing FxDesktop component families between
+those languages.
 
 See [Milestone 4: Localization Foundation](milestone-4-localization.md) for the
 implementation plan.

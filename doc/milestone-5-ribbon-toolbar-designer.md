@@ -561,7 +561,11 @@ Locale behavior:
   because translated captions may not map cleanly to Latin keyboard input;
 - preserve context-specific localization keys so duplicate English words such
   as "Copy" or "Open" can be translated differently in toolbar, menu, designer,
-  and validation contexts.
+  and validation contexts;
+- cover English, Thai, Japanese, and Nepali consistently with the suite-wide
+  localization milestone;
+- keep ribbon/designer PO import/export examples context-specific through
+  `msgctxt`.
 
 Designer requirements:
 
@@ -578,6 +582,7 @@ Tests:
 - render toolbar command captions in a non-English locale;
 - keep events stable when labels change by locale;
 - localize designer action labels and validation messages;
+- verify English, Thai, Japanese, and Nepali ribbon/designer labels;
 - verify right-to-left text direction smoke behavior where practical;
 - capture at least one localized screenshot in the release cycle.
 
