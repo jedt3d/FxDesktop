@@ -93,23 +93,24 @@ Milestone 2 implementation phases are not small documentation-only updates, so
 each Phase 2.1 through 2.6 release should create a GitHub Release and attach the
 phase screenshots.
 
-## Milestone 3 Phase Versions
+## Milestone 3 Release Versions
 
-Milestone 3 is expected to use the `0.3.x` release line for implementation
-phases:
+Milestone 3 uses the `0.3.x` release line. The original implementation phases
+were consolidated into the `v0.3.0` baseline and then refined through smaller
+follow-up releases:
 
-- Phase 3.1: `v0.3.1`
-- Phase 3.2: `v0.3.2`
-- Phase 3.3: `v0.3.3`
-- Phase 3.4: `v0.3.4`
-- Phase 3.5: `v0.3.5`
+- `v0.3.0`: Milestone 3 ListBox/Grid depth baseline.
+- `v0.3.1`: interactive `listbox_demo` gallery and scrollbar polish.
+- `v0.3.2`: Excel-style sizing, wrapping, implicit rendering, and progress overlays.
+- `v0.3.3`: capped auto-fit resizing, wrapping synchronization, and undoable layout changes.
+- `v0.3.4`: range slider, row reordering, crosshair visualization, and inline styled cells.
+- `v0.3.5`: lookup providers, custom cell renderers, and hosted combobox overlays.
+- `v0.3.6`: multi-column lookups, input masks, cell action buttons, and active row/column background highlighting.
 
-The exact phase count can change after spec review, but implementation releases
-should stay small enough to validate, screenshot, merge, tag, and publish one
-phase at a time.
-
-Planning-only Milestone 3 specs do not change `pubspec.yaml`, README install
-versions, or tags.
+Future `0.3.x` documentation-only reconciliation work should not change
+`pubspec.yaml`, README install versions, or tags. A version bump is required
+only when implementation, public API, generated documentation, or release
+artifacts change in a way that should be published.
 
 ## Pub.dev
 

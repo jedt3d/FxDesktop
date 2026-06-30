@@ -1,17 +1,43 @@
-# listbox_demo
+# FxDesktop ListBox/Grid Gallery
 
-A new Flutter project.
+This app is the interactive spec gallery for the `FxListBox` and `FxGrid`
+surface in FxDesktop.
 
-## Getting Started
+It demonstrates the `0.3.x` table releases:
 
-This project is a starting point for a Flutter application.
+- selection modes, keyboard traversal, and table states
+- sorting, column sizing, line wrapping, and implicit renderers
+- editable cells, validation, range selection, TSV clipboard workflows, and
+  undo/redo integration
+- row reordering, inline styled text, range sliders, custom renderers, hosted
+  lookup editors, multi-column database lookups, input masks, and ellipsis cell
+  actions
 
-A few resources to get you started if this is your first Flutter project:
+Run it from this directory on macOS:
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+```bash
+flutter run -d macos
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+The generated Windows runner is also present for platform parity checks:
+
+```bash
+flutter run -d windows
+```
+
+Useful review targets:
+
+- Page 8: advanced formatting, auto-fit sizing, line wrapping, and progress
+  overlays.
+- Page 9: range slider, row reordering, and active row/column highlighting.
+- Page 10: custom cell rendering, sparklines, map/enum lookups, hosted overlay
+  editors, and lookup undo/redo.
+- Page 11: multi-column database lookups, phone/SSN masks, ellipsis action
+  buttons, and advanced editor undo/redo.
+
+Run package checks with:
+
+```bash
+flutter analyze
+flutter test
+```

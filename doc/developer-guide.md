@@ -79,20 +79,22 @@ FxDesktop provides two distinct table controls, matching Xojo's layout patterns:
 - Use `FxGrid` when the user edits cells directly, expects rectangular range selections (click-and-drag or Shift+Arrow keys), needs per-cell validation markers, or copies/pastes multiple cells as Tab-Separated Values (TSV).
 
 ### Xojo Parity Alignment
-- **Supported features**: Column resizing, multi-selection modes, column sorting descriptors, custom empty/loading/error placeholder overrides, inline cell editors (text, checkbox/boolean, choice/dropdown), validation styling, raw pointer range selection, TSV clipboard copy/paste, and atomic undo/redo integration.
-- **Approximate features**: alternating row colors, column sizing metrics (fixed, flexible, min/max).
-- **Deferred / Out-of-scope**: cell merging, formulas, pivot tables, and drawing custom canvas elements inside cells (although in Flutter this is easily done by providing custom cell builders).
+- **Supported features**: Column resizing, multi-selection modes, column sorting descriptors, custom empty/loading/error placeholder overrides, inline cell editors (text, checkbox/boolean, choice/dropdown), validation styling, raw pointer range selection, TSV clipboard copy/paste, row reordering, lookup providers, hosted dropdown editors, input masks, ellipsis action buttons, custom cell renderers, active row/column background highlighting, and atomic undo/redo integration.
+- **Approximate features**: alternating row colors, column sizing metrics (fixed, flexible, min/max), and generator-friendly table metadata.
+- **Deferred / Out-of-scope**: cell merging, formulas, pivot tables, remote data-source abstractions, full spreadsheet import/export, and ORM/database integration.
 
 ### Layout Refinements (Auto-Fit & Wrapping)
 - **Auto-Fit Capping**: Double-clicking header resize borders auto-fits content up to 50% of the table width. Exceeding 50% caps the width and sets the column's wrapping override to `true` (wrapped by default).
 - **State Overrides**: Wrapping overrides are stored in local state (`_columnLineWrapOverrides`). If the parent updates the column descriptors (e.g. toggles wrapping), local overrides are automatically cleared in `didUpdateWidget` to match the parent.
 - **Undo Integration**: Auto-fit changes (width and wrapping state) are recorded as a single committed `FxUndoAction`. Manual switch toggles can be committed via `_undoController.commitValue`.
 
-### Interaction and Visual Parity (v0.3.4)
+### Interaction and Visual Parity (v0.3.4-v0.3.6)
 - **Range Slider (`FxSlider.range`)**: Dual-handle slider constructor for choosing minimum and maximum range limits in one control.
 - **Drag-and-Drop Row Reordering**: Reorder rows manually in `FxListBox` and `FxGrid` using virtual grab handles. Emits `onRowReordered` callback and draws custom visual drop indicators.
-- **Selection Crosshairs (Darker Active Borders)**: Emphasizes the active cell's location by rendering 50% darker border lines for the active row's top/bottom borders and active column's left/right borders.
+- **Active Row/Column Highlighting**: `v0.3.4` introduced darker crosshair borders; `v0.3.6` supersedes that visual treatment with subtle background-saturation highlighting for the active row and column while preserving the selected cell as the focal point.
 - **Inline Rich Styled Text**: Render styled text in cell values using Markdown-like (`**` bold, `*` italic, `~` underline) or HTML-like (`<b>`, `<i>`, `<u>`) tags when `supportStyledText` is enabled on columns.
+- **Lookup Providers and Hosted Editors**: Use `FxMapLookupProvider`, `FxEnumLookupProvider`, or `FxDbLookupProvider` with `FxCellType.lookup` to store raw keys while showing readable labels, including multi-column dropdowns.
+- **Input Masks and Cell Actions**: Use column `inputMask`, `hasActionButton`, `actionIcon`, and `onActionPressed` for fixed-format entry and ellipsis-style workflows such as file pickers or selector dialogs.
 
 ## Release Workflow
 

@@ -90,17 +90,22 @@ AI agents and generators understand why a component is or is not created.
 See [Milestone 2: Xojo Desktop Control Parity](milestone-2-control-parity.md)
 for priority, phases, demo presentation, and definition of done.
 
-## Milestone 3 Planned Table Depth
+## Milestone 3 Delivered Table Depth
 
-Milestone 3 focuses on `FxListBox` and `FxGrid`. Keep the semantic split clear:
+Milestone 3 is delivered through `v0.3.6`. Keep the semantic split clear:
 
-| FxDesktop | Xojo Desktop | Milestone 3 direction |
+| FxDesktop | Xojo Desktop | Delivered table direction |
 |---|---|---|
-| `FxListBox` | `DesktopListBox` | Row-oriented record list with selection, sorting, sizing, row state, optional editing, and generator metadata. |
-| `FxGrid` | `DesktopGrid` | Cell-oriented data grid with cell/range selection, editing, validation, clipboard, and generator metadata. |
+| `FxListBox` | `DesktopListBox` | Row-oriented record list with row selection, multi-selection, sorting, column sizing/visibility, row state, optional cell editing, lookup editors, input masks, row reordering, TSV copy/paste, undo integration, and generator metadata. |
+| `FxGrid` | `DesktopGrid` | Cell-oriented data grid with cell/row/range selection, keyboard traversal, sorting, sizing, inline editing, validation, lookup editors, input masks, ellipsis action buttons, TSV clipboard workflows, undo integration, and generator metadata. |
+
+Advanced `0.3.x` refinements include custom cell renderers, hosted lookup
+combobox overlays, multi-column database lookups, active row/column background
+highlighting, and performance tests for large row and wide column sets.
 
 See [Milestone 3: ListBox And Grid Depth](milestone-3-listbox-grid.md) for the
-phase plan, acceptance criteria, testing strategy, and open design questions.
+delivered release history and [Advanced Grid Features (v0.3.6)](milestone-6-advanced-grid-features.md)
+for the latest cell-editing features.
 
 ## Mobile And Tablet
 

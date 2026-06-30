@@ -104,7 +104,10 @@ class OrderPanel extends StatelessWidget {
 control comparable to Xojo `DesktopGrid`.
 
 Milestone 3 introduces deep `FxListBox` and `FxGrid` controls (refined in `v0.3.3` through `v0.3.6`). This includes selection models, keyboard navigation/traversal, sorting, column sizing/visibility policies, capped auto-fit resizing, editable cell types (text, number, boolean, options) with validation, database-grade multi-column lookups, input masking, ellipsis cell action buttons, background-saturation row/column highlights, clipboard operations (TSV copy/paste), layout undo/redo integration, performance virtualization (up to 10k+ rows and 100+ columns), and rich accessibility support via `Semantics`.
-See [Milestone 3: ListBox And Grid Depth](doc/milestone-3-listbox-grid.md) and [Advanced Grid Features (v0.3.6)](doc/milestone-6-advanced-grid-features.md).
+Milestone 3 is delivered through `v0.3.6`; the original plan remains in the
+milestone document as the acceptance map, and the delivered release history is
+now tracked there. See [Milestone 3: ListBox And Grid Depth](doc/milestone-3-listbox-grid.md)
+and [Advanced Grid Features (v0.3.6)](doc/milestone-6-advanced-grid-features.md).
 
 ## Text Input Constraints
 
@@ -195,6 +198,11 @@ Run the full local quality harness before committing:
 ```bash
 dart run tool/agent_harness.dart
 ```
+
+The main `example/` app is the vertical component harness. The
+`listbox_demo/` app is the interactive ListBox/Grid spec gallery used to review
+the `0.3.x` table surface, including lookup editors, input masks, cell action
+buttons, row reordering, undo/redo, and large-table behavior.
 
 The harness runs formatting checks, static analysis, tests, Dartdoc, pub.dev
 dry-run checks, and public API policy checks.

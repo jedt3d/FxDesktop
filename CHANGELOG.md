@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Documentation
+- Reconciled Milestone 3 documentation with the delivered `0.3.6` release
+  history.
+- Updated ListBox/Grid docs, release-versioning guidance, component mapping,
+  testing notes, and gallery README so the current table surface is described
+  as shipped rather than planned.
+- Moved release verification notes into `doc/` and refreshed the `v0.3.6`
+  manual checklist.
+
 ## 0.3.6
 
 Version `0.3.6` introduces advanced enterprise cell editing features: cell action buttons, input masking, and multi-column lookups.

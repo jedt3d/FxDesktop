@@ -215,7 +215,7 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
   ];
   final Map<String, double> _page8ColumnWidths = {};
 
-  // Page 9: Range Slider & Grid Selection Crosshairs
+  // Page 9: Range Slider & Grid Selection Highlighting
   RangeValues _sliderRange = const RangeValues(20, 80);
   RangeValues? _sliderDragStartRange;
   Set<({String rowId, String columnId})> _selectedGridCellsPage9 = {
@@ -294,7 +294,7 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
                             _buildPage6TableStates(),
                             _buildPage7Virtualization(),
                             _buildPage8AdvancedFeatures(),
-                            _buildPage9RangeSliderAndCrosshairs(),
+                            _buildPage9RangeSliderAndHighlighting(),
                             _buildPage10LookupAndBadges(),
                             _buildPage11AdvancedEditors(),
                           ],
@@ -414,7 +414,7 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
       'Table States & Placeholders',
       'Large-Data Virtualization',
       'Excel-Style Advanced Features',
-      'Range Slider & Crosshair Highlight',
+      'Range Slider & Active Highlighting',
       'Lookup Fields & Custom Rendering',
       'Advanced Grid Editors',
     ];
@@ -467,9 +467,9 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
           '• Progress Bar Overlay: cells with percentage strings (e.g., "75%") draw a visual bottom-border progress chart.\n'
           '• Conditional Formatting: blood sugar values highlight red when abnormal (< 70 or > 100).',
 
-      'Showcases advanced control features and cell crosshair highlight visualization:\n\n'
+      'Showcases advanced control features and active row/column highlighting:\n\n'
           '• Range Slider: select a minimum and maximum bounds range in a single component.\n'
-          '• Selection Crosshair: selecting a cell highlights the correlated row (top/bottom) and column (left/right) with 50% darker border lines.\n'
+          '• Active Row/Column Highlighting: selecting a cell subtly saturates the correlated row and column backgrounds while keeping the selected cell as the focal point.\n'
           '• Row Reordering: drag the grab handles on the left side of rows to rearrange them manually. Row indices update instantly.',
 
       'Demonstrates Delphi-style Key-Value lookups and custom inline cell rendering:\n\n'
@@ -539,7 +539,7 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
       [
         'Locate the Range Slider at the top. Drag either thumb to select min/max values.',
         'Locate the Grid below. Click cells or use keyboard arrows to move cell selection.',
-        'Observe how the selected cell\'s row and column borders are redrawn 50% darker.',
+        'Observe how the selected cell subtly saturates the active row and column backgrounds.',
         'Navigate to Page 8 to try Drag-and-Drop Row Reordering using the left grab handles.',
         'Notice that the notes on Page 8 support styled text (bold, italic, underline).',
       ],
@@ -1612,7 +1612,7 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
     );
   }
 
-  Widget _buildPage9RangeSliderAndCrosshairs() {
+  Widget _buildPage9RangeSliderAndHighlighting() {
     final columns = [
       const FxGridColumn(
         id: 'col-1',
@@ -1646,7 +1646,7 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const Text(
-          'Range Slider & Grid Selection Crosshairs',
+          'Range Slider & Grid Active Highlighting',
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 12),
@@ -1709,9 +1709,9 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
           ),
         ),
         const SizedBox(height: 16),
-        // Grid selection crosshair demo
+        // Grid active row/column highlighting demo
         const Text(
-          'Grid Selection Crosshair Highlight (Darkened by 50%)',
+          'Grid Active Row/Column Highlight',
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
         ),
         const SizedBox(height: 8),
@@ -1735,7 +1735,7 @@ class _DemoGalleryPageState extends State<DemoGalleryPage> {
         ),
         const SizedBox(height: 8),
         const Text(
-          'Try: Click or use arrow keys to navigate the grid cells. The selected cell\'s row and column borders are redrawn 50% darker.',
+          'Try: Click or use arrow keys to navigate the grid cells. The selected cell keeps focus while the active row and column receive a subtle saturated background.',
           style: TextStyle(
             fontSize: 12,
             color: Color(0xFF64748B),

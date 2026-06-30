@@ -1,7 +1,16 @@
 # FxDesktop v0.3.6 Manual Verification Checklist
 
-Please run the demo application (`cd listbox_demo && flutter run -d macos`), navigate to **Page 11: Advanced Grid Editors**, and test the following features. 
-Update this file by changing `[ ]` to `[x]` and adding any feedback next to the item.
+This checklist covers the latest shipped ListBox/Grid gallery behavior in
+`v0.3.6`. Run the demo application with:
+
+```bash
+cd listbox_demo
+flutter run -d macos
+```
+
+Navigate to **Page 10: Lookup Fields & Custom Rendering** and **Page 11:
+Advanced Grid Editors**. Update this file by changing `[ ]` to `[x]` and
+adding feedback next to each item.
 
 ---
 
@@ -65,4 +74,4 @@ Update this file by changing `[ ]` to `[x]` and adding any feedback next to the 
 
 ---
 *Checked by:* (Your name / signature here)  
-*Date:* 2026-06-08  
+*Checklist last reconciled:* 2026-06-30  

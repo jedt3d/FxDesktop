@@ -87,6 +87,12 @@ Preserve the semantic split: `FxListBox` is row-oriented record selection and
 `FxGrid` is cell-oriented data inspection/editing. Shared table infrastructure
 is allowed, but public APIs must keep the two controls distinct.
 
+Milestone 3 is delivered through `v0.3.6`. Treat the milestone document as a
+delivered acceptance map plus release history, not as a pending phase plan. For
+new table work, update `CHANGELOG.md`, `doc/milestone-3-listbox-grid.md`,
+`doc/xojo-component-map.md`, `doc/milestone-6-advanced-grid-features.md` when
+advanced editor behavior changes, and the `listbox_demo/` gallery docs.
+
 ## Version And Release Rules
 
 - Do not bump versions or create tags for planning-only changes.
@@ -96,7 +102,8 @@ is allowed, but public APIs must keep the two controls distinct.
 - For Milestone 2, release each implementation phase separately:
   `v0.2.1`, `v0.2.2`, `v0.2.3`, `v0.2.4`, `v0.2.5`, and `v0.2.6`.
 - For Milestone 3, use the `0.3.x` release line for implementation phases.
-  Planning-only specs do not bump the package version.
+  Planning-only specs and documentation reconciliation do not bump the package
+  version.
 - For every Milestone 2 phase, update the example harness, capture screenshots,
   run the full quality harness, tag the version, and create a GitHub Release
   with screenshots attached.
