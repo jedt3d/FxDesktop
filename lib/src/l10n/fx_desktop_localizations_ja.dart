@@ -201,4 +201,123 @@ class FxDesktopLocalizationsJa extends FxDesktopLocalizations {
   @override
   String get galleryPoStatus =>
       'ARB はランタイムの文言ソースのままです。PO と POT は翻訳者向けのブリッジファイルです。';
+
+  @override
+  String get ribbonToolbarSemantics => 'リボンツールバー';
+
+  @override
+  String get ribbonNoTabs => 'リボンタブがありません';
+
+  @override
+  String get ribbonCollapse => 'リボンを折りたたむ';
+
+  @override
+  String get ribbonExpand => 'リボンを展開';
+
+  @override
+  String get ribbonOpenMenu => 'メニューを開く';
+
+  @override
+  String get ribbonMenuEmpty => 'メニュー項目がありません';
+
+  @override
+  String ribbonGroupSemantics(String group) {
+    return 'リボングループ $group';
+  }
+
+  @override
+  String get ribbonDesignerTitle => 'リボンデザイナー';
+
+  @override
+  String get ribbonDesignerNew => '新規';
+
+  @override
+  String get ribbonDesignerAddTab => 'タブを追加';
+
+  @override
+  String get ribbonDesignerAddGroup => 'グループを追加';
+
+  @override
+  String get ribbonDesignerAddItem => '項目を追加';
+
+  @override
+  String get ribbonDesignerDelete => '削除';
+
+  @override
+  String get ribbonDesignerExport => 'JSON をエクスポート';
+
+  @override
+  String get ribbonDesignerExported => 'リボン JSON をエクスポートしました。';
+
+  @override
+  String get ribbonDesignerPreviewLocale => 'プレビュー ロケール';
+
+  @override
+  String get ribbonDesignerStructure => '構造';
+
+  @override
+  String get ribbonDesignerJsonPreview => 'JSON プレビュー';
+
+  @override
+  String get ribbonDesignerInspector => 'インスペクター';
+
+  @override
+  String get ribbonDesignerNoSelection => 'タブ、グループ、または項目を選択してください。';
+
+  @override
+  String get ribbonDesignerStatusReady => '準備完了。';
+
+  @override
+  String get ribbonDesignerCaption => 'キャプション';
+
+  @override
+  String get ribbonDesignerKeyTip => 'KeyTip';
+
+  @override
+  String get ribbonDesignerContextual => 'コンテキスト タブ';
+
+  @override
+  String get ribbonDesignerContextGroup => 'コンテキスト グループ';
+
+  @override
+  String get ribbonDesignerCommandTag => 'コマンドタグ';
+
+  @override
+  String get ribbonDesignerItemType => '項目タイプ';
+
+  @override
+  String get ribbonDesignerTooltip => 'ツールチップ';
+
+  @override
+  String get ribbonDesignerIconKey => 'アイコンキー';
+
+  @override
+  String get ribbonDesignerEnabled => '有効';
+
+  @override
+  String get ribbonDesignerChecked => 'チェック済み';
+
+  @override
+  String get ribbonDesignerLocalizedCaptions => 'ローカライズ済みキャプション';
+
+  @override
+  String get ribbonItemTypeLarge => '大ボタン';
+
+  @override
+  String get ribbonItemTypeSmall => '小ボタン';
+
+  @override
+  String get ribbonItemTypeDropdown => 'ドロップダウン';
+
+  @override
+  String get ribbonItemTypeSplitButton => '分割ボタン';
+
+  @override
+  String get ribbonItemTypeToggle => 'トグル';
+
+  @override
+  String get ribbonItemTypeCheckBox => 'チェックボックス';
+
+  @override
+  String get ribbonItemTypeSeparator => '区切り';
 }

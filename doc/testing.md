@@ -66,6 +66,16 @@ flutter test --update-goldens test/release_screenshot_test.dart
 The `v0.4.0` localization screenshot set covers English, Thai, Japanese,
 Nepali, and an RTL smoke view under `doc/screenshots/v0.4.0/localization/`.
 
+Ribbon-specific checks:
+
+```bash
+flutter test test/fx_ribbon_models_test.dart test/fx_ribbon_layout_test.dart test/fx_ribbon_toolbar_test.dart test/fx_ribbon_designer_test.dart
+flutter test --update-goldens test/release_screenshot_test.dart
+```
+
+The `v0.5.0` ribbon screenshot set covers a 1280 px toolbar and designer proof
+surface under `doc/screenshots/v0.5.0/ribbon/`.
+
 ## Public API Policy
 
 Public FxDesktop APIs should not expose implementation dependency types from:

@@ -201,4 +201,123 @@ class FxDesktopLocalizationsTh extends FxDesktopLocalizations {
   @override
   String get galleryPoStatus =>
       'ARB ยังเป็นแหล่งข้อความตอนรันไทม์ ส่วน PO และ POT เป็นไฟล์สะพานสำหรับนักแปล';
+
+  @override
+  String get ribbonToolbarSemantics => 'แถบริบบอน';
+
+  @override
+  String get ribbonNoTabs => 'ไม่มีแท็บริบบอน';
+
+  @override
+  String get ribbonCollapse => 'ยุบริบบอน';
+
+  @override
+  String get ribbonExpand => 'ขยายริบบอน';
+
+  @override
+  String get ribbonOpenMenu => 'เปิดเมนู';
+
+  @override
+  String get ribbonMenuEmpty => 'ไม่มีรายการเมนู';
+
+  @override
+  String ribbonGroupSemantics(String group) {
+    return 'กลุ่มริบบอน $group';
+  }
+
+  @override
+  String get ribbonDesignerTitle => 'ตัวออกแบบริบบอน';
+
+  @override
+  String get ribbonDesignerNew => 'ใหม่';
+
+  @override
+  String get ribbonDesignerAddTab => 'เพิ่มแท็บ';
+
+  @override
+  String get ribbonDesignerAddGroup => 'เพิ่มกลุ่ม';
+
+  @override
+  String get ribbonDesignerAddItem => 'เพิ่มรายการ';
+
+  @override
+  String get ribbonDesignerDelete => 'ลบ';
+
+  @override
+  String get ribbonDesignerExport => 'ส่งออก JSON';
+
+  @override
+  String get ribbonDesignerExported => 'ส่งออก JSON ของริบบอนแล้ว';
+
+  @override
+  String get ribbonDesignerPreviewLocale => 'โลเคลตัวอย่าง';
+
+  @override
+  String get ribbonDesignerStructure => 'โครงสร้าง';
+
+  @override
+  String get ribbonDesignerJsonPreview => 'ตัวอย่าง JSON';
+
+  @override
+  String get ribbonDesignerInspector => 'ตัวตรวจสอบ';
+
+  @override
+  String get ribbonDesignerNoSelection => 'เลือกแท็บ กลุ่ม หรือรายการ';
+
+  @override
+  String get ribbonDesignerStatusReady => 'พร้อม';
+
+  @override
+  String get ribbonDesignerCaption => 'คำบรรยาย';
+
+  @override
+  String get ribbonDesignerKeyTip => 'KeyTip';
+
+  @override
+  String get ribbonDesignerContextual => 'แท็บตามบริบท';
+
+  @override
+  String get ribbonDesignerContextGroup => 'กลุ่มบริบท';
+
+  @override
+  String get ribbonDesignerCommandTag => 'แท็กคำสั่ง';
+
+  @override
+  String get ribbonDesignerItemType => 'ชนิดรายการ';
+
+  @override
+  String get ribbonDesignerTooltip => 'ทูลทิป';
+
+  @override
+  String get ribbonDesignerIconKey => 'คีย์ไอคอน';
+
+  @override
+  String get ribbonDesignerEnabled => 'เปิดใช้งาน';
+
+  @override
+  String get ribbonDesignerChecked => 'เลือกแล้ว';
+
+  @override
+  String get ribbonDesignerLocalizedCaptions => 'คำบรรยายหลายภาษา';
+
+  @override
+  String get ribbonItemTypeLarge => 'ปุ่มใหญ่';
+
+  @override
+  String get ribbonItemTypeSmall => 'ปุ่มเล็ก';
+
+  @override
+  String get ribbonItemTypeDropdown => 'ดรอปดาวน์';
+
+  @override
+  String get ribbonItemTypeSplitButton => 'ปุ่มแยก';
+
+  @override
+  String get ribbonItemTypeToggle => 'สลับ';
+
+  @override
+  String get ribbonItemTypeCheckBox => 'เช็กบ็อกซ์';
+
+  @override
+  String get ribbonItemTypeSeparator => 'ตัวคั่น';
 }

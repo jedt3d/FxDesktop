@@ -275,6 +275,30 @@ const fxComponentRegistry = <FxComponentDescriptor>[
     notes:
         'One-window localization proof surface for FxDesktop-owned strings, ARB locales, and PO bridge context.',
   ),
+  FxComponentDescriptor(
+    id: 'fx.ribbon_toolbar',
+    name: 'FxRibbonToolbar',
+    xojoDesktopClass: 'XjRibbon',
+    supportLevel: FxComponentSupportLevel.custom,
+    notes:
+        'Widget-native Flutter ribbon toolbar with tabs, groups, menus, toggles, keytips, embedded icons, and localized command text.',
+  ),
+  FxComponentDescriptor(
+    id: 'fx.ribbon_designer',
+    name: 'FxRibbonDesigner',
+    xojoDesktopClass: 'XjRibbonDesigner',
+    supportLevel: FxComponentSupportLevel.custom,
+    notes:
+        'Embeddable visual designer for FxRibbonDefinition structures, localized captions, JSON export, and live preview.',
+  ),
+  FxComponentDescriptor(
+    id: 'fx.ribbon_icon_view',
+    name: 'FxRibbonIconView',
+    xojoDesktopClass: 'XjRibbon icon renderer',
+    supportLevel: FxComponentSupportLevel.custom,
+    notes:
+        'Supporting renderer for Material, SVG, PNG, image-provider, and placeholder ribbon icon sources.',
+  ),
 ];
 
 /// A compact desktop button comparable to Xojo's DesktopButton.

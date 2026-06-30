@@ -108,25 +108,24 @@ must update all four bundled locales, regenerate localizations, run
 `dart run tool/fx_l10n.dart audit`, update `FxLocalizationGallery` when useful,
 and keep ribbon/designer work on the same localization foundation.
 
-For Milestone 5 ribbon work, follow
-`doc/milestone-5-ribbon-toolbar-designer.md`. Keep the implementation scoped to
-FxDesktop; use `jaspr-ribbon-toolbar` as Dart architecture source material and
-`XjRibbon` as design ancestry only. Public APIs must use `Fx*` names such as
-`FxRibbonToolbar`, `FxRibbonDefinition`, and `FxRibbonDesigner`. Prefer a
-Flutter widget-first renderer that uses focus, actions, semantics, menus,
-overlays, themes, and pointer-kind handling instead of blindly porting the
-Jaspr canvas renderer. The toolbar must support mouse, keyboard, and touch on
+Milestone 5 ribbon/designer is delivered in `v0.5.0`. Follow
+`doc/milestone-5-ribbon-toolbar-designer.md`, `doc/ribbon-schema.md`, and
+`doc/ribbon-designer.md` before changing this surface. Keep the implementation
+scoped to FxDesktop; use `jaspr-ribbon-toolbar` as Dart architecture source
+material and `XjRibbon` as design ancestry only. Public APIs must use `Fx*`
+names such as `FxRibbonToolbar`, `FxRibbonDefinition`, and
+`FxRibbonDesigner`. Preserve the Flutter widget-first renderer that uses focus,
+actions, semantics, menus, overlays, themes, and pointer-kind handling instead
+of a canvas-only port. The toolbar must support mouse, keyboard, and touch on
 large desktop/web screens; it must not become a mobile-phone navigation system.
-Plan icon support around an `iconKey` registry with SVG as the preferred path
-when dependency review allows it, and PNG/Material/placeholder fallbacks as
-required. Use Flutter `ThemeExtension`/`ThemeData` as the ribbon style-sheet
-surface, with `FxRibbonThemeData` only for ribbon-specific tokens. Implement the
-feature through the documented cycle gates and, after Cycle 0 exists, use
-`dart run tool/ribbon_cycle.dart --all` or a targeted `--cycle` command for
-unattended progress, logs, tests, and screenshots at 1280 px primary and 1024 px
-minimum widths. Consume the Milestone 4 localization foundation instead of
-creating a ribbon-only translation system; ribbon and designer strings must use
-the same four-locale, context-specific, PO-bridge workflow.
+Keep icon support behind the `iconKey` registry with SVG, PNG, Material, and
+placeholder sources. Use Flutter `ThemeExtension`/`ThemeData` as the ribbon
+style-sheet surface, with `FxRibbonThemeData` only for ribbon-specific tokens.
+Consume the Milestone 4 localization foundation instead of creating a
+ribbon-only translation system; ribbon and designer strings must use the same
+four-locale, context-specific, PO-bridge workflow. Run the focused ribbon tests,
+localization audit, release screenshots, and full harness before tagging a
+`0.5.x` release.
 
 ## Version And Release Rules
 

@@ -201,4 +201,124 @@ class FxDesktopLocalizationsNe extends FxDesktopLocalizations {
   @override
   String get galleryPoStatus =>
       'ARB रनटाइम स्रोत नै रहन्छ; PO र POT अनुवादकका ब्रिज फाइलहरू हुन्।';
+
+  @override
+  String get ribbonToolbarSemantics => 'रिबन उपकरणपट्टी';
+
+  @override
+  String get ribbonNoTabs => 'रिबन ट्याब छैन';
+
+  @override
+  String get ribbonCollapse => 'रिबन संक्षिप्त गर्नुहोस्';
+
+  @override
+  String get ribbonExpand => 'रिबन विस्तार गर्नुहोस्';
+
+  @override
+  String get ribbonOpenMenu => 'मेनु खोल्नुहोस्';
+
+  @override
+  String get ribbonMenuEmpty => 'मेनु वस्तु छैन';
+
+  @override
+  String ribbonGroupSemantics(String group) {
+    return 'रिबन समूह $group';
+  }
+
+  @override
+  String get ribbonDesignerTitle => 'रिबन डिजाइनर';
+
+  @override
+  String get ribbonDesignerNew => 'नयाँ';
+
+  @override
+  String get ribbonDesignerAddTab => 'ट्याब थप्नुहोस्';
+
+  @override
+  String get ribbonDesignerAddGroup => 'समूह थप्नुहोस्';
+
+  @override
+  String get ribbonDesignerAddItem => 'वस्तु थप्नुहोस्';
+
+  @override
+  String get ribbonDesignerDelete => 'मेटाउनुहोस्';
+
+  @override
+  String get ribbonDesignerExport => 'JSON निर्यात';
+
+  @override
+  String get ribbonDesignerExported => 'रिबन JSON निर्यात गरियो।';
+
+  @override
+  String get ribbonDesignerPreviewLocale => 'पूर्वावलोकन लोकेल';
+
+  @override
+  String get ribbonDesignerStructure => 'संरचना';
+
+  @override
+  String get ribbonDesignerJsonPreview => 'JSON पूर्वावलोकन';
+
+  @override
+  String get ribbonDesignerInspector => 'निरीक्षक';
+
+  @override
+  String get ribbonDesignerNoSelection =>
+      'ट्याब, समूह, वा वस्तु चयन गर्नुहोस्।';
+
+  @override
+  String get ribbonDesignerStatusReady => 'तयार।';
+
+  @override
+  String get ribbonDesignerCaption => 'क्याप्सन';
+
+  @override
+  String get ribbonDesignerKeyTip => 'KeyTip';
+
+  @override
+  String get ribbonDesignerContextual => 'सान्दर्भिक ट्याब';
+
+  @override
+  String get ribbonDesignerContextGroup => 'सान्दर्भिक समूह';
+
+  @override
+  String get ribbonDesignerCommandTag => 'कमाण्ड ट्याग';
+
+  @override
+  String get ribbonDesignerItemType => 'वस्तु प्रकार';
+
+  @override
+  String get ribbonDesignerTooltip => 'टुलटिप';
+
+  @override
+  String get ribbonDesignerIconKey => 'आइकन कुञ्जी';
+
+  @override
+  String get ribbonDesignerEnabled => 'सक्षम';
+
+  @override
+  String get ribbonDesignerChecked => 'चेक गरिएको';
+
+  @override
+  String get ribbonDesignerLocalizedCaptions => 'स्थानीयकृत क्याप्सन';
+
+  @override
+  String get ribbonItemTypeLarge => 'ठूलो बटन';
+
+  @override
+  String get ribbonItemTypeSmall => 'सानो बटन';
+
+  @override
+  String get ribbonItemTypeDropdown => 'ड्रपडाउन';
+
+  @override
+  String get ribbonItemTypeSplitButton => 'स्प्लिट बटन';
+
+  @override
+  String get ribbonItemTypeToggle => 'टगल';
+
+  @override
+  String get ribbonItemTypeCheckBox => 'चेकबक्स';
+
+  @override
+  String get ribbonItemTypeSeparator => 'विभाजक';
 }

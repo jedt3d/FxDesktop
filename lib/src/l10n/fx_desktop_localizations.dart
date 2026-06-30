@@ -464,6 +464,240 @@ abstract class FxDesktopLocalizations {
   /// In en, this message translates to:
   /// **'ARB remains the runtime source; PO and POT are translator bridge files.'**
   String get galleryPoStatus;
+
+  /// Accessibility label for the ribbon toolbar container.
+  ///
+  /// In en, this message translates to:
+  /// **'Ribbon toolbar'**
+  String get ribbonToolbarSemantics;
+
+  /// Empty state shown when a ribbon definition has no tabs.
+  ///
+  /// In en, this message translates to:
+  /// **'No ribbon tabs'**
+  String get ribbonNoTabs;
+
+  /// Tooltip/action label for collapsing the ribbon content band.
+  ///
+  /// In en, this message translates to:
+  /// **'Collapse ribbon'**
+  String get ribbonCollapse;
+
+  /// Tooltip/action label for expanding the ribbon content band.
+  ///
+  /// In en, this message translates to:
+  /// **'Expand ribbon'**
+  String get ribbonExpand;
+
+  /// Accessibility hint for a ribbon command with a menu.
+  ///
+  /// In en, this message translates to:
+  /// **'Open menu'**
+  String get ribbonOpenMenu;
+
+  /// Disabled menu row shown when a dropdown has no menu entries.
+  ///
+  /// In en, this message translates to:
+  /// **'No menu items'**
+  String get ribbonMenuEmpty;
+
+  /// Accessibility label for a ribbon group.
+  ///
+  /// In en, this message translates to:
+  /// **'Ribbon group {group}'**
+  String ribbonGroupSemantics(String group);
+
+  /// Title for the embeddable ribbon designer.
+  ///
+  /// In en, this message translates to:
+  /// **'Ribbon Designer'**
+  String get ribbonDesignerTitle;
+
+  /// Designer command that creates a new ribbon definition.
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get ribbonDesignerNew;
+
+  /// Designer command that adds a tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Add tab'**
+  String get ribbonDesignerAddTab;
+
+  /// Designer command that adds a group.
+  ///
+  /// In en, this message translates to:
+  /// **'Add group'**
+  String get ribbonDesignerAddGroup;
+
+  /// Designer command that adds an item.
+  ///
+  /// In en, this message translates to:
+  /// **'Add item'**
+  String get ribbonDesignerAddItem;
+
+  /// Designer command that deletes the selected node.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get ribbonDesignerDelete;
+
+  /// Designer command that exports the current ribbon JSON.
+  ///
+  /// In en, this message translates to:
+  /// **'Export JSON'**
+  String get ribbonDesignerExport;
+
+  /// Designer status shown after export is requested.
+  ///
+  /// In en, this message translates to:
+  /// **'Ribbon JSON exported.'**
+  String get ribbonDesignerExported;
+
+  /// Label for the designer preview locale picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview locale'**
+  String get ribbonDesignerPreviewLocale;
+
+  /// Designer hierarchy pane title.
+  ///
+  /// In en, this message translates to:
+  /// **'Structure'**
+  String get ribbonDesignerStructure;
+
+  /// Designer JSON pane title.
+  ///
+  /// In en, this message translates to:
+  /// **'JSON preview'**
+  String get ribbonDesignerJsonPreview;
+
+  /// Designer inspector pane title.
+  ///
+  /// In en, this message translates to:
+  /// **'Inspector'**
+  String get ribbonDesignerInspector;
+
+  /// Designer inspector empty state.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a tab, group, or item.'**
+  String get ribbonDesignerNoSelection;
+
+  /// Designer default status message.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready.'**
+  String get ribbonDesignerStatusReady;
+
+  /// Inspector label for fallback caption.
+  ///
+  /// In en, this message translates to:
+  /// **'Caption'**
+  String get ribbonDesignerCaption;
+
+  /// Inspector label for keytip.
+  ///
+  /// In en, this message translates to:
+  /// **'KeyTip'**
+  String get ribbonDesignerKeyTip;
+
+  /// Inspector toggle for contextual tab state.
+  ///
+  /// In en, this message translates to:
+  /// **'Contextual tab'**
+  String get ribbonDesignerContextual;
+
+  /// Inspector field for contextual tab group name.
+  ///
+  /// In en, this message translates to:
+  /// **'Context group'**
+  String get ribbonDesignerContextGroup;
+
+  /// Inspector field for stable command tag.
+  ///
+  /// In en, this message translates to:
+  /// **'Command tag'**
+  String get ribbonDesignerCommandTag;
+
+  /// Inspector field for ribbon item type.
+  ///
+  /// In en, this message translates to:
+  /// **'Item type'**
+  String get ribbonDesignerItemType;
+
+  /// Inspector field for fallback tooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Tooltip'**
+  String get ribbonDesignerTooltip;
+
+  /// Inspector field for icon registry key.
+  ///
+  /// In en, this message translates to:
+  /// **'Icon key'**
+  String get ribbonDesignerIconKey;
+
+  /// Inspector toggle for enabled state.
+  ///
+  /// In en, this message translates to:
+  /// **'Enabled'**
+  String get ribbonDesignerEnabled;
+
+  /// Inspector toggle for toggle/checkbox active state.
+  ///
+  /// In en, this message translates to:
+  /// **'Checked'**
+  String get ribbonDesignerChecked;
+
+  /// Inspector section title for per-locale captions.
+  ///
+  /// In en, this message translates to:
+  /// **'Localized captions'**
+  String get ribbonDesignerLocalizedCaptions;
+
+  /// Ribbon item type name.
+  ///
+  /// In en, this message translates to:
+  /// **'Large button'**
+  String get ribbonItemTypeLarge;
+
+  /// Ribbon item type name.
+  ///
+  /// In en, this message translates to:
+  /// **'Small button'**
+  String get ribbonItemTypeSmall;
+
+  /// Ribbon item type name.
+  ///
+  /// In en, this message translates to:
+  /// **'Dropdown'**
+  String get ribbonItemTypeDropdown;
+
+  /// Ribbon item type name.
+  ///
+  /// In en, this message translates to:
+  /// **'Split button'**
+  String get ribbonItemTypeSplitButton;
+
+  /// Ribbon item type name.
+  ///
+  /// In en, this message translates to:
+  /// **'Toggle'**
+  String get ribbonItemTypeToggle;
+
+  /// Ribbon item type name.
+  ///
+  /// In en, this message translates to:
+  /// **'Checkbox'**
+  String get ribbonItemTypeCheckBox;
+
+  /// Ribbon item type name.
+  ///
+  /// In en, this message translates to:
+  /// **'Separator'**
+  String get ribbonItemTypeSeparator;
 }
 
 class _FxDesktopLocalizationsDelegate

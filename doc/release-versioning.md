@@ -125,6 +125,21 @@ Future `0.4.x` updates should keep ARB, generated localizations, PO fixtures,
 README, screenshots, public API docs, and pub.dev version metadata in sync.
 Run `dart run tool/fx_l10n.dart audit` before the full release harness.
 
+## Milestone 5 Release Versions
+
+Milestone 5 uses the `0.5.x` release line:
+
+- `v0.5.0`: Flutter-native `FxRibbonToolbar`, embeddable
+  `FxRibbonDesigner`, serializable ribbon model/schema, SVG/PNG/Material icon
+  registry, `FxRibbonThemeData`, mouse/touch/keyboard interaction support,
+  four-locale ribbon/designer strings, PO/POT bridge updates, and ribbon
+  release screenshots.
+
+Future `0.5.x` updates should keep ribbon schema docs, designer docs, ARB
+files, generated localizations, PO fixtures, screenshots, public API docs, and
+pub.dev version metadata in sync. Run the focused ribbon tests plus the full
+agent harness before tagging.
+
 ## Pub.dev
 
 FxDesktop is a Flutter package. Use `flutter pub publish` commands, not

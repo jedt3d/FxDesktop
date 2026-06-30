@@ -2,6 +2,53 @@
 
 ## Unreleased
 
+## 0.5.0
+
+Version `0.5.0` delivers Milestone 5: the Flutter-native ribbon toolbar and
+visual ribbon designer for large-screen desktop and web workflows.
+
+### Added
+- Added `FxRibbonToolbar`, a widget-first ribbon with tabs, groups, large and
+  small commands, dropdowns, split buttons, toggles, checkboxes, separators,
+  contextual tabs, collapse behavior, semantic events, keytips, and localized
+  command text.
+- Added `FxRibbonDesigner`, an embeddable visual editor with a live toolbar
+  preview, structure tree, JSON preview, inspector, localized caption fields,
+  validation status, and JSON export callback.
+- Added the pure Dart ribbon model layer: `FxRibbonDefinition`,
+  `FxRibbonTab`, `FxRibbonGroup`, `FxRibbonItem`, `FxRibbonMenuItem`,
+  `FxRibbonSelection`, `FxRibbonValidationResult`, and related event and
+  validation types.
+- Added `FxRibbonIconRegistry`, `FxRibbonIconSource`, `FxRibbonIconView`, SVG
+  string/asset support, PNG asset/bytes support, Material icon support, and
+  stable placeholder rendering for missing icons.
+- Added `FxRibbonThemeData`, `FxRibbonDensity`, and
+  `FxRibbonInteractionMode` so apps can style ribbon surfaces through Flutter
+  `ThemeData`/`ThemeExtension` while choosing mouse, touch, or auto pointer
+  behavior.
+- Added `FxRibbonSamples.explorer()`, adapted from the Jaspr reference ribbon
+  schema, with English, Thai, Japanese, and Nepali command captions and
+  tooltips.
+- Added ribbon and designer release screenshots for the pub.dev package page.
+
+### Changed
+- Extended the Milestone 4 localization foundation with ribbon toolbar and
+  designer strings across English, Thai, Japanese, and Nepali.
+- Registered `FxRibbonToolbar` and `FxRibbonDesigner` in
+  `fxComponentRegistry` and public exports.
+- Added `flutter_svg` as the package SVG renderer dependency after choosing
+  Flutter widget-native icon rendering over a canvas-only port.
+
+### Documentation
+- Added `doc/ribbon-schema.md` and `doc/ribbon-designer.md` for the shared JSON
+  model, localization behavior, icon sources, designer workflow, validation,
+  and export pattern.
+- Reconciled the Milestone 5 plan, developer guide, Xojo component map,
+  testing notes, localization guide, README, screenshots, generated API
+  signature, and release-versioning notes with the delivered `v0.5.0` surface.
+- Regenerated `.pot` and Thai/Japanese/Nepali `.po` bridge examples so
+  translator fixtures include the new ribbon and designer contexts.
+
 ## 0.4.0
 
 Version `0.4.0` delivers the Milestone 4 localization foundation before ribbon

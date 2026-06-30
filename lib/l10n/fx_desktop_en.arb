@@ -343,5 +343,206 @@
   "@galleryPoStatus": {
     "description": "Short proof text explaining PO bridge status in the localization gallery.",
     "context": "gallery.po_bridge.status"
+  },
+  "ribbonToolbarSemantics": "Ribbon toolbar",
+  "@ribbonToolbarSemantics": {
+    "description": "Accessibility label for the ribbon toolbar container.",
+    "context": "ribbon.toolbar.semantics"
+  },
+  "ribbonNoTabs": "No ribbon tabs",
+  "@ribbonNoTabs": {
+    "description": "Empty state shown when a ribbon definition has no tabs.",
+    "context": "ribbon.toolbar.no_tabs"
+  },
+  "ribbonCollapse": "Collapse ribbon",
+  "@ribbonCollapse": {
+    "description": "Tooltip/action label for collapsing the ribbon content band.",
+    "context": "ribbon.toolbar.collapse"
+  },
+  "ribbonExpand": "Expand ribbon",
+  "@ribbonExpand": {
+    "description": "Tooltip/action label for expanding the ribbon content band.",
+    "context": "ribbon.toolbar.expand"
+  },
+  "ribbonOpenMenu": "Open menu",
+  "@ribbonOpenMenu": {
+    "description": "Accessibility hint for a ribbon command with a menu.",
+    "context": "ribbon.toolbar.open_menu"
+  },
+  "ribbonMenuEmpty": "No menu items",
+  "@ribbonMenuEmpty": {
+    "description": "Disabled menu row shown when a dropdown has no menu entries.",
+    "context": "ribbon.toolbar.menu_empty"
+  },
+  "ribbonGroupSemantics": "Ribbon group {group}",
+  "@ribbonGroupSemantics": {
+    "description": "Accessibility label for a ribbon group.",
+    "context": "ribbon.toolbar.group_semantics",
+    "placeholders": {
+      "group": {
+        "type": "String",
+        "example": "Clipboard"
+      }
+    }
+  },
+  "ribbonDesignerTitle": "Ribbon Designer",
+  "@ribbonDesignerTitle": {
+    "description": "Title for the embeddable ribbon designer.",
+    "context": "ribbon.designer.title"
+  },
+  "ribbonDesignerNew": "New",
+  "@ribbonDesignerNew": {
+    "description": "Designer command that creates a new ribbon definition.",
+    "context": "ribbon.designer.command.new"
+  },
+  "ribbonDesignerAddTab": "Add tab",
+  "@ribbonDesignerAddTab": {
+    "description": "Designer command that adds a tab.",
+    "context": "ribbon.designer.command.add_tab"
+  },
+  "ribbonDesignerAddGroup": "Add group",
+  "@ribbonDesignerAddGroup": {
+    "description": "Designer command that adds a group.",
+    "context": "ribbon.designer.command.add_group"
+  },
+  "ribbonDesignerAddItem": "Add item",
+  "@ribbonDesignerAddItem": {
+    "description": "Designer command that adds an item.",
+    "context": "ribbon.designer.command.add_item"
+  },
+  "ribbonDesignerDelete": "Delete",
+  "@ribbonDesignerDelete": {
+    "description": "Designer command that deletes the selected node.",
+    "context": "ribbon.designer.command.delete"
+  },
+  "ribbonDesignerExport": "Export JSON",
+  "@ribbonDesignerExport": {
+    "description": "Designer command that exports the current ribbon JSON.",
+    "context": "ribbon.designer.command.export"
+  },
+  "ribbonDesignerExported": "Ribbon JSON exported.",
+  "@ribbonDesignerExported": {
+    "description": "Designer status shown after export is requested.",
+    "context": "ribbon.designer.status.exported"
+  },
+  "ribbonDesignerPreviewLocale": "Preview locale",
+  "@ribbonDesignerPreviewLocale": {
+    "description": "Label for the designer preview locale picker.",
+    "context": "ribbon.designer.preview_locale"
+  },
+  "ribbonDesignerStructure": "Structure",
+  "@ribbonDesignerStructure": {
+    "description": "Designer hierarchy pane title.",
+    "context": "ribbon.designer.pane.structure"
+  },
+  "ribbonDesignerJsonPreview": "JSON preview",
+  "@ribbonDesignerJsonPreview": {
+    "description": "Designer JSON pane title.",
+    "context": "ribbon.designer.pane.json_preview"
+  },
+  "ribbonDesignerInspector": "Inspector",
+  "@ribbonDesignerInspector": {
+    "description": "Designer inspector pane title.",
+    "context": "ribbon.designer.pane.inspector"
+  },
+  "ribbonDesignerNoSelection": "Select a tab, group, or item.",
+  "@ribbonDesignerNoSelection": {
+    "description": "Designer inspector empty state.",
+    "context": "ribbon.designer.no_selection"
+  },
+  "ribbonDesignerStatusReady": "Ready.",
+  "@ribbonDesignerStatusReady": {
+    "description": "Designer default status message.",
+    "context": "ribbon.designer.status.ready"
+  },
+  "ribbonDesignerCaption": "Caption",
+  "@ribbonDesignerCaption": {
+    "description": "Inspector label for fallback caption.",
+    "context": "ribbon.designer.field.caption"
+  },
+  "ribbonDesignerKeyTip": "KeyTip",
+  "@ribbonDesignerKeyTip": {
+    "description": "Inspector label for keytip.",
+    "context": "ribbon.designer.field.keytip"
+  },
+  "ribbonDesignerContextual": "Contextual tab",
+  "@ribbonDesignerContextual": {
+    "description": "Inspector toggle for contextual tab state.",
+    "context": "ribbon.designer.field.contextual"
+  },
+  "ribbonDesignerContextGroup": "Context group",
+  "@ribbonDesignerContextGroup": {
+    "description": "Inspector field for contextual tab group name.",
+    "context": "ribbon.designer.field.context_group"
+  },
+  "ribbonDesignerCommandTag": "Command tag",
+  "@ribbonDesignerCommandTag": {
+    "description": "Inspector field for stable command tag.",
+    "context": "ribbon.designer.field.command_tag"
+  },
+  "ribbonDesignerItemType": "Item type",
+  "@ribbonDesignerItemType": {
+    "description": "Inspector field for ribbon item type.",
+    "context": "ribbon.designer.field.item_type"
+  },
+  "ribbonDesignerTooltip": "Tooltip",
+  "@ribbonDesignerTooltip": {
+    "description": "Inspector field for fallback tooltip.",
+    "context": "ribbon.designer.field.tooltip"
+  },
+  "ribbonDesignerIconKey": "Icon key",
+  "@ribbonDesignerIconKey": {
+    "description": "Inspector field for icon registry key.",
+    "context": "ribbon.designer.field.icon_key"
+  },
+  "ribbonDesignerEnabled": "Enabled",
+  "@ribbonDesignerEnabled": {
+    "description": "Inspector toggle for enabled state.",
+    "context": "ribbon.designer.field.enabled"
+  },
+  "ribbonDesignerChecked": "Checked",
+  "@ribbonDesignerChecked": {
+    "description": "Inspector toggle for toggle/checkbox active state.",
+    "context": "ribbon.designer.field.checked"
+  },
+  "ribbonDesignerLocalizedCaptions": "Localized captions",
+  "@ribbonDesignerLocalizedCaptions": {
+    "description": "Inspector section title for per-locale captions.",
+    "context": "ribbon.designer.localized_captions"
+  },
+  "ribbonItemTypeLarge": "Large button",
+  "@ribbonItemTypeLarge": {
+    "description": "Ribbon item type name.",
+    "context": "ribbon.item_type.large"
+  },
+  "ribbonItemTypeSmall": "Small button",
+  "@ribbonItemTypeSmall": {
+    "description": "Ribbon item type name.",
+    "context": "ribbon.item_type.small"
+  },
+  "ribbonItemTypeDropdown": "Dropdown",
+  "@ribbonItemTypeDropdown": {
+    "description": "Ribbon item type name.",
+    "context": "ribbon.item_type.dropdown"
+  },
+  "ribbonItemTypeSplitButton": "Split button",
+  "@ribbonItemTypeSplitButton": {
+    "description": "Ribbon item type name.",
+    "context": "ribbon.item_type.split_button"
+  },
+  "ribbonItemTypeToggle": "Toggle",
+  "@ribbonItemTypeToggle": {
+    "description": "Ribbon item type name.",
+    "context": "ribbon.item_type.toggle"
+  },
+  "ribbonItemTypeCheckBox": "Checkbox",
+  "@ribbonItemTypeCheckBox": {
+    "description": "Ribbon item type name.",
+    "context": "ribbon.item_type.checkbox"
+  },
+  "ribbonItemTypeSeparator": "Separator",
+  "@ribbonItemTypeSeparator": {
+    "description": "Ribbon item type name.",
+    "context": "ribbon.item_type.separator"
   }
 }

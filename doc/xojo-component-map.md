@@ -32,8 +32,9 @@ is semantic and generation-oriented, not a native-control equivalence.
 | `FxListBox` | `DesktopListBox` | `WebListBox` | Custom |
 | `FxGrid` | `DesktopGrid` | future/custom | Custom |
 | `FxLocalizationGallery` | localization preview window | generation/custom | Custom |
-| `FxRibbonToolbar` | `XjRibbon` / `DesktopCanvas` ribbon | `XjRibbon` / `WebCanvas` ribbon | Planned |
-| `FxRibbonDesigner` | `XjRibbon Designer` | embeddable Flutter web/desktop designer | Planned |
+| `FxRibbonToolbar` | `XjRibbon` / `DesktopCanvas` ribbon | `XjRibbon` / `WebCanvas` ribbon | Custom |
+| `FxRibbonDesigner` | `XjRibbon Designer` | embeddable Flutter web/desktop designer | Custom |
+| `FxRibbonIconView` | `XjRibbon` icon renderer | supporting renderer | Custom |
 
 ## Layout Naming
 
@@ -126,22 +127,24 @@ See [Localization](localization.md) for the implementation guide and
 [Milestone 4: Localization Foundation](milestone-4-localization.md) for the
 acceptance map.
 
-## Milestone 5 Planned Ribbon Surface
+## Milestone 5 Delivered Ribbon Surface
 
-Milestone 5 plans an Office-style ribbon toolbar and visual designer for large
-Flutter desktop and web surfaces. It transfers the Dart model/schema lessons
-from `jaspr-ribbon-toolbar` and the original Xojo control semantics from
-`XjRibbon`, while adapting the renderer to Flutter widgets, semantics, focus,
-menus, overlays, pointer-kind handling, theming, and the Milestone 4
-localization foundation.
+Milestone 5 is delivered in `v0.5.0` with an Office-style ribbon toolbar and
+visual designer for large Flutter desktop and web surfaces. It transfers the
+Dart model/schema lessons from `jaspr-ribbon-toolbar` and the original Xojo
+control semantics from `XjRibbon`, while adapting the renderer to Flutter
+widgets, semantics, focus, menus, pointer-kind handling, theming, and the
+Milestone 4 localization foundation.
 
-| Planned FxDesktop | Source concept | Direction |
+| FxDesktop | Source concept | Delivered direction |
 |---|---|---|
-| `FxRibbonToolbar` | `RibbonToolbar` / `XjRibbon` | Widget-first ribbon with tabs, groups, large/small commands, dropdowns, split buttons, toggles, checkboxes, separators, contextual tabs, collapse behavior, SVG/PNG icons, keytips, mouse, keyboard, and touch support. |
-| `FxRibbonDesigner` | Jaspr/Xojo ribbon designers | Embeddable visual designer with hierarchy editing, inspector, live preview, validation, JSON import/export, icon assignment, and undo/redo. |
+| `FxRibbonToolbar` | `RibbonToolbar` / `XjRibbon` | Widget-first ribbon with tabs, groups, large/small commands, dropdowns, split buttons, toggles, checkboxes, separators, contextual tabs, collapse behavior, SVG/PNG/Material icons, keytips, mouse, keyboard, touch mode, semantic events, and localized captions. |
+| `FxRibbonDesigner` | Jaspr/Xojo ribbon designers | Embeddable visual designer with hierarchy editing, inspector, live preview, validation, JSON export callback, localized caption editing, and shared model updates. |
+| `FxRibbonIconView` | Jaspr/Xojo icon renderer | Supporting public renderer for SVG, PNG, Material, image-provider, and placeholder icon sources. |
 
 See [Milestone 5: Ribbon Toolbar And Visual Designer](milestone-5-ribbon-toolbar-designer.md)
-for the implementation plan.
+for the delivered acceptance map, plus [Ribbon Schema](ribbon-schema.md) and
+[Ribbon Designer](ribbon-designer.md) for usage details.
 
 ## Mobile And Tablet
 

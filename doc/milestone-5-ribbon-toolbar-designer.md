@@ -1,21 +1,59 @@
 # Milestone 5: Ribbon Toolbar And Visual Designer
 
-Milestone 5 adds an Office-style ribbon toolbar and a visual ribbon designer to
-FxDesktop. The feature targets Flutter desktop and Flutter web on large screens.
-It may work well on iPad-sized touch screens, but it is not a mobile-phone
-component and must not introduce a phone-first layout mode.
+Milestone 5 is delivered in `v0.5.0`. It adds an Office-style ribbon toolbar
+and a visual ribbon designer to FxDesktop. The feature targets Flutter desktop
+and Flutter web on large screens. It may work well on iPad-sized touch screens,
+but it is not a mobile-phone component and must not introduce a phone-first
+layout mode.
 
-This is a large feature branch. Treat it as a sequence of implementation
-cycles with explicit gates, screenshots, and logs, not one broad port.
+This document now serves as the delivered acceptance map plus the original
+planning record. The first published surface intentionally focuses on a
+dependency-light package core: reusable toolbar, shared model, icon registry,
+theme extension, validator, embeddable designer, JSON export, localization, and
+release screenshots.
 
-Recommended implementation branch:
+Delivered implementation branch:
 
 ```bash
 feature/m5-ribbon-toolbar-designer
 ```
 
-This planning branch is documentation-only and does not bump the package
-version.
+Published release target:
+
+```bash
+v0.5.0
+```
+
+## Delivered In v0.5.0
+
+- `FxRibbonToolbar`
+- `FxRibbonDesigner`
+- `FxRibbonDefinition`, `FxRibbonTab`, `FxRibbonGroup`, `FxRibbonItem`,
+  `FxRibbonMenuItem`, and `FxRibbonSelection`
+- `FxRibbonValidator`, validation issue codes, severities, and JSON validation
+- `FxRibbonIconRegistry`, SVG string/asset support, PNG asset/bytes support,
+  Material icon support, image-provider support, and placeholder icons
+- `FxRibbonThemeData`, `FxRibbonDensity`, and `FxRibbonInteractionMode`
+- Jaspr-style `.ribbon` JSON import compatibility for the shared model
+- JSON export from the designer through `onExportRequested`
+- localized command captions, tooltips, toolbar chrome, and designer chrome for
+  English, Thai, Japanese, and Nepali
+- `FxRibbonSamples.explorer()`, adapted from
+  `jaspr-ribbon-toolbar/examples/explorer.ribbon`
+- public exports, component registry entries, README usage, schema/designer
+  docs, release screenshots, generated API signature, and PO/POT bridge updates
+
+Deferred after the first release:
+
+- file picker or browser download integration in package core
+- drag/drop icon import
+- visual reordering of tabs, groups, and items
+- full dropdown menu item editor in the designer
+- designer undo/redo snapshots
+- Xojo code generation and Jaspr-compatible export mode
+- separate unattended `tool/ribbon_cycle.dart` runner; the release uses the
+  existing package harness plus focused ribbon, localization, screenshot, and
+  pub.dev checks
 
 ## Source Material
 
@@ -145,14 +183,13 @@ Proposed public model and widget names:
 - `FxRibbonDensity`
 - `FxRibbonInteractionMode`
 - `FxRibbonThemeData`
-- `FxRibbonLocalizations`
 - `FxRibbonLocalizedText`
 
 Avoid unprefixed names like `RibbonDefinition` in public FxDesktop exports.
 
 ## File Layout
 
-Expected implementation files:
+Delivered implementation files:
 
 ```text
 lib/src/fx_ribbon_models.dart
@@ -161,42 +198,39 @@ lib/src/fx_ribbon_layout.dart
 lib/src/fx_ribbon_toolbar.dart
 lib/src/fx_ribbon_designer.dart
 lib/src/fx_ribbon_theme.dart
-lib/src/fx_ribbon_localizations.dart
 ```
 
-Expected tests:
+Delivered tests:
 
 ```text
 test/fx_ribbon_models_test.dart
-test/fx_ribbon_icons_test.dart
 test/fx_ribbon_layout_test.dart
 test/fx_ribbon_toolbar_test.dart
 test/fx_ribbon_designer_test.dart
-test/fx_ribbon_localizations_test.dart
-test/release_ribbon_screenshot_test.dart
+test/release_screenshot_test.dart
 ```
 
-Expected examples and docs:
+Delivered examples and docs:
 
 ```text
 doc/milestone-5-ribbon-toolbar-designer.md
 doc/ribbon-schema.md
 doc/ribbon-designer.md
-doc/ribbon-cycle-log.md
-example/lib/main.dart
-doc/screenshots/v0.5.x/
+doc/screenshots/v0.5.0/ribbon/
 ```
 
-Expected cycle tooling:
+Release checks:
 
-```text
-tool/ribbon_cycle.dart
-tool/ribbon_screenshot.dart
-tool/agent_harness.dart
+```bash
+flutter analyze
+flutter test test/fx_ribbon_models_test.dart test/fx_ribbon_layout_test.dart test/fx_ribbon_toolbar_test.dart test/fx_ribbon_designer_test.dart
+dart run tool/fx_l10n.dart audit
+flutter test --update-goldens test/release_screenshot_test.dart
+dart run tool/agent_harness.dart --update-api
+dart run tool/agent_harness.dart
 ```
 
-`lib/fx_desktop.dart` should export the ribbon files only after Phase 4.1 has
-model tests and Phase 4.3 has a usable toolbar widget.
+`lib/fx_desktop.dart` exports the ribbon files in `v0.5.0`.
 
 ## Model Contract
 
@@ -537,18 +571,17 @@ There are two ribbon localization surfaces:
    import/export actions, undo/redo labels, keytip announcements, collapse
    affordances, and accessibility descriptions.
 
-Required public contract:
+Delivered public contract:
 
-- `FxRibbonLocalizations` should be an extension of the shared FxDesktop
-  localization layer, not an unrelated delegate.
-- `FxRibbonToolbar` and `FxRibbonDesigner` should resolve built-in text through
-  the shared FxDesktop localizations API.
-- `FxRibbonDefinition` should own user-authored localized command text through
+- `FxRibbonToolbar` and `FxRibbonDesigner` resolve built-in text through the
+  shared `FxDesktopLocalizations` API.
+- `FxRibbonDefinition` owns user-authored localized command text through
   fallback strings plus optional locale maps.
-- `FxRibbonValidator` should expose stable error/warning codes and arguments so
-  messages can be localized at presentation time.
-- Public callbacks and events should carry stable tags/codes, not translated
-  strings, so app logic remains locale-independent.
+- `FxRibbonLocalizedText` is a public alias to suite-wide `FxLocalizedText`.
+- `FxRibbonValidator` exposes stable error/warning codes and issue paths; the
+  first release stores issue messages as developer-facing English diagnostics.
+- Public callbacks and events carry stable tags/codes, not translated strings,
+  so app logic remains locale-independent.
 
 Locale behavior:
 
@@ -588,8 +621,9 @@ Tests:
 
 ## Designer
 
-`FxRibbonDesigner` should be an embeddable Flutter widget, not a separate app
-locked to one shell. The example app can host it as a full-screen page.
+`FxRibbonDesigner` is an embeddable Flutter widget, not a separate app locked
+to one shell. The example app or a product app can host it as a full-screen
+page.
 
 ### Designer Layout
 
@@ -614,27 +648,30 @@ Use existing FxDesktop controls where they prove the suite:
 
 ### Designer MVP Features
 
-Required:
+Delivered in `v0.5.0`:
 
 - create new definition;
-- load definition from JSON string;
 - export definition to JSON string;
-- add/delete/reorder tabs;
-- add/delete/reorder groups;
-- add/delete/reorder items;
+- add/delete tabs;
+- add/delete groups;
+- add/delete items;
 - edit caption, tag, item type, enabled state, tooltip, keytip, icon key;
-- edit localized captions, tooltips, and semantic labels;
-- edit dropdown menu items;
+- edit localized captions;
 - edit contextual tab fields;
 - preview using a selected locale;
 - live preview using `FxRibbonToolbar`;
 - validation panel;
+- status row.
+
+Deferred after the first release:
+
+- load definition from JSON string inside the package widget;
+- reorder tabs, groups, and items;
+- edit localized tooltips and semantic labels in the visual inspector;
+- edit dropdown menu items visually;
 - dirty state;
 - undo/redo through snapshot or model-command history;
-- copy JSON to clipboard where Flutter platform support exists.
-
-Nice-to-have after MVP:
-
+- copy JSON to clipboard where Flutter platform support exists;
 - sample templates such as File Explorer-style Home/View tabs;
 - icon manager with drag/drop upload in app shells that provide bytes;
 - Xojo code generation;
@@ -810,9 +847,13 @@ Expose warnings separately from errors so the designer can show soft guidance.
 
 ## Autonomous Development Cycles
 
-Implementation should be split into cycles that can be run, logged, and
-verified independently. The current `Implementation Phases` section defines the
-feature order; this section defines the unattended execution contract.
+This section records the original unattended-cycle plan. The delivered
+`v0.5.0` release did not add a separate `tool/ribbon_cycle.dart`; instead it
+uses the existing `tool/agent_harness.dart` plus focused ribbon tests,
+localization audit, release screenshots, release-sync checks, Dartdoc, and
+pub.dev dry-run. Keep the cycle notes below as the historical phase map and as
+guidance for future automation, not as a list of files that must exist in
+`v0.5.0`.
 
 ### One-Command Contract
 
@@ -924,8 +965,8 @@ Deliver:
 
 - `FxRibbonThemeData` as a `ThemeExtension`;
 - `FxRibbonDensity` and `FxRibbonInteractionMode`;
-- `FxRibbonLocalizations` plus an English delegate and sample non-English
-  delegate;
+- shared `FxDesktopLocalizations` keys for toolbar and designer chrome plus
+  sample non-English translations;
 - icon registry with Material, SVG if accepted, PNG, embedded, and placeholder
   paths;
 - disabled, hover, active, focus, keytip, menu, and validation style slots;

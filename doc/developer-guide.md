@@ -120,9 +120,11 @@ Key rules:
 
 ## Ribbon Toolbar and Designer
 
-Milestone 5 plans a large-screen `FxRibbonToolbar` and `FxRibbonDesigner`.
-Follow `doc/milestone-5-ribbon-toolbar-designer.md` before implementing this
-surface.
+Milestone 5 is delivered in `v0.5.0` with a large-screen
+`FxRibbonToolbar`, `FxRibbonDesigner`, serializable ribbon model, icon
+registry, theme extension, and four-locale built-in strings. Follow
+`doc/ribbon-schema.md`, `doc/ribbon-designer.md`, and
+`doc/milestone-5-ribbon-toolbar-designer.md` before extending this surface.
 
 Key rules:
 
@@ -137,14 +139,16 @@ Key rules:
 - Do not turn the ribbon into a mobile-phone navigation component.
 - Treat 1280 px as the primary design width and 1024 px as the minimum usable
   width that must prove horizontal overflow or equivalent large-screen behavior.
-- Use the documented ribbon cycle runner once Cycle 0 creates it:
-  `dart run tool/ribbon_cycle.dart --all` for unattended progress or
-  `dart run tool/ribbon_cycle.dart --cycle N` for focused resumes.
 - Consume the Milestone 4 localization foundation for built-in strings,
   context-specific duplicate text, four-language coverage, and `.po`/`.pot`
   bridge behavior.
 - Keep the designer embeddable and dependency-light; app shells can provide
   file picker or web download integrations through callbacks.
+- Preserve the shared JSON model so definitions can be imported from
+  Jaspr-style `.ribbon` files and exported from the designer without depending
+  on local file-system APIs.
+- Run the focused ribbon tests after changing this surface:
+  `flutter test test/fx_ribbon_models_test.dart test/fx_ribbon_layout_test.dart test/fx_ribbon_toolbar_test.dart test/fx_ribbon_designer_test.dart`.
 
 ## Release Workflow
 

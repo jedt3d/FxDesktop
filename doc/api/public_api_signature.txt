@@ -406,6 +406,234 @@
   FxRemainingColumnWidth constructor const FxRemainingColumnWidth()
   FxRemainingColumnWidth member Map<String, Object?> toJson()
   FxRemainingColumnWidth member table.TableSpanExtent toTableSpanExtent()
+  FxRibbonDefinition constructor FxRibbonDefinition copyWith(
+  FxRibbonDefinition constructor FxRibbonDefinition toggled(String tag)
+  FxRibbonDefinition constructor const FxRibbonDefinition(
+  FxRibbonDefinition constructor factory FxRibbonDefinition.fromJson(Map<String, Object?> json)
+  FxRibbonDefinition constructor factory FxRibbonDefinition.fromJsonString(String source)
+  FxRibbonDefinition member FxRibbonItem? findItem(String tag)
+  FxRibbonDefinition member List<FxRibbonTab> visibleTabs(Set<String> visibleContextGroups)
+  FxRibbonDefinition member Map<String, Object?> toJson()
+  FxRibbonDefinition member Map<String, Object?> toTemplateMap()
+  FxRibbonDefinition member String resolveName(Locale locale)
+  FxRibbonDefinition member String toJsonString()
+  FxRibbonDefinition member bool operator ==(Object other)
+  FxRibbonDefinition member final List<FxRibbonTab> tabs
+  FxRibbonDefinition member final Map<String, FxRibbonEmbeddedIcon> icons
+  FxRibbonDefinition member final Map<String, Object?> metadata
+  FxRibbonDefinition member final Map<String, String> localizedNames
+  FxRibbonDefinition member final String projectType
+  FxRibbonDefinition member final String version
+  FxRibbonDefinition member final String? description
+  FxRibbonDefinition member final String? name
+  FxRibbonDefinition member static const String kJasprSchemaVersion = '2.0'
+  FxRibbonDefinition member static const String kProjectTypeFlutter = 'flutter'
+  FxRibbonDefinition member static const String kSchemaVersion = '1.0'
+  FxRibbonDesigner constructor const FxRibbonDesigner(
+  FxRibbonDesigner member final FxRibbonDefinition? initialDefinition
+  FxRibbonDesigner member final FxRibbonIconRegistry icons
+  FxRibbonDesigner member final Locale? locale
+  FxRibbonDesigner member final ValueChanged<FxRibbonDefinition>? onDefinitionChanged
+  FxRibbonDesigner member final ValueChanged<FxRibbonSelection>? onSelectionChanged
+  FxRibbonDesigner member final ValueChanged<String>? onExportRequested
+  FxRibbonEmbeddedIcon constructor const FxRibbonEmbeddedIcon(required this.kind, required this.data})
+  FxRibbonEmbeddedIcon constructor factory FxRibbonEmbeddedIcon.fromJson(Map<String, Object?> json)
+  FxRibbonEmbeddedIcon member Map<String, Object?> toJson()
+  FxRibbonEmbeddedIcon member bool operator ==(Object other)
+  FxRibbonEmbeddedIcon member final FxRibbonEmbeddedIconKind kind
+  FxRibbonEmbeddedIcon member final String data
+  FxRibbonEmbeddedIcon member int get hashCode
+  FxRibbonGroup constructor FxRibbonGroup copyWith(
+  FxRibbonGroup constructor const FxRibbonGroup(
+  FxRibbonGroup constructor factory FxRibbonGroup.fromJson(Map<String, Object?> json)
+  FxRibbonGroup member FxRibbonItem? findItem(String tag)
+  FxRibbonGroup member Map<String, Object?> toJson()
+  FxRibbonGroup member String resolveCaption(Locale locale)
+  FxRibbonGroup member bool operator ==(Object other)
+  FxRibbonGroup member final List<FxRibbonItem> items
+  FxRibbonGroup member final Map<String, String> localizedCaptions
+  FxRibbonGroup member final String caption
+  FxRibbonGroup member final String? id
+  FxRibbonIconRegistry constructor FxRibbonIconRegistry merge(FxRibbonIconRegistry other)
+  FxRibbonIconRegistry constructor const FxRibbonIconRegistry._(this._entries)
+  FxRibbonIconRegistry constructor const FxRibbonIconRegistry.empty()
+  FxRibbonIconRegistry constructor factory FxRibbonIconRegistry(
+  FxRibbonIconRegistry constructor factory FxRibbonIconRegistry.fromEmbedded(
+  FxRibbonIconRegistry member FxRibbonIconSource? operator [](String? key)
+  FxRibbonIconRegistry member Map<String, Object?> toTemplateMap()
+  FxRibbonIconSource constructor const FxRibbonIconSource._(
+  FxRibbonIconSource constructor const FxRibbonIconSource.imageProvider(ImageProvider imageProvider)
+  FxRibbonIconSource constructor const FxRibbonIconSource.material(IconData icon)
+  FxRibbonIconSource constructor const FxRibbonIconSource.pngAsset(String assetName, String? package})
+  FxRibbonIconSource constructor const FxRibbonIconSource.pngBytes(Uint8List pngBytes)
+  FxRibbonIconSource constructor const FxRibbonIconSource.svgAsset(String assetName, String? package})
+  FxRibbonIconSource constructor const FxRibbonIconSource.svgString(String svgString)
+  FxRibbonIconSource constructor factory FxRibbonIconSource.fromEmbedded(FxRibbonEmbeddedIcon icon)
+  FxRibbonIconSource member final FxRibbonIconKind kind
+  FxRibbonIconSource member final IconData? icon
+  FxRibbonIconSource member final ImageProvider? imageProvider
+  FxRibbonIconSource member final String? assetName
+  FxRibbonIconSource member final String? package
+  FxRibbonIconSource member final String? svgString
+  FxRibbonIconSource member final Uint8List? pngBytes
+  FxRibbonIconView constructor const FxRibbonIconView(
+  FxRibbonIconView member Widget build(BuildContext context)
+  FxRibbonIconView member final Color? placeholderColor
+  FxRibbonIconView member final FxRibbonIconSource? source
+  FxRibbonIconView member final String label
+  FxRibbonIconView member final bool enabled
+  FxRibbonIconView member final double size
+  FxRibbonItem constructor FxRibbonItem copyWith(
+  FxRibbonItem constructor FxRibbonItem toggled()
+  FxRibbonItem constructor const FxRibbonItem(
+  FxRibbonItem constructor const FxRibbonItem.separator()
+  FxRibbonItem constructor factory FxRibbonItem.checkBox(
+  FxRibbonItem constructor factory FxRibbonItem.dropdown(
+  FxRibbonItem constructor factory FxRibbonItem.fromJson(Map<String, Object?> json)
+  FxRibbonItem constructor factory FxRibbonItem.large(
+  FxRibbonItem constructor factory FxRibbonItem.small(
+  FxRibbonItem constructor factory FxRibbonItem.splitButton(
+  FxRibbonItem constructor factory FxRibbonItem.toggle(
+  FxRibbonItem member Map<String, Object?> toJson()
+  FxRibbonItem member String resolveCaption(Locale locale)
+  FxRibbonItem member String resolveSemanticLabel(Locale locale)
+  FxRibbonItem member String? resolveTooltip(Locale locale)
+  FxRibbonItem member bool operator ==(Object other)
+  FxRibbonItem member final FxRibbonItemType itemType
+  FxRibbonItem member final List<FxRibbonMenuItem> menuItems
+  FxRibbonItem member final Map<String, String> localizedCaptions
+  FxRibbonItem member final Map<String, String> localizedSemanticLabels
+  FxRibbonItem member final Map<String, String> localizedTooltips
+  FxRibbonItem member final String caption
+  FxRibbonItem member final String tag
+  FxRibbonItem member final String? iconKey
+  FxRibbonItem member final String? keyTip
+  FxRibbonItem member final String? semanticLabel
+  FxRibbonItem member final String? tooltipText
+  FxRibbonItem member final bool isEnabled
+  FxRibbonItem member final bool isToggleActive
+  FxRibbonLaidGroup constructor const FxRibbonLaidGroup(
+  FxRibbonLaidGroup member final FxRibbonGroup group
+  FxRibbonLaidGroup member final List<FxRibbonLaidItem> items
+  FxRibbonLaidGroup member final Rect rect
+  FxRibbonLaidItem constructor const FxRibbonLaidItem(
+  FxRibbonLaidItem member final FxRibbonItem item
+  FxRibbonLaidItem member final Rect rect
+  FxRibbonLaidItem member final Rect? arrowRect
+  FxRibbonLaidItem member final Rect? bodyRect
+  FxRibbonLaidTab constructor const FxRibbonLaidTab(
+  FxRibbonLaidTab member final FxRibbonTab tab
+  FxRibbonLaidTab member final Rect rect
+  FxRibbonLaidTab member final int visibleIndex
+  FxRibbonLayout constructor const FxRibbonLayout(
+  FxRibbonLayout member final List<FxRibbonLaidGroup> groups
+  FxRibbonLayout member final List<FxRibbonLaidTab> tabs
+  FxRibbonLayout member final Rect collapseButtonRect
+  FxRibbonLayout member final Size size
+  FxRibbonLayout member final bool collapsed
+  FxRibbonLayout member static FxRibbonLayout compute(
+  FxRibbonLayoutMetrics constructor const FxRibbonLayoutMetrics(
+  FxRibbonLayoutMetrics constructor factory FxRibbonLayoutMetrics.forMode(
+  FxRibbonLayoutMetrics member final double arrowZoneWidth
+  FxRibbonLayoutMetrics member final double collapseButtonSize
+  FxRibbonLayoutMetrics member final double contentPadding
+  FxRibbonLayoutMetrics member final double groupGap
+  FxRibbonLayoutMetrics member final double groupLabelHeight
+  FxRibbonLayoutMetrics member final double groupPadding
+  FxRibbonLayoutMetrics member final double itemGap
+  FxRibbonLayoutMetrics member final double largeButtonHeight
+  FxRibbonLayoutMetrics member final double largeButtonWidth
+  FxRibbonLayoutMetrics member final double smallButtonHeight
+  FxRibbonLayoutMetrics member final double smallButtonMinWidth
+  FxRibbonLayoutMetrics member final double tabStripHeight
+  FxRibbonMenuItem constructor FxRibbonMenuItem copyWith(
+  FxRibbonMenuItem constructor const FxRibbonMenuItem(
+  FxRibbonMenuItem constructor const FxRibbonMenuItem.separator()
+  FxRibbonMenuItem constructor factory FxRibbonMenuItem.fromJson(Map<String, Object?> json)
+  FxRibbonMenuItem member Map<String, Object?> toJson()
+  FxRibbonMenuItem member String resolveCaption(Locale locale)
+  FxRibbonMenuItem member String resolveSemanticLabel(Locale locale)
+  FxRibbonMenuItem member bool operator ==(Object other)
+  FxRibbonMenuItem member final Map<String, String> localizedCaptions
+  FxRibbonMenuItem member final Map<String, String> localizedSemanticLabels
+  FxRibbonMenuItem member final String caption
+  FxRibbonMenuItem member final String tag
+  FxRibbonMenuItem member final String? semanticLabel
+  FxRibbonMenuItem member final bool isSeparator
+  FxRibbonSamples constructor const FxRibbonSamples._()
+  FxRibbonSamples member static FxRibbonDefinition explorer()
+  FxRibbonSelection constructor const FxRibbonSelection(
+  FxRibbonSelection member Map<String, Object?> toTemplateMap()
+  FxRibbonSelection member bool operator ==(Object other)
+  FxRibbonSelection member final int tabIndex
+  FxRibbonSelection member final int? groupIndex
+  FxRibbonSelection member final int? itemIndex
+  FxRibbonSelection member final int? menuItemIndex
+  FxRibbonSelection member static const firstTab = FxRibbonSelection(tabIndex: 0)
+  FxRibbonTab constructor FxRibbonTab copyWith(
+  FxRibbonTab constructor const FxRibbonTab(
+  FxRibbonTab constructor const FxRibbonTab.contextual(
+  FxRibbonTab constructor factory FxRibbonTab.fromJson(Map<String, Object?> json)
+  FxRibbonTab member FxRibbonItem? findItem(String tag)
+  FxRibbonTab member Map<String, Object?> toJson()
+  FxRibbonTab member String resolveCaption(Locale locale)
+  FxRibbonTab member String? resolveContextGroup(Locale locale)
+  FxRibbonTab member bool operator ==(Object other)
+  FxRibbonTab member final Color? accentColor
+  FxRibbonTab member final List<FxRibbonGroup> groups
+  FxRibbonTab member final Map<String, String> localizedCaptions
+  FxRibbonTab member final Map<String, String> localizedContextGroups
+  FxRibbonTab member final String caption
+  FxRibbonTab member final String? contextGroup
+  FxRibbonTab member final String? id
+  FxRibbonTab member final String? keyTip
+  FxRibbonTab member final bool isContextual
+  FxRibbonThemeData constructor FxRibbonThemeData copyWith(
+  FxRibbonThemeData constructor FxRibbonThemeData lerp(ThemeExtension<FxRibbonThemeData>? other, double t)
+  FxRibbonThemeData constructor const FxRibbonThemeData(
+  FxRibbonThemeData member Color resolvedActiveTab(ColorScheme scheme)
+  FxRibbonThemeData member Color resolvedBackground(ColorScheme scheme)
+  FxRibbonThemeData member Color resolvedGroupBackground(ColorScheme scheme)
+  FxRibbonThemeData member Color resolvedHover(ColorScheme scheme)
+  FxRibbonThemeData member Color resolvedKeyTipBackground(ColorScheme scheme)
+  FxRibbonThemeData member Color resolvedKeyTipForeground(ColorScheme scheme)
+  FxRibbonThemeData member Color resolvedPressed(ColorScheme scheme)
+  FxRibbonThemeData member Color resolvedTabStrip(ColorScheme scheme)
+  FxRibbonThemeData member final Color? activeTabColor
+  FxRibbonThemeData member final Color? backgroundColor
+  FxRibbonThemeData member final Color? groupBackgroundColor
+  FxRibbonThemeData member final Color? hoverColor
+  FxRibbonThemeData member final Color? keyTipBackgroundColor
+  FxRibbonThemeData member final Color? keyTipForegroundColor
+  FxRibbonThemeData member final Color? pressedColor
+  FxRibbonThemeData member final Color? tabStripColor
+  FxRibbonThemeData member final FxRibbonDensity density
+  FxRibbonThemeData member final double borderRadius
+  FxRibbonThemeData member static FxRibbonThemeData of(BuildContext context)
+  FxRibbonToolbar constructor const FxRibbonToolbar(
+  FxRibbonToolbar member final FxRibbonDefinition definition
+  FxRibbonToolbar member final FxRibbonDensity? density
+  FxRibbonToolbar member final FxRibbonIconRegistry icons
+  FxRibbonToolbar member final FxRibbonInteractionMode interactionMode
+  FxRibbonToolbar member final Locale? locale
+  FxRibbonToolbar member final Set<String> visibleContextGroups
+  FxRibbonToolbar member final ValueChanged<FxRibbonDefinition>? onDefinitionChanged
+  FxRibbonToolbar member final ValueChanged<FxRibbonEvent>? onEvent
+  FxRibbonToolbar member final ValueChanged<bool>? onCollapsedChanged
+  FxRibbonToolbar member final ValueChanged<int>? onTabChanged
+  FxRibbonToolbar member final bool collapsed
+  FxRibbonToolbar member final int activeTabIndex
+  FxRibbonValidationIssue constructor const FxRibbonValidationIssue(
+  FxRibbonValidationIssue member Map<String, Object?> toTemplateMap()
+  FxRibbonValidationIssue member final FxRibbonValidationCode code
+  FxRibbonValidationIssue member final FxRibbonValidationSeverity severity
+  FxRibbonValidationIssue member final String message
+  FxRibbonValidationIssue member final String path
+  FxRibbonValidationResult constructor const FxRibbonValidationResult(this.issues)
+  FxRibbonValidationResult member final List<FxRibbonValidationIssue> issues
+  FxRibbonValidator constructor const FxRibbonValidator._()
+  FxRibbonValidator member static FxRibbonValidationResult validateDefinition(
+  FxRibbonValidator member static FxRibbonValidationResult validateSource(String source)
   FxSegmentedButton<T> constructor const FxSegmentedButton(
   FxSegmentedButton<T> member Map<String, Object?> toTemplateMap()
   FxSegmentedButton<T> member Widget build(BuildContext context)
@@ -608,6 +836,28 @@ class class FxRadioButton<T> extends StatelessWidget
 class class FxRadioGroup<T> extends StatelessWidget
 class class FxRadioOption<T>
 class class FxRemainingColumnWidth extends FxColumnWidth
+class class FxRibbonDefinition
+class class FxRibbonDesigner extends StatefulWidget
+class class FxRibbonEmbeddedIcon
+class class FxRibbonGroup
+class class FxRibbonIconRegistry
+class class FxRibbonIconSource
+class class FxRibbonIconView extends StatelessWidget
+class class FxRibbonItem
+class class FxRibbonLaidGroup
+class class FxRibbonLaidItem
+class class FxRibbonLaidTab
+class class FxRibbonLayout
+class class FxRibbonLayoutMetrics
+class class FxRibbonMenuItem
+class class FxRibbonSamples
+class class FxRibbonSelection
+class class FxRibbonTab
+class class FxRibbonThemeData extends ThemeExtension<FxRibbonThemeData>
+class class FxRibbonToolbar extends StatefulWidget
+class class FxRibbonValidationIssue
+class class FxRibbonValidationResult
+class class FxRibbonValidator
 class class FxSegmentedButton<T> extends StatelessWidget
 class class FxSegmentedOption<T>
 class class FxSeparator extends StatelessWidget
@@ -640,6 +890,13 @@ enum enum FxLayoutKind
 enum enum FxLayoutOverflow
 enum enum FxListBoxSelectionMode
 enum enum FxLocalizationIssueCode
+enum enum FxRibbonDensity
+enum enum FxRibbonEmbeddedIconKind
+enum enum FxRibbonIconKind
+enum enum FxRibbonInteractionMode
+enum enum FxRibbonItemType
+enum enum FxRibbonValidationCode
+enum enum FxRibbonValidationSeverity
 enum enum FxSeparatorOrientation
 enum enum FxTableState
 enum enum FxTextInputConstraintKind

@@ -201,4 +201,123 @@ class FxDesktopLocalizationsEn extends FxDesktopLocalizations {
   @override
   String get galleryPoStatus =>
       'ARB remains the runtime source; PO and POT are translator bridge files.';
+
+  @override
+  String get ribbonToolbarSemantics => 'Ribbon toolbar';
+
+  @override
+  String get ribbonNoTabs => 'No ribbon tabs';
+
+  @override
+  String get ribbonCollapse => 'Collapse ribbon';
+
+  @override
+  String get ribbonExpand => 'Expand ribbon';
+
+  @override
+  String get ribbonOpenMenu => 'Open menu';
+
+  @override
+  String get ribbonMenuEmpty => 'No menu items';
+
+  @override
+  String ribbonGroupSemantics(String group) {
+    return 'Ribbon group $group';
+  }
+
+  @override
+  String get ribbonDesignerTitle => 'Ribbon Designer';
+
+  @override
+  String get ribbonDesignerNew => 'New';
+
+  @override
+  String get ribbonDesignerAddTab => 'Add tab';
+
+  @override
+  String get ribbonDesignerAddGroup => 'Add group';
+
+  @override
+  String get ribbonDesignerAddItem => 'Add item';
+
+  @override
+  String get ribbonDesignerDelete => 'Delete';
+
+  @override
+  String get ribbonDesignerExport => 'Export JSON';
+
+  @override
+  String get ribbonDesignerExported => 'Ribbon JSON exported.';
+
+  @override
+  String get ribbonDesignerPreviewLocale => 'Preview locale';
+
+  @override
+  String get ribbonDesignerStructure => 'Structure';
+
+  @override
+  String get ribbonDesignerJsonPreview => 'JSON preview';
+
+  @override
+  String get ribbonDesignerInspector => 'Inspector';
+
+  @override
+  String get ribbonDesignerNoSelection => 'Select a tab, group, or item.';
+
+  @override
+  String get ribbonDesignerStatusReady => 'Ready.';
+
+  @override
+  String get ribbonDesignerCaption => 'Caption';
+
+  @override
+  String get ribbonDesignerKeyTip => 'KeyTip';
+
+  @override
+  String get ribbonDesignerContextual => 'Contextual tab';
+
+  @override
+  String get ribbonDesignerContextGroup => 'Context group';
+
+  @override
+  String get ribbonDesignerCommandTag => 'Command tag';
+
+  @override
+  String get ribbonDesignerItemType => 'Item type';
+
+  @override
+  String get ribbonDesignerTooltip => 'Tooltip';
+
+  @override
+  String get ribbonDesignerIconKey => 'Icon key';
+
+  @override
+  String get ribbonDesignerEnabled => 'Enabled';
+
+  @override
+  String get ribbonDesignerChecked => 'Checked';
+
+  @override
+  String get ribbonDesignerLocalizedCaptions => 'Localized captions';
+
+  @override
+  String get ribbonItemTypeLarge => 'Large button';
+
+  @override
+  String get ribbonItemTypeSmall => 'Small button';
+
+  @override
+  String get ribbonItemTypeDropdown => 'Dropdown';
+
+  @override
+  String get ribbonItemTypeSplitButton => 'Split button';
+
+  @override
+  String get ribbonItemTypeToggle => 'Toggle';
+
+  @override
+  String get ribbonItemTypeCheckBox => 'Checkbox';
+
+  @override
+  String get ribbonItemTypeSeparator => 'Separator';
 }
