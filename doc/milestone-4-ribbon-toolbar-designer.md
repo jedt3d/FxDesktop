@@ -6,7 +6,7 @@ It may work well on iPad-sized touch screens, but it is not a mobile-phone
 component and must not introduce a phone-first layout mode.
 
 This is a large feature branch. Treat it as a sequence of implementation
-phases, not one broad port.
+cycles with explicit gates, screenshots, and logs, not one broad port.
 
 Recommended implementation branch:
 
@@ -32,6 +32,8 @@ Use it for:
 - layout and hit-test decisions.
 - renderer and designer decomposition.
 - tutorial/example expectations.
+- report structure, milestone screenshots, and the single-command verification
+  habit from the Jaspr work.
 
 The design ancestor is:
 
@@ -48,6 +50,8 @@ Use it for:
 
 Do not modify either upstream repository from this work. Transfer only the
 architecture, schema knowledge, and behavior decisions into FxDesktop.
+Prefer the Jaspr repository over XjRibbon whenever Dart implementation details
+conflict with original Xojo ancestry.
 
 ## Flutter Platform Direction
 
@@ -80,6 +84,9 @@ Useful Flutter APIs for this milestone:
   mouse, trackpad, stylus, and touch behavior.
 - `ThemeExtension` or an FxDesktop theme extension for ribbon colors, density,
   and state layers.
+- `ButtonStyle`, `MenuStyle`, `TooltipThemeData`, `ScrollbarThemeData`,
+  `VisualDensity`, and `WidgetStateProperty` for a Flutter-native style-sheet
+  surface instead of a CSS-like parallel system.
 
 ## Goals
 
@@ -171,8 +178,17 @@ Expected examples and docs:
 doc/milestone-4-ribbon-toolbar-designer.md
 doc/ribbon-schema.md
 doc/ribbon-designer.md
+doc/ribbon-cycle-log.md
 example/lib/main.dart
 doc/screenshots/v0.4.x/
+```
+
+Expected cycle tooling:
+
+```text
+tool/ribbon_cycle.dart
+tool/ribbon_screenshot.dart
+tool/agent_harness.dart
 ```
 
 `lib/fx_desktop.dart` should export the ribbon files only after Phase 4.1 has
@@ -544,29 +560,95 @@ Future adaptive ideas:
 - overflow menu per group;
 - remembered collapse state per window width.
 
-## Theming
+## Flutter Theme And Style Sheet Strategy
 
-Add `FxRibbonThemeData` or extend existing FxDesktop theme support.
+Use Flutter's theme system as the ribbon style sheet. Do not introduce a
+separate CSS-like format for the first release. The package should expose a
+small ribbon theme object for ribbon-specific tokens, derive defaults from
+`Theme.of(context)`, and let apps override the result through normal Flutter
+theme composition.
 
-The theme should cover:
+Primary API:
 
-- background;
-- content band background;
-- tab text;
-- active tab;
-- contextual accent wash;
-- group separator;
-- item hover;
-- item pressed;
-- disabled text/icon;
-- toggle active;
-- focus ring;
-- keytip badge;
-- menu surface;
-- warning/error validation state in designer.
+```dart
+@immutable
+class FxRibbonThemeData extends ThemeExtension<FxRibbonThemeData> {
+  const FxRibbonThemeData({
+    this.density,
+    this.interactionMode,
+    this.backgroundColor,
+    this.contentBandColor,
+    this.activeTabColor,
+    this.contextualAccentColor,
+    this.groupSeparatorColor,
+    this.itemStyle,
+    this.tabStyle,
+    this.menuStyle,
+    this.keytipStyle,
+    this.designerValidationStyle,
+  });
 
-Support light and dark modes. Use `ColorScheme` as the first input and only add
-custom colors where ribbon-specific states need them.
+  static FxRibbonThemeData fromColorScheme(ColorScheme colorScheme);
+}
+```
+
+The toolbar and designer should resolve styles in this order:
+
+1. widget-level override such as `FxRibbonToolbar(theme: ...)`;
+2. inherited `ThemeExtension<FxRibbonThemeData>`;
+3. defaults derived from `ColorScheme`, `TextTheme`, `VisualDensity`, and
+   `MediaQuery`;
+4. hard-coded fallback constants only for values that cannot be inferred.
+
+Theme data should cover:
+
+- background and content band colors;
+- tab text, hover, active, and focus states;
+- contextual tab accent wash;
+- group caption text and separator;
+- item hover, pressed, selected, toggled, disabled, and focus states;
+- split-button body and arrow state colors;
+- keytip badge foreground/background/border;
+- menu surface, menu hover, menu disabled, and menu shadow;
+- designer validation colors for warning/error/info states;
+- designer selection, drag target, inspector field, and dirty-state accents.
+
+Map as much as possible to Flutter-native style objects:
+
+- `ColorScheme` for base surfaces, accents, disabled opacity, and error colors;
+- `TextTheme` for tab labels, item captions, group captions, and inspector
+  fields;
+- `VisualDensity` plus `FxRibbonDensity` for compact, regular, and touch
+  sizing;
+- `ButtonStyle` or ribbon-local style slots backed by `WidgetStateProperty`
+  for hover, focus, pressed, disabled, and selected states;
+- `MenuStyle` for dropdown and split-button menus;
+- `TooltipThemeData` for hover and long-press help;
+- `ScrollbarThemeData` for horizontal overflow at 1024 px and medium widths.
+
+Required modes:
+
+- light;
+- dark;
+- high contrast, derived from `MediaQuery.highContrast` where available;
+- compact density for dense desktop tools;
+- regular density for the default 1280 px experience;
+- touch density with hit targets near 44 px where practical.
+
+Viewport requirements:
+
+- 1280 px wide is the primary design target and should show a useful ribbon
+  without immediate overflow for the bundled example definitions.
+- 1024 px wide is the minimum supported target. The ribbon must remain usable
+  through horizontal scroll, group overflow, or collapse behavior, not by
+  switching into a phone navigation pattern.
+- Wider desktop windows may expand whitespace and group spacing, but should not
+  change the semantic model or command order.
+
+Designer theming should reuse the same `FxRibbonThemeData` preview path so a
+user can edit a definition and see the exact themed toolbar that an app would
+render. The designer shell may add its own panel colors, selection outlines, and
+validation styles through the same extension object.
 
 ## Accessibility
 
@@ -602,6 +684,404 @@ Validation should report:
 - invalid color value.
 
 Expose warnings separately from errors so the designer can show soft guidance.
+
+## Autonomous Development Cycles
+
+Implementation should be split into cycles that can be run, logged, and
+verified independently. The current `Implementation Phases` section defines the
+feature order; this section defines the unattended execution contract.
+
+### One-Command Contract
+
+Cycle 0 should add a dedicated runner:
+
+```bash
+dart run tool/ribbon_cycle.dart --all
+```
+
+The runner should also support targeted resumes:
+
+```bash
+dart run tool/ribbon_cycle.dart --cycle 3
+dart run tool/ribbon_cycle.dart --from 4 --to 6
+dart run tool/ribbon_cycle.dart --all --viewport=1280x720 --min-viewport=1024x768
+```
+
+Each successful cycle should:
+
+- run the cycle's required format, analyze, test, build, and screenshot gates;
+- append a dated entry to `doc/ribbon-cycle-log.md`;
+- save screenshots under `doc/screenshots/v0.4.x/ribbon/` when the cycle has a
+  visual gate;
+- record the exact command output summary, not full noisy logs;
+- leave a clear next-cycle command.
+
+Each failed cycle should:
+
+- stop immediately before starting later cycles;
+- append the failing command and short diagnosis to `doc/ribbon-cycle-log.md`;
+- keep diagnostic screenshots when a visual/browser check fails;
+- avoid version bumps, tags, and release changes;
+- leave the working tree in a reviewable state.
+
+The runner should call the existing package harness instead of duplicating it.
+Use `dart run tool/agent_harness.dart` as the full-package gate and add
+ribbon-specific subcommands only where the existing harness does not cover
+screenshots, web smoke routes, or cycle logging.
+
+### Cycle 0: Harness, Fixtures, And Evidence Loop
+
+Purpose: make the next three-hour unattended run controllable before building
+feature code.
+
+Deliver:
+
+- `tool/ribbon_cycle.dart`;
+- cycle report format in `doc/ribbon-cycle-log.md`;
+- screenshot output directories;
+- Jaspr fixture import locations, copied only into FxDesktop test fixtures;
+- README or doc pointer for the one-command workflow.
+
+Use Jaspr material:
+
+- example `.ribbon` definitions;
+- small SVG command icons such as copy, cut, paste, delete, details, hide,
+  navigation, rename, and table where license-compatible;
+- screenshot names and milestone cadence as evidence examples.
+
+Gate:
+
+```bash
+dart format tool doc test lib example
+dart run tool/check_release_sync.dart
+dart run tool/agent_harness.dart
+```
+
+No screenshot is required yet unless the runner itself needs a diagnostic.
+
+### Cycle 1: Pure Model, Schema, And Validator
+
+Purpose: establish the Dart model shared by toolbar, designer, screenshots, and
+future tooling.
+
+Deliver:
+
+- pure Dart ribbon model;
+- JSON import/export;
+- Jaspr `.ribbon` compatibility importer;
+- validator with warnings and errors;
+- schema docs draft.
+
+Gate:
+
+```bash
+dart run tool/ribbon_cycle.dart --cycle 1
+```
+
+Required tests:
+
+- round-trip FxDesktop schema;
+- parse Jaspr fixture;
+- duplicate command tags;
+- invalid icon keys;
+- contextual tab validation;
+- menu item validation.
+
+No screenshot is required.
+
+### Cycle 2: Theme, Icon, And Style Infrastructure
+
+Purpose: make theme and icon decisions before the toolbar layout depends on
+them.
+
+Deliver:
+
+- `FxRibbonThemeData` as a `ThemeExtension`;
+- `FxRibbonDensity` and `FxRibbonInteractionMode`;
+- icon registry with Material, SVG if accepted, PNG, embedded, and placeholder
+  paths;
+- disabled, hover, active, focus, keytip, menu, and validation style slots;
+- dependency decision note for `flutter_svg`.
+
+Gate:
+
+```bash
+dart run tool/ribbon_cycle.dart --cycle 2
+```
+
+Required tests:
+
+- theme defaults from light and dark `ColorScheme`;
+- compact, regular, and touch density resolution;
+- icon lookup and missing placeholder;
+- SVG or documented PNG fallback behavior;
+- disabled icon styling.
+
+Screenshot:
+
+- optional icon registry smoke screenshot if SVG/PNG rendering is implemented.
+
+### Cycle 3: Toolbar MVP At 1280 px
+
+Purpose: ship the first usable `FxRibbonToolbar` with ordinary commands.
+
+Deliver:
+
+- tab strip;
+- content band;
+- standard tabs;
+- groups;
+- large buttons;
+- small stacked buttons;
+- separators;
+- command events;
+- hover, pressed, disabled, focus, tooltip, and semantics state;
+- example route.
+
+Gate:
+
+```bash
+dart run tool/ribbon_cycle.dart --cycle 3 --viewport=1280x720
+```
+
+Required tests:
+
+- render seed definition;
+- change active tab;
+- activate enabled command;
+- ignore disabled command;
+- focus and keyboard activation;
+- semantics labels.
+
+Required screenshot:
+
+- `toolbar-mvp-1280-light.png`.
+
+### Cycle 4: Menus, Split Buttons, Toggles, Contextual Tabs, Collapse
+
+Purpose: complete the source toolbar behavior before polishing layout.
+
+Deliver:
+
+- dropdown menus;
+- split-button primary and arrow regions;
+- toggle and checkbox state events;
+- contextual tabs and visible context groups;
+- collapse/expand behavior;
+- keytip MVP through F6.
+
+Gate:
+
+```bash
+dart run tool/ribbon_cycle.dart --cycle 4 --viewport=1280x720
+```
+
+Required tests:
+
+- dropdown opens and emits menu item tag;
+- split body emits the primary tag;
+- split arrow opens menu;
+- toggle and checkbox events include next state;
+- contextual tabs show/hide by context group;
+- collapsed state keeps tab strip visible;
+- Escape closes menus and exits keytip mode.
+
+Required screenshots:
+
+- `toolbar-dropdown-1280-light.png`;
+- `toolbar-contextual-1280-dark.png`;
+- `toolbar-keytips-1280-high-contrast.png`.
+
+### Cycle 5: 1024 px, Touch, Text Scale, And Accessibility Polish
+
+Purpose: verify the large-screen target boundary and pointer-kind behavior.
+
+Deliver:
+
+- 1024 px horizontal overflow or group overflow behavior;
+- touch hit target policy;
+- pointer-kind aware interaction mode;
+- text scale review;
+- high contrast pass;
+- scroll affordances.
+
+Gate:
+
+```bash
+dart run tool/ribbon_cycle.dart --cycle 5 --viewport=1024x768
+```
+
+Required tests:
+
+- touch tap activates commands;
+- touch split arrow opens menu;
+- touch mode increases effective hit targets;
+- mouse hover remains mouse-only;
+- 1024 px layout stays usable without overlap;
+- text scale does not overlap item labels or group captions;
+- semantics include tab, group, menu, disabled, checked, and collapsed state.
+
+Required screenshots:
+
+- `toolbar-1024-regular-light.png`;
+- `toolbar-1024-touch-light.png`;
+- `toolbar-1280-dark.png`.
+
+### Cycle 6: Designer MVP
+
+Purpose: build the embeddable visual designer around the same model and toolbar
+preview.
+
+Deliver:
+
+- `FxRibbonDesigner`;
+- top command row;
+- live preview;
+- hierarchy editor;
+- inspector;
+- add/delete/reorder tabs, groups, items, and menu items;
+- validation panel;
+- dirty state;
+- undo/redo;
+- import/export callbacks.
+
+Gate:
+
+```bash
+dart run tool/ribbon_cycle.dart --cycle 6 --viewport=1280x800
+```
+
+Required tests:
+
+- render seed model;
+- add tab/group/item;
+- inspector edits update preview;
+- reorder and delete;
+- validation errors display;
+- undo/redo restores snapshots;
+- export JSON parses back.
+
+Required screenshot:
+
+- `designer-mvp-1280-light.png`.
+
+### Cycle 7: Designer Icon, Template, And Import/Export Polish
+
+Purpose: bring the designer near feature parity with the Jaspr visual designer
+without making it a separate product.
+
+Deliver:
+
+- icon assignment and removal;
+- embedded icon preview;
+- File Explorer-style sample template;
+- JSON preview or schema panel;
+- copy-to-clipboard path where Flutter supports it;
+- designer keyboard shortcuts;
+- focus-preserving refresh after inspector edits.
+
+Gate:
+
+```bash
+dart run tool/ribbon_cycle.dart --cycle 7 --viewport=1280x800
+```
+
+Required tests:
+
+- assign SVG or PNG icon by key;
+- missing icon warning appears;
+- import/export preserves embedded icon bundle;
+- template opens and validates;
+- focus remains in edited inspector field after model refresh;
+- keyboard shortcuts call the same commands as buttons.
+
+Required screenshots:
+
+- `designer-icons-1280-light.png`;
+- `designer-validation-1280-dark.png`.
+
+### Cycle 8: Docs, Screenshots, Pub Dry Run, And Release Candidate
+
+Purpose: reconcile all public package surfaces before tagging a 0.4.x release.
+
+Deliver:
+
+- README ribbon section with component and designer screenshots;
+- `doc/ribbon-schema.md`;
+- `doc/ribbon-designer.md`;
+- updated `doc/developer-guide.md`;
+- updated `doc/xojo-component-map.md`;
+- updated `AGENT.md`;
+- changelog entry;
+- public API signature update;
+- release notes draft.
+
+Gate:
+
+```bash
+dart run tool/ribbon_cycle.dart --cycle 8 --viewport=1280x720 --min-viewport=1024x768
+```
+
+Required validation:
+
+- full package harness;
+- web smoke test;
+- screenshot capture;
+- `flutter pub publish --dry-run`;
+- release sync check;
+- GitHub workflow review.
+
+Required screenshots:
+
+- `toolbar-release-1280-light.png`;
+- `toolbar-release-1280-dark.png`;
+- `toolbar-release-1024-light.png`;
+- `designer-release-1280-light.png`;
+- `designer-release-1280-dark.png`.
+
+No tag should be created by this cycle unless the user explicitly grants a
+release/tagging step after reviewing the dry-run output.
+
+### Screenshot Cadence
+
+Capture screenshots only when they prove user-facing progress or diagnose a
+failure. Required visual checkpoints:
+
+| Cycle | Viewports | Screenshots |
+|---|---|---|
+| 3 | 1280x720 | toolbar MVP light |
+| 4 | 1280x720 | dropdown, contextual dark, keytips high contrast |
+| 5 | 1024x768, 1280x720 | minimum width, touch density, dark mode |
+| 6 | 1280x800 | designer MVP |
+| 7 | 1280x800 | designer icons, designer validation |
+| 8 | 1024x768, 1280x720, 1280x800 | release toolbar and designer set |
+
+The 1280 px screenshots are the primary review target. The 1024 px screenshots
+are minimum-width proof. Mobile-phone screenshots are out of scope.
+
+### Unattended Run Policy
+
+For a future three-hour autonomous implementation run, start with Cycle 0,
+commit only after a cycle passes, and keep the branch reviewable between cycles.
+If time expires mid-cycle, stop after the current failing or passing gate and
+write the exact continuation command to `doc/ribbon-cycle-log.md`.
+
+Allowed unattended actions:
+
+- add implementation files in the planned locations;
+- add tests and fixtures;
+- add screenshots generated by the cycle runner;
+- update docs named in this plan;
+- commit passing cycles with focused messages.
+
+Forbidden unattended actions without a fresh user grant:
+
+- modify `~/jaspr-ribbon-toolbar` or `XjRibbon`;
+- bump `pubspec.yaml` version;
+- create or move Git tags;
+- publish to pub.dev;
+- change GitHub repository settings;
+- add large binary assets beyond necessary screenshots or PNG fixture icons.
 
 ## Implementation Phases
 
@@ -962,4 +1442,3 @@ Milestone 4 is done when:
 - GitHub CI passes;
 - pub.dev dry-run has 0 warnings;
 - release tag and package version are reconciled.
-

@@ -109,8 +109,15 @@ Key rules:
 - Use `iconKey` plus a registry for SVG/PNG/Material/placeholder icons.
 - Prefer Flutter widget primitives for semantics, focus, actions, menus,
   overlays, tooltips, pointer handling, and theming.
+- Treat Flutter `ThemeData` plus `FxRibbonThemeData` as the style-sheet layer;
+  avoid a parallel CSS-like styling system for the first release.
 - Support mouse, keyboard, and touch on desktop/web large screens.
 - Do not turn the ribbon into a mobile-phone navigation component.
+- Treat 1280 px as the primary design width and 1024 px as the minimum usable
+  width that must prove horizontal overflow or equivalent large-screen behavior.
+- Use the documented ribbon cycle runner once Cycle 0 creates it:
+  `dart run tool/ribbon_cycle.dart --all` for unattended progress or
+  `dart run tool/ribbon_cycle.dart --cycle N` for focused resumes.
 - Keep the designer embeddable and dependency-light; app shells can provide
   file picker or web download integrations through callbacks.
 

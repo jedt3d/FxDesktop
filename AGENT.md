@@ -105,7 +105,12 @@ Jaspr canvas renderer. The toolbar must support mouse, keyboard, and touch on
 large desktop/web screens; it must not become a mobile-phone navigation system.
 Plan icon support around an `iconKey` registry with SVG as the preferred path
 when dependency review allows it, and PNG/Material/placeholder fallbacks as
-required.
+required. Use Flutter `ThemeExtension`/`ThemeData` as the ribbon style-sheet
+surface, with `FxRibbonThemeData` only for ribbon-specific tokens. Implement the
+feature through the documented cycle gates and, after Cycle 0 exists, use
+`dart run tool/ribbon_cycle.dart --all` or a targeted `--cycle` command for
+unattended progress, logs, tests, and screenshots at 1280 px primary and 1024 px
+minimum widths.
 
 ## Version And Release Rules
 

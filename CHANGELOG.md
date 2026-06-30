@@ -8,6 +8,10 @@
   `jaspr-ribbon-toolbar`, XjRibbon ancestry, SVG/PNG icons, mouse/touch/keyboard
   input, Flutter-native rendering enhancements, designer scope, testing, and
   release criteria.
+- Expanded the Milestone 4 plan with a Flutter-native theme/style-sheet
+  strategy, 1024 px and 1280 px viewport targets, autonomous implementation
+  cycles, one-command cycle runner expectations, screenshot cadence, and
+  unattended-run guardrails.
 
 ## 0.3.7
 
