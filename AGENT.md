@@ -92,7 +92,7 @@ Milestone 3 is delivered through `v0.3.6`. Treat the milestone document as a
 delivered acceptance map plus release history, not as a pending phase plan. For
 new table work, update `CHANGELOG.md`, `doc/milestone-3-listbox-grid.md`,
 `doc/xojo-component-map.md`, `doc/milestone-6-advanced-grid-features.md` when
-advanced editor behavior changes, and the `listbox_demo/` gallery docs.
+advanced editor behavior changes, and the `example-listbox-demo/` gallery docs.
 
 Milestone 4 localization is delivered in `v0.4.0`; keep
 `doc/milestone-4-localization.md` as the acceptance map and

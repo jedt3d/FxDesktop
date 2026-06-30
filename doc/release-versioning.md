@@ -102,7 +102,7 @@ were consolidated into the `v0.3.0` baseline and then refined through smaller
 follow-up releases:
 
 - `v0.3.0`: Milestone 3 ListBox/Grid depth baseline.
-- `v0.3.1`: interactive `listbox_demo` gallery and scrollbar polish.
+- `v0.3.1`: interactive `example-listbox-demo` gallery and scrollbar polish.
 - `v0.3.2`: Excel-style sizing, wrapping, implicit rendering, and progress overlays.
 - `v0.3.3`: capped auto-fit resizing, wrapping synchronization, and undoable layout changes.
 - `v0.3.4`: range slider, row reordering, crosshair visualization, and inline styled cells.

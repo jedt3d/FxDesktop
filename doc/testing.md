@@ -13,7 +13,8 @@ The harness checks:
 - Flutter unit/widget tests
 - Dartdoc generation
 - pub.dev dry-run readiness
-- example package analysis
+- demo package analysis
+- web smoke builds for the component-suite demo and ribbon designer
 - repository policy checks
 
 Individual commands:
@@ -27,18 +28,20 @@ flutter pub publish --dry-run
 dart run tool/fx_l10n.dart audit
 ```
 
-The example app can be checked separately:
+The component-suite example app can be checked separately:
 
 ```bash
-cd example
+cd fx-desktop-example
 flutter pub get
 flutter analyze
+flutter test
+flutter build web --debug
 ```
 
 The interactive table gallery can be checked separately:
 
 ```bash
-cd listbox_demo
+cd example-listbox-demo
 flutter pub get
 flutter analyze
 flutter test
@@ -49,6 +52,17 @@ Use the gallery for manual review of `FxListBox` and `FxGrid` behavior,
 especially pages 10 and 11 for custom renderers, hosted lookup editors,
 multi-column database lookup dropdowns, input masks, ellipsis action buttons,
 and undo/redo integration.
+
+The standalone ribbon designer can be checked separately:
+
+```bash
+cd ribbon-toolbar-designer
+flutter pub get
+flutter analyze
+flutter test
+flutter build web --debug
+flutter run -d macos
+```
 
 Release screenshot evidence belongs under `doc/screenshots/vX.Y.Z/`. Prefer a
 deterministic Flutter screenshot or golden harness for table states when manual

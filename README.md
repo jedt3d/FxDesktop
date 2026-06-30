@@ -1,7 +1,7 @@
 # FxDesktop
 
-[![Pub](https://img.shields.io/badge/pub-0.5.1-blue)](https://pub.dev/packages/fx_desktop)
-[![Release](https://img.shields.io/badge/release-v0.5.1-blue)](https://github.com/jedt3d/FxDesktop/releases/tag/v0.5.1)
+[![Pub](https://img.shields.io/badge/pub-0.6.0-blue)](https://pub.dev/packages/fx_desktop)
+[![Release](https://img.shields.io/badge/release-v0.6.0-blue)](https://github.com/jedt3d/FxDesktop/releases/tag/v0.6.0)
 [![CI](https://github.com/jedt3d/FxDesktop/actions/workflows/ci.yml/badge.svg)](https://github.com/jedt3d/FxDesktop/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](https://github.com/jedt3d/FxDesktop/blob/main/LICENSE)
 
@@ -29,7 +29,7 @@ multi-size desktop workflows.
 
 ```yaml
 dependencies:
-  fx_desktop: ^0.5.1
+  fx_desktop: ^0.6.0
 ```
 
 ## Quick Start
@@ -145,11 +145,11 @@ MaterialApp(
 );
 ```
 
-![FxDesktop Explorer-style ribbon toolbar](https://raw.githubusercontent.com/jedt3d/FxDesktop/v0.5.1/doc/screenshots/v0.5.1/ribbon/fxdesktop-ribbon-toolbar-explorer.png)
+![FxDesktop Explorer-style ribbon toolbar](https://raw.githubusercontent.com/jedt3d/FxDesktop/v0.6.0/doc/screenshots/v0.5.1/ribbon/fxdesktop-ribbon-toolbar-explorer.png)
 
-![FxDesktop ribbon dropdown menu](https://raw.githubusercontent.com/jedt3d/FxDesktop/v0.5.1/doc/screenshots/v0.5.1/ribbon/fxdesktop-ribbon-toolbar-menu-en.png)
+![FxDesktop ribbon dropdown menu](https://raw.githubusercontent.com/jedt3d/FxDesktop/v0.6.0/doc/screenshots/v0.5.1/ribbon/fxdesktop-ribbon-toolbar-menu-en.png)
 
-![FxDesktop ribbon designer](https://raw.githubusercontent.com/jedt3d/FxDesktop/v0.5.1/doc/screenshots/v0.5.1/ribbon/fxdesktop-ribbon-designer-ja.png)
+![FxDesktop ribbon designer](https://raw.githubusercontent.com/jedt3d/FxDesktop/v0.6.0/doc/screenshots/v0.5.1/ribbon/fxdesktop-ribbon-designer-ja.png)
 
 See [Ribbon Schema](https://github.com/jedt3d/FxDesktop/blob/main/doc/ribbon-schema.md)
 and [Ribbon Designer](https://github.com/jedt3d/FxDesktop/blob/main/doc/ribbon-designer.md).
@@ -162,11 +162,11 @@ models, inline editing, validation, TSV clipboard operations, undo/redo
 integration, custom renderers, hosted lookup editors, input masks, cell action
 buttons, and accessibility semantics.
 
-![FxDesktop lookup cells and custom renderers](https://raw.githubusercontent.com/jedt3d/FxDesktop/v0.5.1/doc/screenshots/v0.3.6/fxdesktop-v0.3.6-lookup-renderers.png)
+![FxDesktop lookup cells and custom renderers](https://raw.githubusercontent.com/jedt3d/FxDesktop/v0.6.0/doc/screenshots/v0.3.6/fxdesktop-v0.3.6-lookup-renderers.png)
 
-![FxDesktop hosted multi-column database lookup overlay](https://raw.githubusercontent.com/jedt3d/FxDesktop/v0.5.1/doc/screenshots/v0.3.6/fxdesktop-v0.3.6-db-lookup-overlay.png)
+![FxDesktop hosted multi-column database lookup overlay](https://raw.githubusercontent.com/jedt3d/FxDesktop/v0.6.0/doc/screenshots/v0.3.6/fxdesktop-v0.3.6-db-lookup-overlay.png)
 
-![FxDesktop masked editor and cell action button](https://raw.githubusercontent.com/jedt3d/FxDesktop/v0.5.1/doc/screenshots/v0.3.6/fxdesktop-v0.3.6-masked-action-editor.png)
+![FxDesktop masked editor and cell action button](https://raw.githubusercontent.com/jedt3d/FxDesktop/v0.6.0/doc/screenshots/v0.3.6/fxdesktop-v0.3.6-masked-action-editor.png)
 
 ## Localization
 
@@ -188,7 +188,7 @@ Bundled package strings cover English, Thai, Japanese, and Nepali. ARB files
 are the runtime source of truth; `.po` and `.pot` files are import/export
 formats for translators.
 
-![FxDesktop localization gallery in Thai](https://raw.githubusercontent.com/jedt3d/FxDesktop/v0.5.1/doc/screenshots/v0.4.0/localization/fxdesktop-localized-th.png)
+![FxDesktop localization gallery in Thai](https://raw.githubusercontent.com/jedt3d/FxDesktop/v0.6.0/doc/screenshots/v0.4.0/localization/fxdesktop-localized-th.png)
 
 ## Text Input Constraints
 
@@ -280,13 +280,16 @@ Run the full local quality harness before committing:
 dart run tool/agent_harness.dart
 ```
 
-The main `example/` app is the vertical component harness. The
-`listbox_demo/` app is the interactive ListBox/Grid spec gallery used to review
-the `0.3.x` table surface, including lookup editors, input masks, cell action
-buttons, row reordering, undo/redo, and large-table behavior.
+The `fx-desktop-example/` app is the vertical component harness for the
+component suite, including the ribbon toolbar. The `ribbon-toolbar-designer/`
+app is the standalone visual designer. The `example-listbox-demo/` app is the
+interactive ListBox/Grid spec gallery used to review the `0.3.x` table surface,
+including lookup editors, input masks, cell action buttons, row reordering,
+undo/redo, and large-table behavior.
 
 The harness runs formatting checks, static analysis, tests, Dartdoc, pub.dev
-dry-run checks, release version-sync checks, and public API policy checks.
+dry-run checks, release version-sync checks, all three demo packages, web smoke
+builds for the ribbon-facing demos, and public API policy checks.
 
 Version tags and optional GitHub Releases are created only after a milestone is
 implemented, documented, validated, and accepted. See

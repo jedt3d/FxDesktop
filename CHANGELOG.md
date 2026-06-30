@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+## 0.6.0
+
+Version `0.6.0` reorganizes the example applications into explicit demo
+packages and separates the visual ribbon designer from the component-suite
+example.
+
+### Changed
+- Renamed the component-suite demo folder to `fx-desktop-example/`.
+- Renamed the ListBox/Grid gallery folder to `example-listbox-demo/`.
+- Added `ribbon-toolbar-designer/` as a standalone Flutter app for the visual
+  ribbon designer.
+- Updated documentation and the release harness for the three-demo layout.
+
 ## 0.5.1
 
 Version `0.5.1` corrects the ribbon presentation after the first public ribbon
@@ -215,7 +228,7 @@ Version `0.3.2` implements advanced formatting, automatic resizing, line wrappin
 
 ## 0.3.1
 
-Version `0.3.1` introduces the interactive `listbox_demo` spec gallery application for desktop platforms and polishes the scrollbar behavior in the table components.
+Version `0.3.1` introduces the interactive `example-listbox-demo` spec gallery application for desktop platforms and polishes the scrollbar behavior in the table components.
 
 ### Added
 - **FxListBox Interactive Spec Gallery**: A standalone Flutter desktop gallery demonstrating all 7 feature areas (Selection, Column Sizing/Resizing, Sorting, Inline Editing, Validation, Table States, and Scale/Virtualization) on PagePanel screens.
@@ -244,7 +257,7 @@ This release provides comprehensive desktop-grade functionality for dense busine
 
 ### Changed
 
-- Updated the vertical demo harness in `example/lib/main.dart` with functional samples for custom grid range selection, interactive column resizing, cell editing, bulk clipboard copy/pasting, and sorting.
+- Updated the vertical demo harness in `fx-desktop-example/lib/main.dart` with functional samples for custom grid range selection, interactive column resizing, cell editing, bulk clipboard copy/pasting, and sorting.
 - Configured visual regression golden testing using `test/visual_golden_test.dart` to assert correct layout and focus-ring states on buttons, checkboxes, disclosures, and progress controls.
 
 ## 0.2.6

@@ -18,6 +18,13 @@ The generated Windows runner is also present for platform parity checks:
 flutter run -d windows
 ```
 
+The web scaffold is present for large-screen browser smoke checks:
+
+```bash
+flutter build web --debug
+flutter run -d chrome
+```
+
 For release-quality local builds, use the repository's Flutter desktop workflow
 and platform-specific signing or packaging scripts from the package root.
 

@@ -142,7 +142,7 @@ hosted lookup editors, input masking, and enterprise-style action cells.
 | Release | Status | Delivered focus |
 |---|---|---|
 | `v0.3.0` | Delivered | Milestone 3 baseline: ListBox/Grid selection, keyboard traversal, sorting, sizing, editing, validation, clipboard, undo integration, accessibility, performance tests, and documentation. |
-| `v0.3.1` | Delivered | Interactive `listbox_demo` spec gallery and draggable multi-axis table scrollbars. |
+| `v0.3.1` | Delivered | Interactive `example-listbox-demo` spec gallery and draggable multi-axis table scrollbars. |
 | `v0.3.2` | Delivered | Excel-style column auto-sizing, line wrapping, implicit boolean/numeric/percentage rendering, and advanced feature demo page. |
 | `v0.3.3` | Delivered | Capped auto-fit resizing, line-wrap synchronization, and undoable layout changes. |
 | `v0.3.4` | Delivered | Range slider, drag-and-drop row reordering, active-cell crosshair visualization, and inline rich styled text cells. |
@@ -394,7 +394,7 @@ Required test areas:
 Run for every implementation phase:
 
 ```bash
-dart format lib test example/lib tool
+dart format lib test fx-desktop-example/lib example-listbox-demo/lib tool
 flutter analyze
 flutter test
 dart run tool/agent_harness.dart

@@ -8,9 +8,9 @@ Delphi InfoPower/DevExpress).
 
 Verification targets:
 
-- `listbox_demo/` Page 10: custom renderers, sparklines, hosted lookup editors,
+- `example-listbox-demo/` Page 10: custom renderers, sparklines, hosted lookup editors,
   and lookup undo/redo.
-- `listbox_demo/` Page 11: multi-column database lookups, phone/SSN masks,
+- `example-listbox-demo/` Page 11: multi-column database lookups, phone/SSN masks,
   ellipsis action buttons, and advanced editor undo/redo.
 - `doc/manual_test_checklist.md`: manual acceptance checklist for the latest
   gallery behaviors.

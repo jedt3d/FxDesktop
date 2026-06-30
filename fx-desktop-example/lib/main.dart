@@ -6,26 +6,55 @@ void main() {
   runApp(const FxDesktopExampleApp());
 }
 
-class FxDesktopExampleApp extends StatelessWidget {
+const _demoLocaleOptions = [
+  _DemoLocaleOption(label: 'English', locale: Locale('en')),
+  _DemoLocaleOption(label: 'Thai', locale: Locale('th')),
+  _DemoLocaleOption(label: 'Japanese', locale: Locale('ja')),
+  _DemoLocaleOption(label: 'Nepali', locale: Locale('ne')),
+];
+
+class FxDesktopExampleApp extends StatefulWidget {
   const FxDesktopExampleApp({super.key});
+
+  @override
+  State<FxDesktopExampleApp> createState() => _FxDesktopExampleAppState();
+}
+
+class _FxDesktopExampleAppState extends State<FxDesktopExampleApp> {
+  Locale _locale = const Locale('en');
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'FxDesktop Example',
       debugShowCheckedModeBanner: false,
+      locale: _locale,
+      supportedLocales: FxDesktopLocalizations.supportedLocales,
+      localizationsDelegates: FxDesktopLocalizations.localizationsDelegates,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xff2563eb)),
         useMaterial3: true,
         extensions: const [FxTheme()],
       ),
-      home: const ExampleHomePage(),
+      home: ExampleHomePage(
+        locale: _locale,
+        onLocaleChanged: (locale) {
+          setState(() => _locale = locale);
+        },
+      ),
     );
   }
 }
 
 class ExampleHomePage extends StatefulWidget {
-  const ExampleHomePage({super.key});
+  const ExampleHomePage({
+    super.key,
+    required this.locale,
+    required this.onLocaleChanged,
+  });
+
+  final Locale locale;
+  final ValueChanged<Locale> onLocaleChanged;
 
   @override
   State<ExampleHomePage> createState() => _ExampleHomePageState();
@@ -165,6 +194,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Expanded(
                                 child: Column(
@@ -190,26 +220,33 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                                   ],
                                 ),
                               ),
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Text('Show Layout Bounds'),
-                                  const SizedBox(width: 8),
-                                  Switch(
-                                    value: _showLayoutBounds,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _showLayoutBounds = value;
-                                        debugPaintSizeEnabled = value;
-                                      });
-                                    },
-                                  ),
-                                ],
+                              const SizedBox(width: 24),
+                              _DemoSettingsBar(
+                                locale: widget.locale,
+                                onLocaleChanged: widget.onLocaleChanged,
+                                showLayoutBounds: _showLayoutBounds,
+                                onShowLayoutBoundsChanged: (value) {
+                                  setState(() {
+                                    _showLayoutBounds = value;
+                                    debugPaintSizeEnabled = value;
+                                  });
+                                },
                               ),
                             ],
                           ),
 
                           const SizedBox(height: 18),
+                          _ComponentRow(
+                            name: 'FxRibbonToolbar',
+                            child: SizedBox(
+                              height: FxRibbonDensity.regular.expandedHeight,
+                              child: FxRibbonToolbar(
+                                definition: FxRibbonSamples.explorer(),
+                                locale: widget.locale,
+                                interactionMode: FxRibbonInteractionMode.mouse,
+                              ),
+                            ),
+                          ),
                           _ComponentRow(
                             name: 'FxTextField Phase 2.5 Constraints & Masks',
                             child: _StateSamples(
@@ -1938,6 +1975,89 @@ class _StateSamples extends StatelessWidget {
       ],
     );
   }
+}
+
+class _DemoSettingsBar extends StatelessWidget {
+  const _DemoSettingsBar({
+    required this.locale,
+    required this.onLocaleChanged,
+    required this.showLayoutBounds,
+    required this.onShowLayoutBoundsChanged,
+  });
+
+  final Locale locale;
+  final ValueChanged<Locale> onLocaleChanged;
+  final bool showLayoutBounds;
+  final ValueChanged<bool> onShowLayoutBoundsChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 430),
+      child: Wrap(
+        spacing: 18,
+        runSpacing: 10,
+        alignment: WrapAlignment.end,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          SizedBox(
+            width: 190,
+            child: FxPopupMenu(
+              label: 'Language',
+              options: [for (final option in _demoLocaleOptions) option.label],
+              selectedValue: _labelForLocale(locale),
+              onChanged: (value) {
+                final option = _optionForLabel(value);
+                if (option != null) {
+                  onLocaleChanged(option.locale);
+                }
+              },
+            ),
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Show Layout Bounds'),
+              const SizedBox(width: 8),
+              Switch(
+                value: showLayoutBounds,
+                onChanged: onShowLayoutBoundsChanged,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DemoLocaleOption {
+  const _DemoLocaleOption({required this.label, required this.locale});
+
+  final String label;
+  final Locale locale;
+}
+
+String _labelForLocale(Locale locale) {
+  return _optionForLocale(locale)?.label ?? _demoLocaleOptions.first.label;
+}
+
+_DemoLocaleOption? _optionForLabel(String? label) {
+  for (final option in _demoLocaleOptions) {
+    if (option.label == label) {
+      return option;
+    }
+  }
+  return null;
+}
+
+_DemoLocaleOption? _optionForLocale(Locale locale) {
+  for (final option in _demoLocaleOptions) {
+    if (option.locale.languageCode == locale.languageCode) {
+      return option;
+    }
+  }
+  return null;
 }
 
 class _StateSample extends StatelessWidget {

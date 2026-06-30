@@ -4,7 +4,7 @@ This checklist covers the latest shipped ListBox/Grid gallery behavior in
 `v0.3.6`. Run the demo application with:
 
 ```bash
-cd listbox_demo
+cd example-listbox-demo
 flutter run -d macos
 ```
 

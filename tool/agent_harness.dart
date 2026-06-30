@@ -1,5 +1,13 @@
 import 'dart:io';
 
+const _demoPackageDirs = [
+  'fx-desktop-example',
+  'example-listbox-demo',
+  'ribbon-toolbar-designer',
+];
+
+const _webDemoPackageDirs = ['fx-desktop-example', 'ribbon-toolbar-designer'];
+
 Future<void> main(List<String> args) async {
   final updateApi = args.contains('--update-api');
 
@@ -23,9 +31,19 @@ Future<void> main(List<String> args) async {
   await _run('dart', ['run', 'tool/check_release_sync.dart'], failures);
   await _run('flutter', ['pub', 'run', 'dartdoc'], failures);
   await _run('flutter', ['pub', 'publish', '--dry-run'], failures);
-  await _run('flutter', ['pub', 'get'], failures, workingDirectory: 'example');
-  await _run('flutter', ['analyze'], failures, workingDirectory: 'example');
-  await _run('flutter', ['test'], failures, workingDirectory: 'example');
+  for (final demoDir in _demoPackageDirs) {
+    await _run('flutter', ['pub', 'get'], failures, workingDirectory: demoDir);
+    await _run('flutter', ['analyze'], failures, workingDirectory: demoDir);
+    await _run('flutter', ['test'], failures, workingDirectory: demoDir);
+  }
+  for (final demoDir in _webDemoPackageDirs) {
+    await _run(
+      'flutter',
+      ['build', 'web', '--debug'],
+      failures,
+      workingDirectory: demoDir,
+    );
+  }
 
   _checkNoMachineLocalPaths(failures);
   _checkPublicApiDoesNotLeakDependencies(failures);
@@ -345,7 +363,7 @@ Iterable<File> _trackedTextFiles() sync* {
     'README.md',
     'analysis_options.yaml',
     'doc',
-    'example',
+    ..._demoPackageDirs,
     'lib',
     'pubspec.yaml',
     'templates',

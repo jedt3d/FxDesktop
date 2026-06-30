@@ -647,9 +647,9 @@ Tests:
 
 ## Designer
 
-`FxRibbonDesigner` is an embeddable Flutter widget, not a separate app locked
-to one shell. The example app or a product app can host it as a full-screen
-page.
+`FxRibbonDesigner` is an embeddable Flutter widget, not a shell-specific
+product. The standalone `ribbon-toolbar-designer/` app hosts the complete
+designer demo, while product apps can host the widget as a full-screen page.
 
 ### Designer Layout
 
@@ -716,8 +716,9 @@ Future<void> Function(String json)? onRequestSaveJson;
 Future<FxRibbonIconSource?> Function()? onRequestIconImport;
 ```
 
-The example app may implement simple text import/export. A product app can wire
-real desktop file dialogs or web download/upload separately.
+The `ribbon-toolbar-designer/` app may implement simple text import/export. A
+product app can wire real desktop file dialogs or web download/upload
+separately.
 
 ## Adaptive Large-Screen Behavior
 
@@ -1391,7 +1392,7 @@ Tests:
 
 Acceptance:
 
-- usable toolbar in example app on desktop;
+- usable toolbar in `fx-desktop-example/` on desktop;
 - web build smoke test passes;
 - no mobile-only behavior.
 
@@ -1572,16 +1573,15 @@ At minimum:
 flutter test --platform chrome test/fx_ribbon_toolbar_test.dart
 ```
 
-When the example app includes the ribbon route:
+When the component-suite example app includes the ribbon toolbar:
 
 ```bash
-cd example
+cd fx-desktop-example
 flutter build web
 ```
 
-If Flutter web/WASM is part of the release target for the phase, add the exact
-supported build command to the harness after verifying it on the current stable
-Flutter channel.
+The release harness runs web debug builds for `fx-desktop-example/` and
+`ribbon-toolbar-designer/` on the current stable Flutter channel.
 
 ### Desktop
 
@@ -1591,8 +1591,9 @@ Run the normal package harness:
 dart run tool/agent_harness.dart
 ```
 
-For screenshot capture and manual verification, run the example app on macOS
-and at least one additional desktop target when practical.
+For screenshot capture and manual verification, run `fx-desktop-example/` and
+`ribbon-toolbar-designer/` on macOS and at least one additional desktop target
+when practical.
 
 ## Release And Versioning
 
@@ -1609,7 +1610,8 @@ Release surfaces to update:
 - `doc/xojo-component-map.md`;
 - `doc/developer-guide.md`;
 - `AGENT.md`;
-- example app;
+- `fx-desktop-example/`;
+- `ribbon-toolbar-designer/`;
 - screenshots;
 - public API signature;
 - release notes.
@@ -1630,7 +1632,7 @@ Do not tag until:
 | SVG dependency adds weight or web issues. | Keep icon renderer strategy abstract; ship PNG/Material fallback. |
 | Ribbon becomes too wide for medium screens. | Add horizontal scroll and future group overflow policy. |
 | Keytips conflict with browser/OS shortcuts. | Use F6 as reliable activation and treat Alt as optional. |
-| Designer becomes a separate product too early. | Ship embeddable widget first; example app hosts it. |
+| Designer demo drifts from the embeddable widget. | Keep the standalone app as a thin shell around `FxRibbonDesigner`. |
 | Model changes break Jaspr compatibility. | Keep fixture import tests from Jaspr `.ribbon` examples. |
 | Touch support degrades dense desktop layout. | Add explicit interaction mode and density instead of one-size layout. |
 | Public API grows too quickly. | Keep future features reserved in schema but not implemented until tested. |

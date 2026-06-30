@@ -119,7 +119,7 @@ Recommended file ownership:
 - Component agents add focused tests under `test/` with names that match the
   component group.
 - The coordinator updates shared files such as `lib/fx_desktop.dart`,
-  `fxComponentRegistry`, `example/lib/main.dart`, `CHANGELOG.md`, README, and
+  `fxComponentRegistry`, `fx-desktop-example/lib/main.dart`, `CHANGELOG.md`, README, and
   release docs after component branches are merged into the phase branch.
 
 Recommended execution waves:
