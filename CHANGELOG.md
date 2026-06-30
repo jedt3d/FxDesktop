@@ -24,9 +24,15 @@ first public pub.dev deployment line.
   screenshots, and Git tags.
 - Hardened GitHub Actions publishing for Flutter package publishing through
   `flutter pub publish`.
+- Tracked the public API signature baseline so a fresh GitHub Actions checkout
+  can run the release harness without relying on local generated files.
+- Made the nested ListBox demo smoke test analyzable from the repository root
+  and from its own demo package context.
 - Kept release screenshot widget checks in CI while avoiding exact pixel-golden
   comparisons on Ubuntu, where renderer differences can invalidate macOS
   release screenshot artifacts.
+- Kept existing visual golden comparisons exact for local development while CI
+  performs renderer-independent render smoke checks for those legacy goldens.
 
 ## 0.3.6
 
