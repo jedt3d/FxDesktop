@@ -57,7 +57,8 @@ The harness runs:
 - `flutter analyze`
 - `flutter test`
 - `dart doc`
-- `dart pub publish --dry-run`
+- `flutter pub publish --dry-run`
+- release version-sync checks
 - example package analysis
 - repository policy checks
 
@@ -112,6 +113,10 @@ advanced editor behavior changes, and the `listbox_demo/` gallery docs.
   demo harness, screenshots, changelog, version bump, tag, and release.
 - Create tags as `vX.Y.Z` only after the quality harness passes on the release
   commit.
+- Pub.dev automated publishing must use tag pattern `v{{version}}`; the pushed
+  tag must match `pubspec.yaml`, README, and `CHANGELOG.md`.
+- Because FxDesktop is a Flutter package, publish checks and publishing use
+  `flutter pub publish`, not `dart pub publish`.
 - Create a GitHub Release when the milestone has meaningful release notes,
   screenshots, demo app changes, or a pub.dev publish candidate.
 - Follow `doc/release-versioning.md` for the full checklist.

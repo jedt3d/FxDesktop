@@ -12,6 +12,7 @@ When a milestone is accepted for release, update these surfaces together:
 
 - `pubspec.yaml` package version
 - README install snippet
+- README version badges
 - `CHANGELOG.md`
 - `AGENT.md` when the phase changes agent workflow, validation, screenshots, or
   release discipline
@@ -66,6 +67,7 @@ Create the tag only after:
 
 - the release commit is complete
 - `dart run tool/agent_harness.dart` passes
+- `dart run tool/check_release_sync.dart --tag vX.Y.Z` passes
 - `AGENT.md`, `CHANGELOG.md`, README, and the active Flutter desktop skill have
   been reviewed and updated or explicitly marked as no-change in the PR
 - the example app has been checked when UI changes are included
@@ -114,6 +116,27 @@ artifacts change in a way that should be published.
 
 ## Pub.dev
 
+FxDesktop is a Flutter package. Use `flutter pub publish` commands, not
+`dart pub publish`.
+
+The pub.dev automated-publishing configuration for this repository must use:
+
+- Repository: `jedt3d/FxDesktop`
+- Tag pattern: `v{{version}}`
+
+Pub.dev only allows GitHub Actions automated publishing for packages that
+already exist on pub.dev. If `fx_desktop` has not been published before, publish
+the first version manually from a clean release commit:
+
+```bash
+flutter pub publish
+```
+
+After the first manual publish, future versions should be published by pushing
+the matching `vX.Y.Z` tag. The workflow checks whether the tagged version is
+already on pub.dev; if it is, it skips the upload and still creates the matching
+GitHub Release.
+
 Before publishing to pub.dev:
 
 - run `dart run tool/agent_harness.dart`
@@ -121,3 +144,4 @@ Before publishing to pub.dev:
 - confirm the package version has not already been published
 - confirm the README install snippet matches `pubspec.yaml`
 - confirm public API docs and examples match the release behavior
+- confirm `dart run tool/check_release_sync.dart --tag vX.Y.Z` passes

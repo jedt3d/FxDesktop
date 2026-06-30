@@ -20,6 +20,7 @@ Future<void> main(List<String> args) async {
   await _run('dart', ['format', '--set-exit-if-changed', '.'], failures);
   await _run('flutter', ['analyze'], failures);
   await _run('flutter', ['test', '--coverage'], failures);
+  await _run('dart', ['run', 'tool/check_release_sync.dart'], failures);
   await _run('flutter', ['pub', 'run', 'dartdoc'], failures);
   await _run('flutter', ['pub', 'publish', '--dry-run'], failures);
   await _run('flutter', ['pub', 'get'], failures, workingDirectory: 'example');

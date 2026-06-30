@@ -17,5 +17,7 @@ jobs:
           cache: true
       - name: Install dependencies
         run: flutter pub get
+      - name: Check release/version sync
+        run: dart run tool/check_release_sync.dart
       - name: Run agent quality harness
         run: dart run tool/agent_harness.dart

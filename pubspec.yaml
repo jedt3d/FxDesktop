@@ -21,6 +21,14 @@ topics:
   - layout
   - xojo
 
+screenshots:
+  - description: "FxDesktop v0.3.6 lookup cells with custom renderers."
+    path: doc/screenshots/v0.3.6/fxdesktop-v0.3.6-lookup-renderers.png
+  - description: "FxDesktop v0.3.6 hosted multi-column database lookup overlay."
+    path: doc/screenshots/v0.3.6/fxdesktop-v0.3.6-db-lookup-overlay.png
+  - description: "FxDesktop v0.3.6 masked editor and cell action button."
+    path: doc/screenshots/v0.3.6/fxdesktop-v0.3.6-masked-action-editor.png
+
 dependencies:
   flexiblebox: ^1.0.4
   flutter:

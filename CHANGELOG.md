@@ -20,6 +20,7 @@ Version `0.3.6` introduces advanced enterprise cell editing features: cell actio
 - **Cell Action/Ellipsis Buttons**: Added `hasActionButton`, `actionIcon`, and `onActionPressed` callback to `FxListBoxColumn` and `FxGridColumn` for custom ellipsis action dialog integration.
 - **Input Masking (`FxMaskTextInputFormatter`)**: Built custom regex-based input formatter for applying patterns like phone format `(###) ###-####` and SSN `###-##-####` on-the-fly.
 - **Demo Gallery Page 11**: Created interactive demonstration featuring input mask formatting, ellipsis file picking, and tabular database lookups.
+- **Pub.dev Package Evidence**: Added package screenshots and release-sync checks so `pubspec.yaml`, README, `CHANGELOG.md`, and the Git tag stay aligned for the first public `fx_desktop` publish.
 
 ## 0.3.5
 

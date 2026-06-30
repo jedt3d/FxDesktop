@@ -1,5 +1,10 @@
 # FxDesktop
 
+[![Pub](https://img.shields.io/badge/pub-0.3.6-blue)](https://pub.dev/packages/fx_desktop)
+[![Release](https://img.shields.io/badge/release-v0.3.6-blue)](https://github.com/jedt3d/FxDesktop/releases/tag/v0.3.6)
+[![CI](https://github.com/jedt3d/FxDesktop/actions/workflows/ci.yml/badge.svg)](https://github.com/jedt3d/FxDesktop/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+
 FxDesktop is a desktop-first Flutter component and layout library for building
 Xojo-style UI design tools, previews, and generators.
 
@@ -205,7 +210,7 @@ the `0.3.x` table surface, including lookup editors, input masks, cell action
 buttons, row reordering, undo/redo, and large-table behavior.
 
 The harness runs formatting checks, static analysis, tests, Dartdoc, pub.dev
-dry-run checks, and public API policy checks.
+dry-run checks, release version-sync checks, and public API policy checks.
 
 Version tags and optional GitHub Releases are created only after a milestone is
 implemented, documented, validated, and accepted. See

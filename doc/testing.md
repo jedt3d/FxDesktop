@@ -23,7 +23,7 @@ dart format --set-exit-if-changed .
 flutter analyze
 flutter test
 dart doc
-dart pub publish --dry-run
+flutter pub publish --dry-run
 ```
 
 The example app can be checked separately:

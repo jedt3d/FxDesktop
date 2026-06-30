@@ -3,7 +3,7 @@ name: Publish to pub.dev
 on:
   push:
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
 
 jobs:
   validate:
@@ -16,13 +16,63 @@ jobs:
           cache: true
       - name: Install dependencies
         run: flutter pub get
+      - name: Check release/version sync
+        run: dart run tool/check_release_sync.dart --tag "$GITHUB_REF_NAME"
       - name: Run agent quality harness
         run: dart run tool/agent_harness.dart
 
   publish:
     needs: validate
+    runs-on: ubuntu-latest
+    environment: pub.dev
     permissions:
       id-token: write
-    uses: dart-lang/setup-dart/.github/workflows/publish.yml@v1
-    with:
-      environment: pub.dev
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dart-lang/setup-dart@v1
+        with:
+          oidc: true
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Check release/version sync
+        run: dart run tool/check_release_sync.dart --tag "$GITHUB_REF_NAME"
+
+      - name: Check pub.dev version state
+        id: pubdev
+        run: |
+          version="$(awk '/^version:/{print $2; exit}' pubspec.yaml)"
+          if ! curl -fsSL "https://pub.dev/api/packages/fx_desktop" -o /tmp/fx_desktop.json; then
+            echo "::error::fx_desktop does not exist on pub.dev yet. Publish the first version manually from a clean release commit with: flutter pub publish"
+            exit 1
+          fi
+          if grep -q "\"version\":\"$version\"" /tmp/fx_desktop.json; then
+            echo "Version $version already exists on pub.dev; skipping upload."
+            echo "should_publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Version $version is not on pub.dev yet; publishing from tag $GITHUB_REF_NAME."
+            echo "should_publish=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish to pub.dev
+        if: steps.pubdev.outputs.should_publish == 'true'
+        run: flutter pub publish --force
+
+      - name: Create GitHub release
+        if: success()
+        run: |
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            echo "GitHub release $GITHUB_REF_NAME already exists."
+          else
+            gh release create "$GITHUB_REF_NAME" --generate-notes --latest --title "$GITHUB_REF_NAME"
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
