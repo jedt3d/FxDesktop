@@ -1,6 +1,6 @@
-# Milestone 4: Ribbon Toolbar And Visual Designer
+# Milestone 5: Ribbon Toolbar And Visual Designer
 
-Milestone 4 adds an Office-style ribbon toolbar and a visual ribbon designer to
+Milestone 5 adds an Office-style ribbon toolbar and a visual ribbon designer to
 FxDesktop. The feature targets Flutter desktop and Flutter web on large screens.
 It may work well on iPad-sized touch screens, but it is not a mobile-phone
 component and must not introduce a phone-first layout mode.
@@ -11,7 +11,7 @@ cycles with explicit gates, screenshots, and logs, not one broad port.
 Recommended implementation branch:
 
 ```bash
-feature/m4-ribbon-toolbar-designer
+feature/m5-ribbon-toolbar-designer
 ```
 
 This planning branch is documentation-only and does not bump the package
@@ -60,7 +60,7 @@ that rendering strategy blindly. Flutter gives us better platform-native
 building blocks for accessibility, focus, gestures, theming, menu overlays, and
 tests.
 
-Milestone 4 should be widget-first:
+Milestone 5 should be widget-first:
 
 - use normal Flutter widgets for items, groups, tabs, menus, focus, semantics,
   and tooltips;
@@ -145,6 +145,8 @@ Proposed public model and widget names:
 - `FxRibbonDensity`
 - `FxRibbonInteractionMode`
 - `FxRibbonThemeData`
+- `FxRibbonLocalizations`
+- `FxRibbonLocalizedText`
 
 Avoid unprefixed names like `RibbonDefinition` in public FxDesktop exports.
 
@@ -159,6 +161,7 @@ lib/src/fx_ribbon_layout.dart
 lib/src/fx_ribbon_toolbar.dart
 lib/src/fx_ribbon_designer.dart
 lib/src/fx_ribbon_theme.dart
+lib/src/fx_ribbon_localizations.dart
 ```
 
 Expected tests:
@@ -169,18 +172,19 @@ test/fx_ribbon_icons_test.dart
 test/fx_ribbon_layout_test.dart
 test/fx_ribbon_toolbar_test.dart
 test/fx_ribbon_designer_test.dart
+test/fx_ribbon_localizations_test.dart
 test/release_ribbon_screenshot_test.dart
 ```
 
 Expected examples and docs:
 
 ```text
-doc/milestone-4-ribbon-toolbar-designer.md
+doc/milestone-5-ribbon-toolbar-designer.md
 doc/ribbon-schema.md
 doc/ribbon-designer.md
 doc/ribbon-cycle-log.md
 example/lib/main.dart
-doc/screenshots/v0.4.x/
+doc/screenshots/v0.5.x/
 ```
 
 Expected cycle tooling:
@@ -208,6 +212,8 @@ tooling.
 - `projectType`
 - ordered `tabs`
 - optional embedded icon bundle
+- optional localization bundle for captions, tooltips, semantic labels, and
+  designer-authored display text
 - optional metadata such as name, description, createdBy, and updatedAt only if
   useful for the designer
 
@@ -222,6 +228,52 @@ The importer should understand the Jaspr `.ribbon` schema version `"2.0"` and
 map it into FxDesktop types. The exporter may write the FxDesktop schema while
 optionally providing a compatibility export for Jaspr/XjRibbon-inspired
 bundles.
+
+### Localized Text
+
+The ribbon must support multi-language command definitions without forcing app
+authors to rebuild widgets per locale. Keep the source model readable by
+retaining simple fallback string fields and adding optional locale maps.
+
+Proposed shape:
+
+```dart
+@immutable
+class FxRibbonLocalizedText {
+  const FxRibbonLocalizedText({
+    required this.fallback,
+    this.values = const {},
+  });
+
+  final String fallback;
+  final Map<String, String> values;
+
+  String resolve(Locale locale);
+}
+```
+
+Use BCP-47-style locale keys such as `en`, `th`, `ja`, `zh-Hans`, and
+`pt-BR`. Resolution order:
+
+1. exact locale tag;
+2. language-script tag when available;
+3. language-only tag;
+4. fallback/default string;
+5. empty string only for optional text such as tooltips.
+
+For schema compatibility and developer ergonomics:
+
+- `caption`, `tooltipText`, and `semanticLabel` remain the default/fallback
+  strings;
+- optional maps such as `localizedCaptions`, `localizedTooltips`, and
+  `localizedSemanticLabels` hold per-locale overrides;
+- importers should map older Jaspr/XjRibbon captions to fallback strings;
+- exporters should keep fallback strings even when locale maps exist;
+- validation should warn when a locale map contains blank text, invalid locale
+  keys, or a missing fallback caption.
+
+The toolbar should resolve localized labels from `Localizations.localeOf(context)`
+unless a widget-level locale override is provided for preview/testing.
 
 ### Tabs
 
@@ -469,6 +521,66 @@ Keytips:
 - do not rely only on Alt because browsers and OSes often intercept Alt
   shortcuts.
 
+## Localization
+
+Milestone 5 must consume the suite-wide localization foundation from
+`doc/milestone-4-localization.md`. Do not build a separate ribbon-only
+translation system.
+
+There are two ribbon localization surfaces:
+
+1. User-authored ribbon definition text:
+   tab captions, group captions, item captions, tooltips, semantic labels, menu
+   item captions, sample template names, and contextual group labels.
+2. Built-in FxDesktop text:
+   designer buttons, inspector labels, validation messages, empty states,
+   import/export actions, undo/redo labels, keytip announcements, collapse
+   affordances, and accessibility descriptions.
+
+Required public contract:
+
+- `FxRibbonLocalizations` should be an extension of the shared FxDesktop
+  localization layer, not an unrelated delegate.
+- `FxRibbonToolbar` and `FxRibbonDesigner` should resolve built-in text through
+  the shared FxDesktop localizations API.
+- `FxRibbonDefinition` should own user-authored localized command text through
+  fallback strings plus optional locale maps.
+- `FxRibbonValidator` should expose stable error/warning codes and arguments so
+  messages can be localized at presentation time.
+- Public callbacks and events should carry stable tags/codes, not translated
+  strings, so app logic remains locale-independent.
+
+Locale behavior:
+
+- follow `Localizations.localeOf(context)` by default;
+- allow a widget-level locale override for designer preview and tests;
+- respect `Directionality.of(context)` and avoid hardcoded left-to-right layout
+  assumptions in text alignment, menu anchoring, and overflow indicators;
+- keep command event tags stable across languages;
+- avoid deriving keytips from translated text unless no explicit keytip exists,
+  because translated captions may not map cleanly to Latin keyboard input;
+- preserve context-specific localization keys so duplicate English words such
+  as "Copy" or "Open" can be translated differently in toolbar, menu, designer,
+  and validation contexts.
+
+Designer requirements:
+
+- show and edit fallback/default text;
+- show locale-specific text maps in the inspector or a localized-text editor;
+- preview the ribbon in the selected locale without mutating the saved model;
+- warn when a visible caption has no fallback;
+- preserve localized text during import/export, copy/paste, undo/redo, and
+  template creation.
+
+Tests:
+
+- resolve exact locale, language-only fallback, and default fallback;
+- render toolbar command captions in a non-English locale;
+- keep events stable when labels change by locale;
+- localize designer action labels and validation messages;
+- verify right-to-left text direction smoke behavior where practical;
+- capture at least one localized screenshot in the release cycle.
+
 ## Designer
 
 `FxRibbonDesigner` should be an embeddable Flutter widget, not a separate app
@@ -506,8 +618,10 @@ Required:
 - add/delete/reorder groups;
 - add/delete/reorder items;
 - edit caption, tag, item type, enabled state, tooltip, keytip, icon key;
+- edit localized captions, tooltips, and semantic labels;
 - edit dropdown menu items;
 - edit contextual tab fields;
+- preview using a selected locale;
 - live preview using `FxRibbonToolbar`;
 - validation panel;
 - dirty state;
@@ -662,6 +776,8 @@ Acceptance criteria:
 - Collapsed state is announced.
 - Keyboard-only operation can activate the same commands as mouse and touch.
 - The designer's hierarchy and inspector fields have labels.
+- Semantic labels resolve through the same locale fallback path as visible
+  labels, while command tags remain locale-independent.
 
 ## Validation
 
@@ -682,6 +798,8 @@ Validation should report:
 - icon key not found in registry;
 - menu item without tag;
 - invalid color value.
+- invalid locale key in localized text maps;
+- localized caption map without fallback/default caption.
 
 Expose warnings separately from errors so the designer can show soft guidance.
 
@@ -711,7 +829,7 @@ Each successful cycle should:
 
 - run the cycle's required format, analyze, test, build, and screenshot gates;
 - append a dated entry to `doc/ribbon-cycle-log.md`;
-- save screenshots under `doc/screenshots/v0.4.x/ribbon/` when the cycle has a
+- save screenshots under `doc/screenshots/v0.5.x/ribbon/` when the cycle has a
   visual gate;
 - record the exact command output summary, not full noisy logs;
 - leave a clear next-cycle command.
@@ -767,9 +885,10 @@ future tooling.
 Deliver:
 
 - pure Dart ribbon model;
+- `FxRibbonLocalizedText` and locale-map serialization;
 - JSON import/export;
 - Jaspr `.ribbon` compatibility importer;
-- validator with warnings and errors;
+- validator with stable warning/error codes and localizable arguments;
 - schema docs draft.
 
 Gate:
@@ -784,6 +903,8 @@ Required tests:
 - parse Jaspr fixture;
 - duplicate command tags;
 - invalid icon keys;
+- localized caption fallback resolution;
+- invalid locale key warnings;
 - contextual tab validation;
 - menu item validation.
 
@@ -798,6 +919,8 @@ Deliver:
 
 - `FxRibbonThemeData` as a `ThemeExtension`;
 - `FxRibbonDensity` and `FxRibbonInteractionMode`;
+- `FxRibbonLocalizations` plus an English delegate and sample non-English
+  delegate;
 - icon registry with Material, SVG if accepted, PNG, embedded, and placeholder
   paths;
 - disabled, hover, active, focus, keytip, menu, and validation style slots;
@@ -813,6 +936,7 @@ Required tests:
 
 - theme defaults from light and dark `ColorScheme`;
 - compact, regular, and touch density resolution;
+- built-in designer/toolbar strings resolve from `Localizations`;
 - icon lookup and missing placeholder;
 - SVG or documented PNG fallback behavior;
 - disabled icon styling.
@@ -835,6 +959,7 @@ Deliver:
 - small stacked buttons;
 - separators;
 - command events;
+- localized captions, tooltips, and semantic labels;
 - hover, pressed, disabled, focus, tooltip, and semantics state;
 - example route.
 
@@ -850,6 +975,8 @@ Required tests:
 - change active tab;
 - activate enabled command;
 - ignore disabled command;
+- resolve command labels from a non-English locale while keeping event tags
+  stable;
 - focus and keyboard activation;
 - semantics labels.
 
@@ -940,6 +1067,7 @@ Deliver:
 - hierarchy editor;
 - inspector;
 - add/delete/reorder tabs, groups, items, and menu items;
+- localized built-in designer labels;
 - validation panel;
 - dirty state;
 - undo/redo;
@@ -956,8 +1084,9 @@ Required tests:
 - render seed model;
 - add tab/group/item;
 - inspector edits update preview;
+- locale switch updates preview text without changing command tags;
 - reorder and delete;
-- validation errors display;
+- validation errors display through localized messages;
 - undo/redo restores snapshots;
 - export JSON parses back.
 
@@ -975,6 +1104,7 @@ Deliver:
 - icon assignment and removal;
 - embedded icon preview;
 - File Explorer-style sample template;
+- localized text editor for captions, tooltips, and semantic labels;
 - JSON preview or schema panel;
 - copy-to-clipboard path where Flutter supports it;
 - designer keyboard shortcuts;
@@ -991,6 +1121,7 @@ Required tests:
 - assign SVG or PNG icon by key;
 - missing icon warning appears;
 - import/export preserves embedded icon bundle;
+- import/export preserves localized text maps;
 - template opens and validates;
 - focus remains in edited inspector field after model refresh;
 - keyboard shortcuts call the same commands as buttons.
@@ -1002,7 +1133,7 @@ Required screenshots:
 
 ### Cycle 8: Docs, Screenshots, Pub Dry Run, And Release Candidate
 
-Purpose: reconcile all public package surfaces before tagging a 0.4.x release.
+Purpose: reconcile all public package surfaces before tagging a 0.5.x release.
 
 Deliver:
 
@@ -1037,7 +1168,8 @@ Required screenshots:
 - `toolbar-release-1280-dark.png`;
 - `toolbar-release-1024-light.png`;
 - `designer-release-1280-light.png`;
-- `designer-release-1280-dark.png`.
+- `designer-release-1280-dark.png`;
+- `toolbar-release-1280-localized.png`.
 
 No tag should be created by this cycle unless the user explicitly grants a
 release/tagging step after reviewing the dry-run output.
@@ -1054,7 +1186,7 @@ failure. Required visual checkpoints:
 | 5 | 1024x768, 1280x720 | minimum width, touch density, dark mode |
 | 6 | 1280x800 | designer MVP |
 | 7 | 1280x800 | designer icons, designer validation |
-| 8 | 1024x768, 1280x720, 1280x800 | release toolbar and designer set |
+| 8 | 1024x768, 1280x720, 1280x800 | release toolbar, designer, and localized proof |
 
 The 1280 px screenshots are the primary review target. The 1024 px screenshots
 are minimum-width proof. Mobile-phone screenshots are out of scope.
@@ -1105,6 +1237,7 @@ Deliver:
 
 - `FxRibbonDefinition`, `FxRibbonTab`, `FxRibbonGroup`, `FxRibbonItem`,
   `FxRibbonMenuItem`;
+- `FxRibbonLocalizedText` and localized caption/tooltip/semantic-label maps;
 - JSON import/export;
 - Jaspr `.ribbon` schema compatibility importer;
 - `FxRibbonValidator`;
@@ -1118,6 +1251,7 @@ Tests:
 - parse Jaspr example fixture;
 - parse XjRibbon-style legacy fixture where practical;
 - duplicate tag validation;
+- localized text fallback and invalid locale validation;
 - contextual tab validation;
 - menu item validation;
 - equality and copy helpers.
@@ -1126,7 +1260,8 @@ Acceptance:
 
 - model tests pass on VM;
 - no Flutter dependency types leak from model APIs;
-- docs explain schema version and compatibility.
+- docs explain schema version, compatibility, localization fallback, and stable
+  locale-independent command tags.
 
 ### Phase 4.2: Icon Registry
 
@@ -1168,6 +1303,7 @@ Deliver:
 - command events;
 - hover/pressed/focus state;
 - light/dark theme support;
+- localized captions, tooltips, and semantic labels;
 - example page.
 
 Tests:
@@ -1176,6 +1312,7 @@ Tests:
 - tap command emits tag;
 - disabled item does not emit command;
 - active tab changes;
+- changing locale changes visible labels without changing emitted tags;
 - keyboard activation works;
 - semantics labels exist;
 - local golden/release screenshot.
@@ -1294,7 +1431,7 @@ Tests:
 
 Acceptance:
 
-- ready for a `0.4.x` release after implementation is accepted.
+- ready for a `0.5.x` release after implementation is accepted.
 
 ## Test Matrix
 
@@ -1389,7 +1526,7 @@ and at least one additional desktop target when practical.
 
 Planning-only work does not bump `pubspec.yaml`.
 
-Implementation releases should use the `0.4.x` line unless a broader versioning
+Implementation releases should use the `0.5.x` line unless a broader versioning
 decision changes that before coding begins.
 
 Release surfaces to update:
@@ -1428,7 +1565,7 @@ Do not tag until:
 
 ## Definition Of Done
 
-Milestone 4 is done when:
+Milestone 5 is done when:
 
 - `FxRibbonToolbar` is exported from `package:fx_desktop/fx_desktop.dart`;
 - all seven source item types are usable;

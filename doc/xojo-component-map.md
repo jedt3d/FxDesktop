@@ -109,20 +109,33 @@ See [Milestone 3: ListBox And Grid Depth](milestone-3-listbox-grid.md) for the
 delivered release history and [Advanced Grid Features (v0.3.6)](milestone-6-advanced-grid-features.md)
 for the latest cell-editing features.
 
-## Milestone 4 Planned Ribbon Surface
+## Milestone 4 Planned Localization Foundation
 
-Milestone 4 plans an Office-style ribbon toolbar and visual designer for large
+Milestone 4 plans suite-wide localization before the next major component
+surface. The source of truth should be Flutter-native ARB localization with
+generated localizations, while `.po` and `.pot` files are supported as
+translator bridge formats. Duplicate English labels stay as separate keys when
+their component or workflow context differs, matching the way Xojo projects can
+need different translations for identical source words in different controls.
+
+See [Milestone 4: Localization Foundation](milestone-4-localization.md) for the
+implementation plan.
+
+## Milestone 5 Planned Ribbon Surface
+
+Milestone 5 plans an Office-style ribbon toolbar and visual designer for large
 Flutter desktop and web surfaces. It transfers the Dart model/schema lessons
 from `jaspr-ribbon-toolbar` and the original Xojo control semantics from
 `XjRibbon`, while adapting the renderer to Flutter widgets, semantics, focus,
-menus, overlays, pointer-kind handling, and theming.
+menus, overlays, pointer-kind handling, theming, and the Milestone 4
+localization foundation.
 
 | Planned FxDesktop | Source concept | Direction |
 |---|---|---|
 | `FxRibbonToolbar` | `RibbonToolbar` / `XjRibbon` | Widget-first ribbon with tabs, groups, large/small commands, dropdowns, split buttons, toggles, checkboxes, separators, contextual tabs, collapse behavior, SVG/PNG icons, keytips, mouse, keyboard, and touch support. |
 | `FxRibbonDesigner` | Jaspr/Xojo ribbon designers | Embeddable visual designer with hierarchy editing, inspector, live preview, validation, JSON import/export, icon assignment, and undo/redo. |
 
-See [Milestone 4: Ribbon Toolbar And Visual Designer](milestone-4-ribbon-toolbar-designer.md)
+See [Milestone 5: Ribbon Toolbar And Visual Designer](milestone-5-ribbon-toolbar-designer.md)
 for the implementation plan.
 
 ## Mobile And Tablet

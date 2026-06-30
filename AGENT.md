@@ -94,8 +94,17 @@ new table work, update `CHANGELOG.md`, `doc/milestone-3-listbox-grid.md`,
 `doc/xojo-component-map.md`, `doc/milestone-6-advanced-grid-features.md` when
 advanced editor behavior changes, and the `listbox_demo/` gallery docs.
 
-For Milestone 4 ribbon work, follow
-`doc/milestone-4-ribbon-toolbar-designer.md`. Keep the implementation scoped to
+For Milestone 4 localization work, follow `doc/milestone-4-localization.md`.
+Use Flutter's native localization stack as the primary path: ARB files,
+`gen_l10n`, `flutter_localizations`, `intl`, `LocalizationsDelegate`, and
+`Localizations.override` for tests/previews. Treat `.po` and `.pot` as
+translator import/export bridge formats, not the runtime source of truth.
+Do not deduplicate localization keys only because English text matches; repeated
+words need context-specific keys and PO `msgctxt` so translations can differ by
+component, command, validation, or designer context.
+
+For Milestone 5 ribbon work, follow
+`doc/milestone-5-ribbon-toolbar-designer.md`. Keep the implementation scoped to
 FxDesktop; use `jaspr-ribbon-toolbar` as Dart architecture source material and
 `XjRibbon` as design ancestry only. Public APIs must use `Fx*` names such as
 `FxRibbonToolbar`, `FxRibbonDefinition`, and `FxRibbonDesigner`. Prefer a
@@ -110,7 +119,8 @@ surface, with `FxRibbonThemeData` only for ribbon-specific tokens. Implement the
 feature through the documented cycle gates and, after Cycle 0 exists, use
 `dart run tool/ribbon_cycle.dart --all` or a targeted `--cycle` command for
 unattended progress, logs, tests, and screenshots at 1280 px primary and 1024 px
-minimum widths.
+minimum widths. Consume the Milestone 4 localization foundation instead of
+creating a ribbon-only translation system.
 
 ## Version And Release Rules
 
@@ -123,6 +133,10 @@ minimum widths.
 - For Milestone 3, use the `0.3.x` release line for implementation phases.
   Planning-only specs and documentation reconciliation do not bump the package
   version.
+- For Milestone 4 localization, use the `0.4.x` release line for implementation
+  phases.
+- For Milestone 5 ribbon/designer, use the `0.5.x` release line unless the
+  accepted release plan changes.
 - For every Milestone 2 phase, update the example harness, capture screenshots,
   run the full quality harness, tag the version, and create a GitHub Release
   with screenshots attached.

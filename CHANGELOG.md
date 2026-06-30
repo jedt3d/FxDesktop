@@ -3,15 +3,14 @@
 ## Unreleased
 
 ### Documentation
-- Added the Milestone 4 plan for a Flutter desktop/web `FxRibbonToolbar` and
-  `FxRibbonDesigner`, covering model/schema transfer from
-  `jaspr-ribbon-toolbar`, XjRibbon ancestry, SVG/PNG icons, mouse/touch/keyboard
-  input, Flutter-native rendering enhancements, designer scope, testing, and
-  release criteria.
-- Expanded the Milestone 4 plan with a Flutter-native theme/style-sheet
-  strategy, 1024 px and 1280 px viewport targets, autonomous implementation
-  cycles, one-command cycle runner expectations, screenshot cadence, and
-  unattended-run guardrails.
+- Added the Milestone 4 localization foundation plan, making Flutter-native ARB
+  localization the source of truth, `.po`/`.pot` files translator bridge
+  formats, and context-specific duplicate text keys a requirement for safe
+  multi-language support.
+- Moved the ribbon toolbar and visual designer plan to Milestone 5 so it can
+  build on the localization foundation, while preserving the Flutter
+  theme/style-sheet strategy, 1024 px and 1280 px viewport targets, autonomous
+  implementation cycles, screenshot cadence, and unattended-run guardrails.
 
 ## 0.3.7
 

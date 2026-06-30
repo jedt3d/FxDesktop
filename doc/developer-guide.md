@@ -96,10 +96,27 @@ FxDesktop provides two distinct table controls, matching Xojo's layout patterns:
 - **Lookup Providers and Hosted Editors**: Use `FxMapLookupProvider`, `FxEnumLookupProvider`, or `FxDbLookupProvider` with `FxCellType.lookup` to store raw keys while showing readable labels, including multi-column dropdowns.
 - **Input Masks and Cell Actions**: Use column `inputMask`, `hasActionButton`, `actionIcon`, and `onActionPressed` for fixed-format entry and ellipsis-style workflows such as file pickers or selector dialogs.
 
+## Localization
+
+Milestone 4 plans the suite-wide localization foundation. Follow
+`doc/milestone-4-localization.md` before localizing components or adding
+new user-facing strings.
+
+Key rules:
+
+- Use Flutter-native ARB and generated localizations as the source of truth.
+- Use `.po`/`.pot` only as translator import/export bridge formats.
+- Keep duplicate English words as separate keys when context differs.
+- Preserve PO `msgctxt` so imports do not merge unrelated translations.
+- Use `MaterialLocalizations` where Flutter already supplies localized text or
+  formatting.
+- Keep app-authored labels and data caller-owned unless a component model
+  explicitly supports localized values.
+
 ## Ribbon Toolbar and Designer
 
-Milestone 4 plans a large-screen `FxRibbonToolbar` and `FxRibbonDesigner`.
-Follow `doc/milestone-4-ribbon-toolbar-designer.md` before implementing this
+Milestone 5 plans a large-screen `FxRibbonToolbar` and `FxRibbonDesigner`.
+Follow `doc/milestone-5-ribbon-toolbar-designer.md` before implementing this
 surface.
 
 Key rules:
@@ -118,6 +135,8 @@ Key rules:
 - Use the documented ribbon cycle runner once Cycle 0 creates it:
   `dart run tool/ribbon_cycle.dart --all` for unattended progress or
   `dart run tool/ribbon_cycle.dart --cycle N` for focused resumes.
+- Consume the Milestone 4 localization foundation for built-in strings,
+  context-specific duplicate text, and `.po`/`.pot` bridge behavior.
 - Keep the designer embeddable and dependency-light; app shells can provide
   file picker or web download integrations through callbacks.
 
