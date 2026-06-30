@@ -94,6 +94,19 @@ new table work, update `CHANGELOG.md`, `doc/milestone-3-listbox-grid.md`,
 `doc/xojo-component-map.md`, `doc/milestone-6-advanced-grid-features.md` when
 advanced editor behavior changes, and the `listbox_demo/` gallery docs.
 
+For Milestone 4 ribbon work, follow
+`doc/milestone-4-ribbon-toolbar-designer.md`. Keep the implementation scoped to
+FxDesktop; use `jaspr-ribbon-toolbar` as Dart architecture source material and
+`XjRibbon` as design ancestry only. Public APIs must use `Fx*` names such as
+`FxRibbonToolbar`, `FxRibbonDefinition`, and `FxRibbonDesigner`. Prefer a
+Flutter widget-first renderer that uses focus, actions, semantics, menus,
+overlays, themes, and pointer-kind handling instead of blindly porting the
+Jaspr canvas renderer. The toolbar must support mouse, keyboard, and touch on
+large desktop/web screens; it must not become a mobile-phone navigation system.
+Plan icon support around an `iconKey` registry with SVG as the preferred path
+when dependency review allows it, and PNG/Material/placeholder fallbacks as
+required.
+
 ## Version And Release Rules
 
 - Do not bump versions or create tags for planning-only changes.

@@ -1,0 +1,965 @@
+# Milestone 4: Ribbon Toolbar And Visual Designer
+
+Milestone 4 adds an Office-style ribbon toolbar and a visual ribbon designer to
+FxDesktop. The feature targets Flutter desktop and Flutter web on large screens.
+It may work well on iPad-sized touch screens, but it is not a mobile-phone
+component and must not introduce a phone-first layout mode.
+
+This is a large feature branch. Treat it as a sequence of implementation
+phases, not one broad port.
+
+Recommended implementation branch:
+
+```bash
+feature/m4-ribbon-toolbar-designer
+```
+
+This planning branch is documentation-only and does not bump the package
+version.
+
+## Source Material
+
+The primary source of transferable implementation knowledge is:
+
+- `https://github.com/jedt3d/jaspr-ribbon-toolbar`
+
+Use it for:
+
+- Dart model structure.
+- `.ribbon` JSON schema.
+- icon registry and embedded icon bundle ideas.
+- control type vocabulary.
+- layout and hit-test decisions.
+- renderer and designer decomposition.
+- tutorial/example expectations.
+
+The design ancestor is:
+
+- `https://github.com/jedt3d/XjRibbon`
+
+Use it for:
+
+- original Xojo component semantics.
+- Desktop/Web parity decisions.
+- keytip behavior.
+- designer workflow.
+- control type taxonomy.
+- color and layout intent.
+
+Do not modify either upstream repository from this work. Transfer only the
+architecture, schema knowledge, and behavior decisions into FxDesktop.
+
+## Flutter Platform Direction
+
+The Jaspr implementation renders to an HTML canvas. FxDesktop should not copy
+that rendering strategy blindly. Flutter gives us better platform-native
+building blocks for accessibility, focus, gestures, theming, menu overlays, and
+tests.
+
+Milestone 4 should be widget-first:
+
+- use normal Flutter widgets for items, groups, tabs, menus, focus, semantics,
+  and tooltips;
+- use a small pure layout engine for deterministic sizing and tests;
+- use `CustomPainter` only for visual effects that are awkward as widgets;
+- use Flutter menu and overlay primitives instead of a hand-rolled canvas menu
+  unless their behavior proves insufficient.
+
+Useful Flutter APIs for this milestone:
+
+- `FocusableActionDetector` for combining focus, shortcuts, actions, hover, and
+  enabled state in custom controls.
+- `Shortcuts`, `Actions`, and `Intent` for keytips and keyboard activation.
+- `MenuAnchor`, `MenuItemButton`, `SubmenuButton`, and `MenuStyle` for ordinary
+  dropdown menus.
+- `OverlayPortal` or `OverlayEntry` for custom ribbon overlays that must align
+  with split-button arrows or designer popovers.
+- `Semantics` for tab, group, item, checked/toggled, menu, and disabled state.
+- `Tooltip` for mouse hover and long-press affordances.
+- `GestureDetector`, `Listener`, and `MouseRegion` for pointer-kind aware
+  mouse, trackpad, stylus, and touch behavior.
+- `ThemeExtension` or an FxDesktop theme extension for ribbon colors, density,
+  and state layers.
+
+## Goals
+
+Deliver two public feature families:
+
+1. `FxRibbonToolbar`
+   A reusable large-screen Flutter ribbon component for desktop and web.
+
+2. `FxRibbonDesigner`
+   A visual editor for ribbon definitions that can be embedded in an app or
+   used in the example harness.
+
+Both should share the same model and `.ribbon` import/export layer.
+
+## Non-Goals
+
+Do not include these in the first implementation milestone:
+
+- mobile-phone adaptive drawer or bottom navigation replacement;
+- full Microsoft Ribbon Framework clone;
+- native OS menu bar replacement;
+- formula/spreadsheet-style ribbon galleries;
+- LSP server or VS Code extension;
+- Xojo code generation as a required first release feature;
+- file picker dependency in the package core;
+- platform-specific native code;
+- mutable global icon registry.
+
+The designer may expose import/export callbacks and text download hooks without
+owning file-system or browser-download dependencies.
+
+## Public Naming
+
+All public APIs must use the `Fx*` prefix.
+
+Proposed public model and widget names:
+
+- `FxRibbonToolbar`
+- `FxRibbonDesigner`
+- `FxRibbonDefinition`
+- `FxRibbonTab`
+- `FxRibbonGroup`
+- `FxRibbonItem`
+- `FxRibbonMenuItem`
+- `FxRibbonItemType`
+- `FxRibbonIconRegistry`
+- `FxRibbonIconSource`
+- `FxRibbonIconKind`
+- `FxRibbonEvent`
+- `FxRibbonItemPressedEvent`
+- `FxRibbonMenuActionEvent`
+- `FxRibbonTabChangedEvent`
+- `FxRibbonCollapseChangedEvent`
+- `FxRibbonSelection`
+- `FxRibbonValidationResult`
+- `FxRibbonDensity`
+- `FxRibbonInteractionMode`
+- `FxRibbonThemeData`
+
+Avoid unprefixed names like `RibbonDefinition` in public FxDesktop exports.
+
+## File Layout
+
+Expected implementation files:
+
+```text
+lib/src/fx_ribbon_models.dart
+lib/src/fx_ribbon_icons.dart
+lib/src/fx_ribbon_layout.dart
+lib/src/fx_ribbon_toolbar.dart
+lib/src/fx_ribbon_designer.dart
+lib/src/fx_ribbon_theme.dart
+```
+
+Expected tests:
+
+```text
+test/fx_ribbon_models_test.dart
+test/fx_ribbon_icons_test.dart
+test/fx_ribbon_layout_test.dart
+test/fx_ribbon_toolbar_test.dart
+test/fx_ribbon_designer_test.dart
+test/release_ribbon_screenshot_test.dart
+```
+
+Expected examples and docs:
+
+```text
+doc/milestone-4-ribbon-toolbar-designer.md
+doc/ribbon-schema.md
+doc/ribbon-designer.md
+example/lib/main.dart
+doc/screenshots/v0.4.x/
+```
+
+`lib/fx_desktop.dart` should export the ribbon files only after Phase 4.1 has
+model tests and Phase 4.3 has a usable toolbar widget.
+
+## Model Contract
+
+The ribbon model must be pure Dart data. It should be serializable, diffable,
+testable on the VM, and usable by renderer, designer, generators, and future
+tooling.
+
+### Definition
+
+`FxRibbonDefinition` should contain:
+
+- `version`
+- `projectType`
+- ordered `tabs`
+- optional embedded icon bundle
+- optional metadata such as name, description, createdBy, and updatedAt only if
+  useful for the designer
+
+Use schema versioning from day one. Prefer:
+
+```text
+version: "1.0"
+projectType: "flutter"
+```
+
+The importer should understand the Jaspr `.ribbon` schema version `"2.0"` and
+map it into FxDesktop types. The exporter may write the FxDesktop schema while
+optionally providing a compatibility export for Jaspr/XjRibbon-inspired
+bundles.
+
+### Tabs
+
+`FxRibbonTab` should contain:
+
+- `caption`
+- `groups`
+- `isContextual`
+- `contextGroup`
+- `accentColor`
+- `keyTip`
+- optional stable `id`
+
+Contextual tabs are hidden until their context group is active. Standard tabs
+are always visible.
+
+### Groups
+
+`FxRibbonGroup` should contain:
+
+- `caption`
+- `items`
+- optional stable `id`
+- optional overflow/collapse hints for future adaptive behavior
+
+Groups are visual and semantic containers. They should expose a group label to
+accessibility tools.
+
+### Items
+
+Support the seven source item kinds:
+
+| Item kind | Behavior |
+|---|---|
+| `large` | Large icon with caption, primary command. |
+| `small` | Small icon with caption, stacks three per column. |
+| `dropdown` | Whole item opens menu. |
+| `splitButton` | Main body fires command, arrow opens menu. |
+| `toggle` | Command with persistent active state. |
+| `checkBox` | Checkbox-style item with checked state. |
+| `separator` | Non-interactive group divider. |
+
+`FxRibbonItem` should contain:
+
+- `caption`
+- `tag`
+- `itemType`
+- `isEnabled`
+- `isToggleActive`
+- `tooltipText`
+- `iconKey`
+- `keyTip`
+- `menuItems`
+- optional `semanticLabel`
+
+The `tag` is the stable command identifier and is what applications should
+handle in events.
+
+### Events
+
+Prefer sealed event classes when the package SDK supports them cleanly:
+
+- item command pressed
+- dropdown menu item selected
+- tab changed
+- collapse state changed
+- toggle/checkbox state requested
+- designer selection changed
+- designer model changed
+
+Applications should receive semantic events rather than raw pointer
+coordinates.
+
+## Icon Strategy
+
+The toolbar must support SVG icons when practical and PNG icons as a fallback.
+Icons must be referenced by `iconKey` from the model, not by directly storing
+Flutter widgets on `FxRibbonItem`.
+
+### Required Icon Sources
+
+Support these source types in the registry:
+
+- `materialIcon`
+  Runtime-only `IconData` for apps that want quick Material symbol mapping.
+- `svgAsset`
+  SVG from Flutter assets.
+- `svgString`
+  Embedded SVG text from `.ribbon` bundles.
+- `pngAsset`
+  PNG from Flutter assets.
+- `pngBytes`
+  Embedded PNG bytes or data URL from `.ribbon` bundles.
+- `imageProvider`
+  Runtime-only escape hatch for app-specific image sources.
+
+### SVG Dependency Decision
+
+Flutter does not provide full SVG widget rendering in the framework itself.
+The preferred implementation path is to add `flutter_svg` only if the dependency
+stays compatible with the package's Flutter SDK floor, web target, desktop
+targets, pub.dev score, and license expectations.
+
+If adding `flutter_svg` is not acceptable, Phase 4 should still ship:
+
+- PNG icons;
+- Material icon support;
+- placeholder icons using the first caption letter;
+- an icon renderer interface so SVG support can be added later without breaking
+  public model APIs.
+
+### Icon Acceptance Criteria
+
+- Missing icons render a stable placeholder.
+- Disabled icons visibly dim.
+- SVG and PNG paths can both be tested.
+- Embedded icon bundle round-trips through JSON.
+- The designer can assign, replace, and remove icons by key.
+- Icon rendering works in desktop widget tests and web smoke builds.
+
+## Toolbar Rendering
+
+`FxRibbonToolbar` should be a `StatefulWidget` unless all interaction state is
+fully controlled by the caller. The first public API should support both
+controlled and uncontrolled usage.
+
+Proposed constructor shape:
+
+```dart
+FxRibbonToolbar({
+  required FxRibbonDefinition definition,
+  FxRibbonIconRegistry icons = const FxRibbonIconRegistry.empty(),
+  int activeTabIndex = 0,
+  bool collapsed = false,
+  Set<String> visibleContextGroups = const {},
+  FxRibbonDensity density = FxRibbonDensity.regular,
+  FxRibbonInteractionMode interactionMode = FxRibbonInteractionMode.auto,
+  ValueChanged<FxRibbonEvent>? onEvent,
+  ValueChanged<int>? onTabChanged,
+  ValueChanged<bool>? onCollapsedChanged,
+})
+```
+
+### Visual Structure
+
+Toolbar layout:
+
+```text
+tab strip
+content band
+  group
+    item columns
+    group caption
+  group separator
+collapse chevron
+```
+
+The renderer must preserve these source decisions:
+
+- large icon target around 32 px in regular density;
+- small icon target around 16 px in regular density;
+- small and checkbox items stack three per column;
+- split button has separate body and arrow hit regions;
+- group caption is centered under controls;
+- contextual tab accent is visible but not overpowering;
+- active tab is obvious in both light and dark themes;
+- collapsed mode leaves tab strip visible.
+
+### Flutter Enhancements
+
+Use Flutter to improve the port:
+
+- Widget-based controls instead of a full canvas renderer so semantics,
+  focus, hover, and hit testing are first-class.
+- `MenuAnchor` for ordinary dropdown and split-button menus.
+- `OverlayPortal` or `OverlayEntry` only where `MenuAnchor` cannot match
+  ribbon positioning or designer popovers.
+- `FocusableActionDetector` on each command item so mouse hover, focus rings,
+  keyboard activation, and enabled state share one control path.
+- `Semantics` labels for tab, group, command, checked/toggled state, disabled
+  state, and menu availability.
+- `Tooltip` for hover and long-press.
+- `Theme.of(context)`, `ColorScheme`, high contrast, and text scale awareness.
+- `MediaQuery` to adapt hit target size and collapse behavior without creating
+  a mobile layout.
+- `ScrollConfiguration` plus visible scroll affordances when the ribbon is
+  wider than the viewport.
+
+## Mouse, Touch, Keyboard
+
+The ribbon must support both mouse click and touch screen interaction.
+
+### Mouse
+
+Required:
+
+- hover states for tabs and items;
+- pressed state;
+- pointer cursor on enabled commands;
+- tooltips;
+- split-button body and arrow hit testing;
+- menu dismissal when clicking outside;
+- double-click or chevron collapse behavior.
+
+### Touch
+
+Required:
+
+- tap activates commands;
+- tap on split arrow opens menu;
+- long press can expose tooltip/help where Flutter supports it;
+- no required hover-only affordance;
+- minimum touch hit target in touch mode should be 44 px where practical;
+- dense desktop mode may remain compact, but touch mode must be selectable.
+
+Add:
+
+```dart
+enum FxRibbonInteractionMode {
+  auto,
+  mouse,
+  touch,
+}
+```
+
+`auto` should track the most recent pointer kind and use larger hit targets for
+touch without changing the visual grammar into a mobile toolbar.
+
+### Keyboard
+
+Required:
+
+- Tab/Shift+Tab focus traversal into and out of the ribbon.
+- Arrow navigation across tabs and visible items.
+- Enter/Space activate command items.
+- Escape closes menus or exits keytip mode.
+- F6 activates keytip mode.
+
+Keytips:
+
+- support manual `keyTip` from the model;
+- auto-generate missing keytips deterministically;
+- show badges over tabs/items in a high-contrast style;
+- support a two-level flow: first choose tab, then choose item;
+- do not rely only on Alt because browsers and OSes often intercept Alt
+  shortcuts.
+
+## Designer
+
+`FxRibbonDesigner` should be an embeddable Flutter widget, not a separate app
+locked to one shell. The example app can host it as a full-screen page.
+
+### Designer Layout
+
+Preferred desktop layout:
+
+```text
+top command row
+preview ribbon
+main split
+  left: hierarchy
+  center: optional JSON/schema preview or canvas-free live preview
+  right: inspector
+bottom status/errors row
+```
+
+Use existing FxDesktop controls where they prove the suite:
+
+- `FxListBox` or `FxGrid` for hierarchy/menu item editing;
+- `FxTextField`, `FxTextArea`, `FxPopupMenu`, `FxCheckBox`, `FxColorPicker`;
+- `FxSegmentedButton`, `FxTabPanel`, or `FxPagePanel` for inspector modes;
+- `FxUndoController` for designer undo/redo snapshots.
+
+### Designer MVP Features
+
+Required:
+
+- create new definition;
+- load definition from JSON string;
+- export definition to JSON string;
+- add/delete/reorder tabs;
+- add/delete/reorder groups;
+- add/delete/reorder items;
+- edit caption, tag, item type, enabled state, tooltip, keytip, icon key;
+- edit dropdown menu items;
+- edit contextual tab fields;
+- live preview using `FxRibbonToolbar`;
+- validation panel;
+- dirty state;
+- undo/redo through snapshot or model-command history;
+- copy JSON to clipboard where Flutter platform support exists.
+
+Nice-to-have after MVP:
+
+- sample templates such as File Explorer-style Home/View tabs;
+- icon manager with drag/drop upload in app shells that provide bytes;
+- Xojo code generation;
+- Jaspr-compatible export mode;
+- command search;
+- command palette for large definitions;
+- designer keyboard shortcuts.
+
+### Designer Import/Export
+
+The package core should not depend on a file picker. Instead expose callbacks:
+
+```dart
+Future<String?> Function()? onRequestOpenJson;
+Future<void> Function(String json)? onRequestSaveJson;
+Future<FxRibbonIconSource?> Function()? onRequestIconImport;
+```
+
+The example app may implement simple text import/export. A product app can wire
+real desktop file dialogs or web download/upload separately.
+
+## Adaptive Large-Screen Behavior
+
+The ribbon should work well at desktop and iPad-sized widths without becoming a
+phone component.
+
+Required:
+
+- wide desktop: all groups visible when space allows;
+- medium desktop/tablet: horizontal scroll or group overflow affordance;
+- collapsed state: tab strip only;
+- touch mode: larger item hit targets and more forgiving menu spacing;
+- text scaling: preserve usability up to reasonable desktop accessibility text
+  scale;
+- minimum width: if the viewport is too narrow, scroll horizontally instead of
+  switching to a mobile drawer.
+
+Future adaptive ideas:
+
+- group collapse priority;
+- compact group buttons;
+- overflow menu per group;
+- remembered collapse state per window width.
+
+## Theming
+
+Add `FxRibbonThemeData` or extend existing FxDesktop theme support.
+
+The theme should cover:
+
+- background;
+- content band background;
+- tab text;
+- active tab;
+- contextual accent wash;
+- group separator;
+- item hover;
+- item pressed;
+- disabled text/icon;
+- toggle active;
+- focus ring;
+- keytip badge;
+- menu surface;
+- warning/error validation state in designer.
+
+Support light and dark modes. Use `ColorScheme` as the first input and only add
+custom colors where ribbon-specific states need them.
+
+## Accessibility
+
+Acceptance criteria:
+
+- Each visible tab is exposed as a tab or button-like semantic node.
+- Each group has a label.
+- Each command item has a label, enabled state, and activation action.
+- Toggle and checkbox items expose checked/toggled state.
+- Dropdown and split-button items expose menu availability.
+- Collapsed state is announced.
+- Keyboard-only operation can activate the same commands as mouse and touch.
+- The designer's hierarchy and inspector fields have labels.
+
+## Validation
+
+Add `FxRibbonValidator`.
+
+Validation should report:
+
+- invalid JSON;
+- unsupported schema version;
+- missing tabs array;
+- tab without caption;
+- group without caption;
+- item without tag when interactive;
+- duplicate tags;
+- unknown item type;
+- dropdown/split-button without menu items if strict mode is enabled;
+- contextual tab without context group;
+- icon key not found in registry;
+- menu item without tag;
+- invalid color value.
+
+Expose warnings separately from errors so the designer can show soft guidance.
+
+## Implementation Phases
+
+### Phase 4.0: Planning And Branch Setup
+
+Status: this document.
+
+Deliver:
+
+- milestone plan;
+- source-material mapping;
+- branch naming;
+- test plan;
+- documentation pointers.
+
+No package version bump.
+
+### Phase 4.1: Model, Schema, Validation
+
+Deliver:
+
+- `FxRibbonDefinition`, `FxRibbonTab`, `FxRibbonGroup`, `FxRibbonItem`,
+  `FxRibbonMenuItem`;
+- JSON import/export;
+- Jaspr `.ribbon` schema compatibility importer;
+- `FxRibbonValidator`;
+- model copy/replace helpers;
+- event classes;
+- public Dartdoc.
+
+Tests:
+
+- round-trip JSON;
+- parse Jaspr example fixture;
+- parse XjRibbon-style legacy fixture where practical;
+- duplicate tag validation;
+- contextual tab validation;
+- menu item validation;
+- equality and copy helpers.
+
+Acceptance:
+
+- model tests pass on VM;
+- no Flutter dependency types leak from model APIs;
+- docs explain schema version and compatibility.
+
+### Phase 4.2: Icon Registry
+
+Deliver:
+
+- `FxRibbonIconRegistry`;
+- `FxRibbonIconSource`;
+- PNG asset/bytes support;
+- Material icon support;
+- placeholder rendering contract;
+- SVG support through `flutter_svg` if accepted after dependency check;
+- fallback plan if SVG is deferred.
+
+Tests:
+
+- registry lookup;
+- missing icon fallback;
+- embedded PNG serialization;
+- SVG serialization when enabled;
+- disabled icon styling.
+
+Acceptance:
+
+- toolbar can render at least Material icons and PNG icons;
+- SVG support is either implemented or explicitly documented as deferred with
+  an unchanged public icon API.
+
+### Phase 4.3: Toolbar MVP
+
+Deliver:
+
+- `FxRibbonToolbar`;
+- tab strip;
+- standard tabs;
+- groups;
+- large buttons;
+- small buttons;
+- separators;
+- command events;
+- hover/pressed/focus state;
+- light/dark theme support;
+- example page.
+
+Tests:
+
+- renders tabs/groups/items;
+- tap command emits tag;
+- disabled item does not emit command;
+- active tab changes;
+- keyboard activation works;
+- semantics labels exist;
+- local golden/release screenshot.
+
+Acceptance:
+
+- usable toolbar in example app on desktop;
+- web build smoke test passes;
+- no mobile-only behavior.
+
+### Phase 4.4: Menus, Split Buttons, Toggles, Contextual Tabs
+
+Deliver:
+
+- dropdown menus;
+- split-button body/arrow behavior;
+- toggle buttons;
+- checkbox items;
+- contextual tabs;
+- collapse/expand behavior;
+- keytip MVP.
+
+Tests:
+
+- dropdown opens and emits menu item tag;
+- split body emits primary command;
+- split arrow opens menu;
+- toggle/checkbox state event works;
+- contextual group show/hide works;
+- collapse changes height and emits event;
+- F6 keytip activation;
+- Escape exits keytip or closes menu.
+
+Acceptance:
+
+- all seven source control kinds work;
+- mouse and keyboard paths produce the same semantic events.
+
+### Phase 4.5: Touch And Large-Screen Polish
+
+Deliver:
+
+- `FxRibbonInteractionMode`;
+- touch hit-target policy;
+- pointer-kind tracking;
+- medium-width horizontal scroll or overflow behavior;
+- long-press tooltip/help behavior where available;
+- high-contrast and text-scale review.
+
+Tests:
+
+- `WidgetTester` touch gesture activates command;
+- mouse hover does not affect touch-only behavior;
+- touch mode increases effective hit targets;
+- medium-width layout remains usable;
+- text scale does not overlap group captions or item labels.
+
+Acceptance:
+
+- toolbar works with mouse, trackpad, and touch;
+- iPad-sized width is supported without adding phone UI.
+
+### Phase 4.6: Designer MVP
+
+Deliver:
+
+- `FxRibbonDesigner`;
+- live preview;
+- hierarchy editor;
+- inspector;
+- add/delete/reorder tabs/groups/items;
+- menu item editor;
+- JSON import/export callbacks;
+- validation panel;
+- dirty state;
+- undo/redo.
+
+Tests:
+
+- designer renders a seed model;
+- add tab/group/item mutates model;
+- inspector edits update preview;
+- delete and reorder work;
+- validation errors show;
+- undo/redo restores snapshots;
+- exported JSON parses back to equivalent model.
+
+Acceptance:
+
+- designer can build a complete toolbar with all seven item types;
+- designer uses FxDesktop controls where appropriate;
+- no file picker dependency in package core.
+
+### Phase 4.7: Documentation, Screenshots, Release Candidate
+
+Deliver:
+
+- README section;
+- `doc/ribbon-schema.md`;
+- `doc/ribbon-designer.md`;
+- `doc/xojo-component-map.md` update;
+- `AGENT.md` update;
+- example gallery screenshots;
+- changelog entry;
+- public API signature update;
+- release screenshots.
+
+Tests:
+
+- full agent harness;
+- `flutter pub publish --dry-run`;
+- desktop widget tests;
+- web smoke test;
+- local golden screenshots;
+- release-sync check.
+
+Acceptance:
+
+- ready for a `0.4.x` release after implementation is accepted.
+
+## Test Matrix
+
+### Unit
+
+- schema parse and serialize;
+- compatibility import;
+- validation;
+- layout measurement using fake text metrics;
+- icon registry;
+- keytip generation;
+- reducer/copy helpers.
+
+### Widget
+
+- toolbar render;
+- tab change;
+- command activation;
+- dropdown menu activation;
+- split-button hit regions;
+- toggle/checkbox state;
+- collapsed state;
+- contextual tabs;
+- disabled state;
+- semantics;
+- focus and keyboard.
+
+### Pointer
+
+- mouse tap;
+- mouse hover;
+- touch tap;
+- touch long press;
+- split-button arrow tap;
+- outside tap menu dismissal.
+
+### Designer
+
+- hierarchy editing;
+- inspector editing;
+- menu item editing;
+- validation panel;
+- undo/redo;
+- import/export;
+- live preview sync.
+
+### Visual
+
+- light toolbar;
+- dark toolbar;
+- contextual tabs;
+- dropdown menu;
+- designer full view;
+- touch density;
+- medium-width horizontal scroll.
+
+Use local exact goldens where possible. In GitHub Actions, avoid brittle
+cross-renderer exact pixel checks when the renderer differs, following the
+existing release screenshot strategy.
+
+### Web
+
+At minimum:
+
+```bash
+flutter test --platform chrome test/fx_ribbon_toolbar_test.dart
+```
+
+When the example app includes the ribbon route:
+
+```bash
+cd example
+flutter build web
+```
+
+If Flutter web/WASM is part of the release target for the phase, add the exact
+supported build command to the harness after verifying it on the current stable
+Flutter channel.
+
+### Desktop
+
+Run the normal package harness:
+
+```bash
+dart run tool/agent_harness.dart
+```
+
+For screenshot capture and manual verification, run the example app on macOS
+and at least one additional desktop target when practical.
+
+## Release And Versioning
+
+Planning-only work does not bump `pubspec.yaml`.
+
+Implementation releases should use the `0.4.x` line unless a broader versioning
+decision changes that before coding begins.
+
+Release surfaces to update:
+
+- `pubspec.yaml`;
+- README install snippet and badges;
+- `CHANGELOG.md`;
+- `doc/xojo-component-map.md`;
+- `doc/developer-guide.md`;
+- `AGENT.md`;
+- example app;
+- screenshots;
+- public API signature;
+- release notes.
+
+Do not tag until:
+
+- the full harness passes;
+- web smoke test passes;
+- release screenshots are captured;
+- pub dry-run has 0 warnings;
+- the tag matches `pubspec.yaml`.
+
+## Risks And Mitigations
+
+| Risk | Mitigation |
+|---|---|
+| Direct canvas port loses Flutter accessibility. | Use widget-first renderer and pure layout model. |
+| SVG dependency adds weight or web issues. | Keep icon renderer strategy abstract; ship PNG/Material fallback. |
+| Ribbon becomes too wide for medium screens. | Add horizontal scroll and future group overflow policy. |
+| Keytips conflict with browser/OS shortcuts. | Use F6 as reliable activation and treat Alt as optional. |
+| Designer becomes a separate product too early. | Ship embeddable widget first; example app hosts it. |
+| Model changes break Jaspr compatibility. | Keep fixture import tests from Jaspr `.ribbon` examples. |
+| Touch support degrades dense desktop layout. | Add explicit interaction mode and density instead of one-size layout. |
+| Public API grows too quickly. | Keep future features reserved in schema but not implemented until tested. |
+
+## Definition Of Done
+
+Milestone 4 is done when:
+
+- `FxRibbonToolbar` is exported from `package:fx_desktop/fx_desktop.dart`;
+- all seven source item types are usable;
+- SVG or the documented PNG fallback path works through an icon registry;
+- mouse, keyboard, and touch activation are tested;
+- contextual tabs and collapse behavior are implemented;
+- `FxRibbonDesigner` can create, edit, validate, preview, import, and export a
+  ribbon definition;
+- docs and screenshots show the toolbar and designer;
+- full local harness passes;
+- GitHub CI passes;
+- pub.dev dry-run has 0 warnings;
+- release tag and package version are reconciled.
+

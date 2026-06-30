@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Documentation
+- Added the Milestone 4 plan for a Flutter desktop/web `FxRibbonToolbar` and
+  `FxRibbonDesigner`, covering model/schema transfer from
+  `jaspr-ribbon-toolbar`, XjRibbon ancestry, SVG/PNG icons, mouse/touch/keyboard
+  input, Flutter-native rendering enhancements, designer scope, testing, and
+  release criteria.
+
 ## 0.3.7
 
 Version `0.3.7` is a package-page and release automation polish release for the

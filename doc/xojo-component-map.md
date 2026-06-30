@@ -31,6 +31,8 @@ is semantic and generation-oriented, not a native-control equivalence.
 | `FxGridLayout` | layout/generation contract | layout/generation contract | Custom bridge |
 | `FxListBox` | `DesktopListBox` | `WebListBox` | Custom |
 | `FxGrid` | `DesktopGrid` | future/custom | Custom |
+| `FxRibbonToolbar` | `XjRibbon` / `DesktopCanvas` ribbon | `XjRibbon` / `WebCanvas` ribbon | Planned |
+| `FxRibbonDesigner` | `XjRibbon Designer` | embeddable Flutter web/desktop designer | Planned |
 
 ## Layout Naming
 
@@ -106,6 +108,22 @@ highlighting, and performance tests for large row and wide column sets.
 See [Milestone 3: ListBox And Grid Depth](milestone-3-listbox-grid.md) for the
 delivered release history and [Advanced Grid Features (v0.3.6)](milestone-6-advanced-grid-features.md)
 for the latest cell-editing features.
+
+## Milestone 4 Planned Ribbon Surface
+
+Milestone 4 plans an Office-style ribbon toolbar and visual designer for large
+Flutter desktop and web surfaces. It transfers the Dart model/schema lessons
+from `jaspr-ribbon-toolbar` and the original Xojo control semantics from
+`XjRibbon`, while adapting the renderer to Flutter widgets, semantics, focus,
+menus, overlays, pointer-kind handling, and theming.
+
+| Planned FxDesktop | Source concept | Direction |
+|---|---|---|
+| `FxRibbonToolbar` | `RibbonToolbar` / `XjRibbon` | Widget-first ribbon with tabs, groups, large/small commands, dropdowns, split buttons, toggles, checkboxes, separators, contextual tabs, collapse behavior, SVG/PNG icons, keytips, mouse, keyboard, and touch support. |
+| `FxRibbonDesigner` | Jaspr/Xojo ribbon designers | Embeddable visual designer with hierarchy editing, inspector, live preview, validation, JSON import/export, icon assignment, and undo/redo. |
+
+See [Milestone 4: Ribbon Toolbar And Visual Designer](milestone-4-ribbon-toolbar-designer.md)
+for the implementation plan.
 
 ## Mobile And Tablet
 

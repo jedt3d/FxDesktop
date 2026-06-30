@@ -96,6 +96,24 @@ FxDesktop provides two distinct table controls, matching Xojo's layout patterns:
 - **Lookup Providers and Hosted Editors**: Use `FxMapLookupProvider`, `FxEnumLookupProvider`, or `FxDbLookupProvider` with `FxCellType.lookup` to store raw keys while showing readable labels, including multi-column dropdowns.
 - **Input Masks and Cell Actions**: Use column `inputMask`, `hasActionButton`, `actionIcon`, and `onActionPressed` for fixed-format entry and ellipsis-style workflows such as file pickers or selector dialogs.
 
+## Ribbon Toolbar and Designer
+
+Milestone 4 plans a large-screen `FxRibbonToolbar` and `FxRibbonDesigner`.
+Follow `doc/milestone-4-ribbon-toolbar-designer.md` before implementing this
+surface.
+
+Key rules:
+
+- Keep public names under the `Fx*` prefix.
+- Keep the ribbon model pure Dart and serializable.
+- Use `iconKey` plus a registry for SVG/PNG/Material/placeholder icons.
+- Prefer Flutter widget primitives for semantics, focus, actions, menus,
+  overlays, tooltips, pointer handling, and theming.
+- Support mouse, keyboard, and touch on desktop/web large screens.
+- Do not turn the ribbon into a mobile-phone navigation component.
+- Keep the designer embeddable and dependency-light; app shells can provide
+  file picker or web download integrations through callbacks.
+
 ## Release Workflow
 
 Normal CI validates every pull request. Publishing to pub.dev is tag-based only.
