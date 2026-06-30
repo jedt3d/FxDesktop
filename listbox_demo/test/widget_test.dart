@@ -1,7 +1,10 @@
+// ignore_for_file: avoid_relative_lib_imports
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:listbox_demo/main.dart';
 import 'package:fx_desktop/fx_desktop.dart';
+
+import '../lib/main.dart';
 
 void main() {
   testWidgets('FxListBox Demo app navigation smoke test', (

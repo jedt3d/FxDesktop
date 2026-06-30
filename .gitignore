@@ -39,7 +39,8 @@ Desktop.ini
 pubspec.lock
 build/
 coverage/
-**/doc/api/
+doc/api/*
+!doc/api/public_api_signature.txt
 **/generated_plugin_registrant.dart
 
 # Flutter platform generated files

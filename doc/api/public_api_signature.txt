@@ -1,0 +1,623 @@
+  FxBooleanCellType constructor const FxBooleanCellType()
+  FxBooleanCellType member Map<String, Object?> toJson()
+  FxButton constructor const FxButton(
+  FxButton member Widget build(BuildContext context)
+  FxButton member final FxButtonProminence prominence
+  FxButton member final IconData? icon
+  FxButton member final String label
+  FxButton member final VoidCallback? onPressed
+  FxCardContainer constructor const FxCardContainer(
+  FxCardContainer member Map<String, Object?> toTemplateMap()
+  FxCardContainer member Widget build(BuildContext context)
+  FxCardContainer member final List<Widget> children
+  FxCardContainer member final int selectedIndex
+  FxCheckBox constructor const FxCheckBox(
+  FxCheckBox member Widget build(BuildContext context)
+  FxCheckBox member final String label
+  FxCheckBox member final ValueChanged<bool?>? onChanged
+  FxCheckBox member final bool tristate
+  FxCheckBox member final bool? value
+  FxChoiceCellType constructor const FxChoiceCellType(this.options)
+  FxChoiceCellType member Map<String, Object?> toJson()
+  FxChoiceCellType member final List<String> options
+  FxColorPicker constructor const FxColorPicker(
+  FxColorPicker member Map<String, Object?> toTemplateMap()
+  FxColorPicker member Widget build(BuildContext context)
+  FxColorPicker member final Color? value
+  FxColorPicker member final FxColorPickerDelegate? picker
+  FxColorPicker member final String label
+  FxColorPicker member final ValueChanged<Color?>? onChanged
+  FxColorPicker member final ValueChanged<Color?>? onCommit
+  FxColorPicker member final bool enabled
+  FxComboBox constructor const FxComboBox(
+  FxComboBox member final List<String> options
+  FxComboBox member final String? errorText
+  FxComboBox member final String? helpText
+  FxComboBox member final String? hintText
+  FxComboBox member final String? label
+  FxComboBox member final String? value
+  FxComboBox member final TextEditingController? controller
+  FxComboBox member final ValueChanged<String>? onChanged
+  FxComboBox member final ValueChanged<String>? onCommit
+  FxComboBox member final ValueChanged<String>? onOptionSelected
+  FxComboBox member final bool enabled
+  FxComboBox member final bool reserveSupportingTextSpace
+  FxComboBox member final int maxVisibleOptions
+  FxComboBox member }) : assert(maxVisibleOptions > 0)
+  FxComponentDescriptor constructor const FxComponentDescriptor(
+  FxComponentDescriptor member Map<String, Object?> toTemplateMap()
+  FxComponentDescriptor member final FxComponentSupportLevel supportLevel
+  FxComponentDescriptor member final String id
+  FxComponentDescriptor member final String name
+  FxComponentDescriptor member final String xojoDesktopClass
+  FxComponentDescriptor member final String? notes
+  FxComponentDescriptor member final String? xojoWebClass
+  FxDateTimePicker constructor const FxDateTimePicker(
+  FxDateTimePicker member Map<String, Object?> toTemplateMap()
+  FxDateTimePicker member Widget build(BuildContext context)
+  FxDateTimePicker member final DateTime? currentDate
+  FxDateTimePicker member final DateTime? firstDate
+  FxDateTimePicker member final DateTime? lastDate
+  FxDateTimePicker member final DateTime? value
+  FxDateTimePicker member final FxDatePickerDelegate? datePicker
+  FxDateTimePicker member final FxDateTimePickerMode mode
+  FxDateTimePicker member final FxTimePickerDelegate? timePicker
+  FxDateTimePicker member final String label
+  FxDateTimePicker member final String? errorText
+  FxDateTimePicker member final String? helpText
+  FxDateTimePicker member final ValueChanged<DateTime?>? onChanged
+  FxDateTimePicker member final bool enabled
+  FxDateTimePicker member final bool nullable
+  FxDateTimePicker member final bool reserveSupportingTextSpace
+  FxDbLookupProvider<K> constructor const FxDbLookupProvider(
+  FxDbLookupProvider<K> member FutureOr<List<FxLookupItem<K>>> getOptions(String query)
+  FxDbLookupProvider<K> member List<String> getLookupHeaders()
+  FxDbLookupProvider<K> member Map<String, Object?> toJson()
+  FxDbLookupProvider<K> member String getDisplayValue(K key)
+  FxDbLookupProvider<K> member final List<String> headers
+  FxDbLookupProvider<K> member final Map<K, List<String>> recordMap
+  FxDbLookupProvider<K> member final int displayColumnIndex
+  FxDisclosureTriangle constructor const FxDisclosureTriangle(
+  FxDisclosureTriangle member Map<String, Object?> toTemplateMap()
+  FxDisclosureTriangle member Widget build(BuildContext context)
+  FxDisclosureTriangle member final String title
+  FxDisclosureTriangle member final ValueChanged<bool>? onChanged
+  FxDisclosureTriangle member final Widget child
+  FxDisclosureTriangle member final bool enabled
+  FxDisclosureTriangle member final bool expanded
+  FxEnumLookupProvider<T constructor const FxEnumLookupProvider(required this.values, this.labels})
+  FxEnumLookupProvider<T member FutureOr<List<FxLookupItem<T>>> getOptions(String query)
+  FxEnumLookupProvider<T member Map<String, Object?> toJson()
+  FxEnumLookupProvider<T member String getDisplayValue(T key)
+  FxEnumLookupProvider<T member final List<T> values
+  FxEnumLookupProvider<T member final Map<T, String>? labels
+  FxFixedColumnWidth constructor const FxFixedColumnWidth(this.value)
+  FxFixedColumnWidth member Map<String, Object?> toJson()
+  FxFixedColumnWidth member final double value
+  FxFixedColumnWidth member table.TableSpanExtent toTableSpanExtent()
+  FxFlexItem constructor const FxFlexItem(
+  FxFlexItem member Widget build(BuildContext context)
+  FxFlexItem member final FxAlignItems? alignSelf
+  FxFlexItem member final Widget child
+  FxFlexItem member final double grow
+  FxFlexItem member final double shrink
+  FxFlexItem member final double? basis
+  FxFlexItem member final double? height
+  FxFlexItem member final double? maxHeight
+  FxFlexItem member final double? maxWidth
+  FxFlexItem member final double? minHeight
+  FxFlexItem member final double? minWidth
+  FxFlexItem member final double? width
+  FxFlexItemSpec constructor const FxFlexItemSpec(
+  FxFlexItemSpec constructor factory FxFlexItemSpec.fromJson(Map<String, Object?> json)
+  FxFlexItemSpec member Map<String, Object?> toJson()
+  FxFlexItemSpec member final FxAlignItems? alignSelf
+  FxFlexItemSpec member final String id
+  FxFlexItemSpec member final double grow
+  FxFlexItemSpec member final double shrink
+  FxFlexItemSpec member final double? basis
+  FxFlexItemSpec member final double? maxHeight
+  FxFlexItemSpec member final double? maxWidth
+  FxFlexItemSpec member final double? minHeight
+  FxFlexItemSpec member final double? minWidth
+  FxFlexLayout constructor const FxFlexLayout(
+  FxFlexLayout member Widget build(BuildContext context)
+  FxFlexLayout member final EdgeInsetsGeometry padding
+  FxFlexLayout member final FxAlignItems align
+  FxFlexLayout member final FxFlexDirection direction
+  FxFlexLayout member final FxFlexWrap wrap
+  FxFlexLayout member final FxJustifyContent alignContent
+  FxFlexLayout member final FxJustifyContent justify
+  FxFlexLayout member final FxLayoutOverflow overflow
+  FxFlexLayout member final List<Widget> children
+  FxFlexLayout member final double gap
+  FxFlexLayout member final double? columnGap
+  FxFlexLayout member final double? rowGap
+  FxFlexLayoutManager constructor const FxFlexLayoutManager(required this.spec})
+  FxFlexLayoutManager member final FxLayoutSpec spec
+  FxFractionalColumnWidth constructor const FxFractionalColumnWidth(this.value)
+  FxFractionalColumnWidth member Map<String, Object?> toJson()
+  FxFractionalColumnWidth member final double value
+  FxFractionalColumnWidth member table.TableSpanExtent toTableSpanExtent()
+  FxGrid constructor const FxGrid(
+  FxGrid member Map<String, Object?> toTemplateMap()
+  FxGrid member final Color? Function(String rowId, String columnId, Object? value)?
+  FxGrid member final FocusNode? focusNode
+  FxGrid member final FxGridCellRange? selectedRange
+  FxGrid member final FxGridSelectionMode selectionMode
+  FxGrid member final FxTableState state
+  FxGrid member final List<FxGridColumn> columns
+  FxGrid member final List<FxGridRow> rows
+  FxGrid member final Map<String, Map<String, String>>? validationErrors
+  FxGrid member final Set<(String rowId, String columnId})> selectedCells
+  FxGrid member final String? errorText
+  FxGrid member final String? sortedColumnId
+  FxGrid member final ValueChanged<FxGridCellRange?>? onRangeSelected
+  FxGrid member final ValueChanged<Set<(String rowId, String columnId})>>? onCellsSelected
+  FxGrid member final Widget? emptyPlaceholder
+  FxGrid member final Widget? errorPlaceholder
+  FxGrid member final Widget? loadingPlaceholder
+  FxGrid member final bool allowRowReordering
+  FxGrid member final bool showGridLines
+  FxGrid member final bool showHeaders
+  FxGrid member final bool sortAscending
+  FxGrid member final double headerHeight
+  FxGrid member final double height
+  FxGrid member final double rowHeight
+  FxGrid member final void Function(String columnId, bool ascending)? onSortChanged
+  FxGrid member final void Function(String columnId, double newWidth)? onColumnResized
+  FxGrid member final void Function(String rowId, String columnId, Object? newValue)?
+  FxGrid member final void Function(int oldIndex, int newIndex)? onRowReordered
+  FxGridArea constructor const FxGridArea(this.name)
+  FxGridArea member Map<String, Object?> toJson()
+  FxGridArea member Widget containing(Widget child)
+  FxGridArea member final String name
+  FxGridCellRange constructor const FxGridCellRange(
+  FxGridCellRange member String toString()
+  FxGridCellRange member bool operator ==(Object other)
+  FxGridCellRange member final String endColumnId
+  FxGridCellRange member final String endRowId
+  FxGridCellRange member final String startColumnId
+  FxGridCellRange member final String startRowId
+  FxGridColumn constructor const FxGridColumn(
+  FxGridColumn member Map<String, Object?> toJson()
+  FxGridColumn member final FxCellAlignment alignment
+  FxGridColumn member final FxCellRendererBuilder? cellRenderer
+  FxGridColumn member final FxCellType type
+  FxGridColumn member final FxColumnWidth width
+  FxGridColumn member final IconData? actionIcon
+  FxGridColumn member final String id
+  FxGridColumn member final String? caption
+  FxGridColumn member final String? inputMask
+  FxGridColumn member final bool editable
+  FxGridColumn member final bool hasActionButton
+  FxGridColumn member final bool lineWrap
+  FxGridColumn member final bool sortable
+  FxGridColumn member final bool supportStyledText
+  FxGridColumn member final bool visible
+  FxGridColumn member final double minWidth
+  FxGridColumn member final void Function(String rowId, String columnId, Object? value)?
+  FxGridLayout constructor const FxGridLayout(
+  FxGridLayout member Widget build(BuildContext context)
+  FxGridLayout member final List<FxTrackSize> columns
+  FxGridLayout member final List<FxTrackSize> rows
+  FxGridLayout member final List<Widget> children
+  FxGridLayout member final String? areas
+  FxGridLayout member final double columnGap
+  FxGridLayout member final double rowGap
+  FxGridLayoutManager constructor const FxGridLayoutManager(required this.spec})
+  FxGridLayoutManager member final FxLayoutSpec spec
+  FxGridPlacement constructor const FxGridPlacement(
+  FxGridPlacement member Widget build(BuildContext context)
+  FxGridPlacement member final Widget child
+  FxGridPlacement member final int columnSpan
+  FxGridPlacement member final int rowSpan
+  FxGridPlacement member final int? columnStart
+  FxGridPlacement member final int? rowStart
+  FxGridPlacementSpec constructor const FxGridPlacementSpec(
+  FxGridPlacementSpec constructor factory FxGridPlacementSpec.fromJson(Map<String, Object?> json)
+  FxGridPlacementSpec member Map<String, Object?> toJson()
+  FxGridPlacementSpec member final String id
+  FxGridPlacementSpec member final String? area
+  FxGridPlacementSpec member final int columnSpan
+  FxGridPlacementSpec member final int rowSpan
+  FxGridPlacementSpec member final int? columnStart
+  FxGridPlacementSpec member final int? rowStart
+  FxGridRow constructor const FxGridRow(
+  FxGridRow member Map<String, Object?> toJson()
+  FxGridRow member final Map<String, Object?> cells
+  FxGridRow member final Map<String, Object?>? cellTags
+  FxGridRow member final Object? rowTag
+  FxGridRow member final String id
+  FxGridRow member final bool enabled
+  FxGridRow member final double? height
+  FxGroupBox constructor const FxGroupBox(
+  FxGroupBox member Widget build(BuildContext context)
+  FxGroupBox member final EdgeInsetsGeometry padding
+  FxGroupBox member final String title
+  FxGroupBox member final Widget child
+  FxLabel constructor const FxLabel(
+  FxLabel member Widget build(BuildContext context)
+  FxLabel member final String text
+  FxLabel member final TextAlign alignment
+  FxLabel member final TextStyle? style
+  FxLabel member final bool enabled
+  FxLabel member final bool softWrap
+  FxLayoutSpec constructor const FxLayoutSpec.flex(
+  FxLayoutSpec constructor const FxLayoutSpec.grid(
+  FxLayoutSpec constructor factory FxLayoutSpec.fromJson(Map<String, Object?> json)
+  FxLayoutSpec member Map<String, Object?> toJson()
+  FxLayoutSpec member final FxAlignItems align
+  FxLayoutSpec member final FxFlexDirection direction
+  FxLayoutSpec member final FxFlexWrap wrap
+  FxLayoutSpec member final FxJustifyContent justify
+  FxLayoutSpec member final FxLayoutKind kind
+  FxLayoutSpec member final List<FxFlexItemSpec> flexChildren
+  FxLayoutSpec member final List<FxGridPlacementSpec> gridChildren
+  FxLayoutSpec member final List<FxTrackSize> columns
+  FxLayoutSpec member final List<FxTrackSize> rows
+  FxLayoutSpec member final String id
+  FxLayoutSpec member final String? areas
+  FxLayoutSpec member final double gap
+  FxLayoutSpec member final double padding
+  FxListBox constructor const FxListBox(
+  FxListBox member Map<String, Object?> toTemplateMap()
+  FxListBox member final Color? Function(String rowId, String columnId, Object? value)?
+  FxListBox member final FocusNode? focusNode
+  FxListBox member final FxListBoxSelectionMode selectionMode
+  FxListBox member final FxTableState state
+  FxListBox member final List<FxListBoxColumn> columns
+  FxListBox member final List<FxListBoxRow> rows
+  FxListBox member final Map<String, Map<String, String>>? validationErrors
+  FxListBox member final Set<String> selectedRowIds
+  FxListBox member final String? errorText
+  FxListBox member final String? sortedColumnId
+  FxListBox member final ValueChanged<Set<String>>? onSelectionChanged
+  FxListBox member final Widget? emptyPlaceholder
+  FxListBox member final Widget? errorPlaceholder
+  FxListBox member final Widget? loadingPlaceholder
+  FxListBox member final bool allowRowReordering
+  FxListBox member final bool showGridLines
+  FxListBox member final bool sortAscending
+  FxListBox member final double headerHeight
+  FxListBox member final double height
+  FxListBox member final double rowHeight
+  FxListBox member final void Function(String columnId, bool ascending)? onSortChanged
+  FxListBox member final void Function(String columnId, double newWidth)? onColumnResized
+  FxListBox member final void Function(String rowId, String columnId, Object? newValue)?
+  FxListBox member final void Function(int oldIndex, int newIndex)? onRowReordered
+  FxListBoxColumn constructor const FxListBoxColumn(
+  FxListBoxColumn member Map<String, Object?> toJson()
+  FxListBoxColumn member final FxCellAlignment alignment
+  FxListBoxColumn member final FxCellRendererBuilder? cellRenderer
+  FxListBoxColumn member final FxCellType type
+  FxListBoxColumn member final FxColumnWidth width
+  FxListBoxColumn member final IconData? actionIcon
+  FxListBoxColumn member final String caption
+  FxListBoxColumn member final String id
+  FxListBoxColumn member final String? inputMask
+  FxListBoxColumn member final bool editable
+  FxListBoxColumn member final bool hasActionButton
+  FxListBoxColumn member final bool lineWrap
+  FxListBoxColumn member final bool sortable
+  FxListBoxColumn member final bool supportStyledText
+  FxListBoxColumn member final bool visible
+  FxListBoxColumn member final double minWidth
+  FxListBoxColumn member final void Function(String rowId, String columnId, Object? value)?
+  FxListBoxRow constructor const FxListBoxRow(
+  FxListBoxRow member Map<String, Object?> toJson()
+  FxListBoxRow member final Map<String, Object?> cells
+  FxListBoxRow member final Object? rowTag
+  FxListBoxRow member final String id
+  FxListBoxRow member final bool enabled
+  FxListBoxRow member final double? height
+  FxLookupCellType constructor const FxLookupCellType(this.provider)
+  FxLookupCellType member Map<String, Object?> toJson()
+  FxLookupCellType member final FxLookupProvider provider
+  FxLookupComboBox<K> constructor const FxLookupComboBox(
+  FxLookupComboBox<K> member final FxLookupProvider<K> provider
+  FxLookupComboBox<K> member final Object? initialValue
+  FxLookupComboBox<K> member final VoidCallback onCancel
+  FxLookupComboBox<K> member final void Function(K newValue) onCommit
+  FxLookupItem<K> constructor const FxLookupItem(this.key, this.display, [this.extraDetails])
+  FxLookupItem<K> member final K key
+  FxLookupItem<K> member final List<String>? extraDetails
+  FxLookupItem<K> member final String display
+  FxMapLookupProvider<K> constructor const FxMapLookupProvider(this.map)
+  FxMapLookupProvider<K> member FutureOr<List<FxLookupItem<K>>> getOptions(String query)
+  FxMapLookupProvider<K> member Map<String, Object?> toJson()
+  FxMapLookupProvider<K> member String getDisplayValue(K key)
+  FxMapLookupProvider<K> member final Map<K, String> map
+  FxMaskTextInputFormatter constructor FxMaskTextInputFormatter(this.mask)
+  FxMaskTextInputFormatter member String applyMask(String rawText)
+  FxMaskTextInputFormatter member String unmask(String maskedText)
+  FxMaskTextInputFormatter member final String mask
+  FxPagePanel constructor const FxPagePanel(
+  FxPagePanel member Map<String, Object?> toTemplateMap()
+  FxPagePanel member Widget build(BuildContext context)
+  FxPagePanel member final List<Widget> children
+  FxPagePanel member final int selectedIndex
+  FxPopupMenu constructor const FxPopupMenu(
+  FxPopupMenu member Widget build(BuildContext context)
+  FxPopupMenu member final List<String> options
+  FxPopupMenu member final String emptyText
+  FxPopupMenu member final String? errorText
+  FxPopupMenu member final String? helpText
+  FxPopupMenu member final String? hintText
+  FxPopupMenu member final String? label
+  FxPopupMenu member final String? selectedValue
+  FxPopupMenu member final ValueChanged<String?>? onChanged
+  FxPopupMenu member final bool enabled
+  FxPopupMenu member final bool reserveSupportingTextSpace
+  FxProgressBar constructor const FxProgressBar(
+  FxProgressBar member Map<String, Object?> toTemplateMap()
+  FxProgressBar member Widget build(BuildContext context)
+  FxProgressBar member final bool enabled
+  FxProgressBar member final double max
+  FxProgressBar member final double min
+  FxProgressBar member final double value
+  FxProgressWheel constructor const FxProgressWheel(
+  FxProgressWheel member Map<String, Object?> toTemplateMap()
+  FxProgressWheel member Widget build(BuildContext context)
+  FxProgressWheel member final bool enabled
+  FxProgressWheel member final double size
+  FxProgressWheel member final double strokeWidth
+  FxProgressWheel member }) : assert(size > 0),
+  FxRadioButton<T> constructor const FxRadioButton(
+  FxRadioButton<T> member Widget build(BuildContext context)
+  FxRadioButton<T> member final String label
+  FxRadioButton<T> member final T value
+  FxRadioButton<T> member final T? groupValue
+  FxRadioButton<T> member final ValueChanged<T>? onChanged
+  FxRadioButton<T> member final bool enabled
+  FxRadioButton<T> member final bool? selected
+  FxRadioGroup<T> constructor const FxRadioGroup(
+  FxRadioGroup<T> member Widget build(BuildContext context)
+  FxRadioGroup<T> member final FxChoiceOrientation orientation
+  FxRadioGroup<T> member final List<FxRadioOption<T>> options
+  FxRadioGroup<T> member final T? value
+  FxRadioGroup<T> member final ValueChanged<T>? onChanged
+  FxRadioGroup<T> member final bool enabled
+  FxRadioGroup<T> member final double spacing
+  FxRadioOption<T> constructor const FxRadioOption(
+  FxRadioOption<T> member final String label
+  FxRadioOption<T> member final T value
+  FxRadioOption<T> member final bool enabled
+  FxRemainingColumnWidth constructor const FxRemainingColumnWidth()
+  FxRemainingColumnWidth member Map<String, Object?> toJson()
+  FxRemainingColumnWidth member table.TableSpanExtent toTableSpanExtent()
+  FxSegmentedButton<T> constructor const FxSegmentedButton(
+  FxSegmentedButton<T> member Map<String, Object?> toTemplateMap()
+  FxSegmentedButton<T> member Widget build(BuildContext context)
+  FxSegmentedButton<T> member final List<FxSegmentedOption<T>> options
+  FxSegmentedButton<T> member final T value
+  FxSegmentedButton<T> member final ValueChanged<T>? onChanged
+  FxSegmentedButton<T> member final bool enabled
+  FxSegmentedOption<T> constructor const FxSegmentedOption(
+  FxSegmentedOption<T> member final String label
+  FxSegmentedOption<T> member final T value
+  FxSegmentedOption<T> member final Widget? icon
+  FxSegmentedOption<T> member final bool enabled
+  FxSeparator constructor const FxSeparator(
+  FxSeparator member Map<String, Object?> toTemplateMap()
+  FxSeparator member Widget build(BuildContext context)
+  FxSeparator member final Color? color
+  FxSeparator member final FxSeparatorOrientation orientation
+  FxSeparator member final double thickness
+  FxSeparator member }) : assert(thickness >= 0)
+  FxSlider constructor FxSlider.range(
+  FxSlider constructor const FxSlider(
+  FxSlider member Widget build(BuildContext context)
+  FxSlider member final RangeValues? rangeValue
+  FxSlider member final String? valueLabel
+  FxSlider member final ValueChanged<RangeValues>? onChangeEndRange
+  FxSlider member final ValueChanged<RangeValues>? onChangeStartRange
+  FxSlider member final ValueChanged<RangeValues>? onRangeChanged
+  FxSlider member final ValueChanged<double>? onChangeEnd
+  FxSlider member final ValueChanged<double>? onChangeStart
+  FxSlider member final ValueChanged<double>? onChanged
+  FxSlider member final bool enabled
+  FxSlider member final double max
+  FxSlider member final double min
+  FxSlider member final double? value
+  FxSlider member final int? divisions
+  FxStyledLabel constructor const FxStyledLabel(
+  FxStyledLabel member Map<String, Object?> toTemplateMap()
+  FxStyledLabel member Widget build(BuildContext context)
+  FxStyledLabel member final List<FxStyledTextSpan> spans
+  FxStyledLabel member final String text
+  FxStyledLabel member final TextAlign alignment
+  FxStyledLabel member final TextOverflow overflow
+  FxStyledLabel member final TextStyle? style
+  FxStyledLabel member final bool enabled
+  FxStyledLabel member final bool softWrap
+  FxStyledLabel member final int? maxLines
+  FxStyledTextSpan constructor const FxStyledTextSpan(required this.text, this.style})
+  FxStyledTextSpan member Map<String, Object?> toTemplateMap()
+  FxStyledTextSpan member final String text
+  FxStyledTextSpan member final TextStyle? style
+  FxTabPanel constructor const FxTabPanel(
+  FxTabPanel member Map<String, Object?> toTemplateMap()
+  FxTabPanel member Widget build(BuildContext context)
+  FxTabPanel member final List<String> tabs
+  FxTabPanel member final List<Widget> children
+  FxTabPanel member final ValueChanged<int>? onChanged
+  FxTabPanel member final int selectedIndex
+  FxTextArea constructor const FxTextArea(
+  FxTextArea member Map<String, Object?> toTemplateMap()
+  FxTextArea member final FocusNode? focusNode
+  FxTextArea member final FxTextInputConstraints? constraints
+  FxTextArea member final ScrollController? scrollController
+  FxTextArea member final String label
+  FxTextArea member final String? errorText
+  FxTextArea member final String? helpText
+  FxTextArea member final String? hintText
+  FxTextArea member final String? value
+  FxTextArea member final TextEditingController? controller
+  FxTextArea member final ValueChanged<String>? onChanged
+  FxTextArea member final ValueChanged<String>? onCommit
+  FxTextArea member final bool enabled
+  FxTextArea member final bool readOnly
+  FxTextArea member final bool requiredInput
+  FxTextArea member final bool reserveSupportingTextSpace
+  FxTextArea member final bool showRequiredIndicator
+  FxTextArea member final int maxLines
+  FxTextArea member final int minLines
+  FxTextCellType constructor const FxTextCellType()
+  FxTextCellType member Map<String, Object?> toJson()
+  FxTextField constructor const FxTextField(
+  FxTextField member Map<String, Object?> toTemplateMap()
+  FxTextField member final FocusNode? focusNode
+  FxTextField member final FxTextInputConstraints? constraints
+  FxTextField member final FxTextInputFormat format
+  FxTextField member final IconData? prefixIcon
+  FxTextField member final IconData? suffixIcon
+  FxTextField member final String label
+  FxTextField member final String? errorText
+  FxTextField member final String? helpText
+  FxTextField member final String? hintText
+  FxTextField member final String? value
+  FxTextField member final TextEditingController? controller
+  FxTextField member final ValueChanged<String>? onChanged
+  FxTextField member final ValueChanged<String>? onCommit
+  FxTextField member final bool enabled
+  FxTextField member final bool obscureText
+  FxTextField member final bool readOnly
+  FxTextField member final bool requiredInput
+  FxTextField member final bool reserveSupportingTextSpace
+  FxTextField member final bool showRequiredIndicator
+  FxTextInputConstraints constructor const FxTextInputConstraints(
+  FxTextInputConstraints member Map<String, Object?> toTemplateMap()
+  FxTextInputConstraints member final FxTextInputConstraintKind kind
+  FxTextInputConstraints member final List<String> forbiddenCharacters
+  FxTextInputConstraints member final String? forbiddenPattern
+  FxTextInputConstraints member final bool allowTab
+  FxTextInputConstraints member final bool showCharacterCount
+  FxTextInputConstraints member final int? maxLength
+  FxTextInputConstraints member final int? minLength
+  FxTextInputFormat constructor const FxTextInputFormat.none()
+  FxTextInputFormat constructor const FxTextInputFormat.number(
+  FxTextInputFormat constructor const FxTextInputFormat.pattern(this.pattern)
+  FxTextInputFormat member Map<String, Object?> toTemplateMap()
+  FxTextInputFormat member final FxTextInputFormatType type
+  FxTextInputFormat member final String decimalSeparator
+  FxTextInputFormat member final String groupingSeparator
+  FxTextInputFormat member final String? pattern
+  FxTextInputFormat member final bool allowNegative
+  FxTextInputFormat member final int? decimalDigits
+  FxTheme constructor FxTheme copyWith(
+  FxTheme constructor FxTheme lerp(ThemeExtension<FxTheme>? other, double t)
+  FxTheme constructor const FxTheme(
+  FxTheme member final Color alternatingRowBackground
+  FxTheme member final Color gridLineColor
+  FxTheme member final Color headerBackground
+  FxTheme member final Color selectionBackground
+  FxTheme member final EdgeInsetsGeometry controlPadding
+  FxTheme member final FxControlSize controlSize
+  FxTheme member final double borderRadius
+  FxTheme member static FxTheme of(BuildContext context)
+  FxTrackSize constructor const FxTrackSize.auto()
+  FxTrackSize constructor const FxTrackSize.fixed(this.value)
+  FxTrackSize constructor const FxTrackSize.flex(this.value)
+  FxTrackSize constructor const FxTrackSize.intrinsic()
+  FxTrackSize constructor factory FxTrackSize.fromJson(Map<String, Object?> json)
+  FxTrackSize member Map<String, Object?> toJson()
+  FxTrackSize member final FxTrackSizeType type
+  FxTrackSize member final double? value
+  FxUndoAction constructor const FxUndoAction(
+  FxUndoAction constructor factory FxUndoAction.batch(
+  FxUndoAction member final String label
+  FxUndoAction member final VoidCallback apply
+  FxUndoAction member final VoidCallback revert
+  FxUndoController member bool commitBatch(String label, Iterable<FxUndoAction> actions)
+  FxUndoController member void clear()
+  FxUndoController member void commit(FxUndoAction action)
+  FxUndoController member void redo()
+  FxUndoController member void undo()
+  FxUndoScope constructor const FxUndoScope(
+  FxUndoScope member static FxUndoController of(BuildContext context)
+  FxUndoScope member static FxUndoController? maybeOf(BuildContext context)
+  FxUndoScope member }) : super(notifier: controller)
+class class FxBooleanCellType extends FxCellType
+class class FxButton extends StatelessWidget
+class class FxCardContainer extends StatelessWidget
+class class FxCheckBox extends StatelessWidget
+class class FxChoiceCellType extends FxCellType
+class class FxColorPicker extends StatelessWidget
+class class FxComboBox extends StatefulWidget
+class class FxComponentDescriptor
+class class FxDateTimePicker extends StatelessWidget
+class class FxDbLookupProvider<K> extends FxLookupProvider<K>
+class class FxDisclosureTriangle extends StatelessWidget
+class class FxEnumLookupProvider<T extends Enum> extends FxLookupProvider<T>
+class class FxFixedColumnWidth extends FxColumnWidth
+class class FxFlexItem extends StatelessWidget
+class class FxFlexItemSpec
+class class FxFlexLayout extends StatelessWidget
+class class FxFlexLayoutManager
+class class FxFractionalColumnWidth extends FxColumnWidth
+class class FxGrid extends StatefulWidget
+class class FxGridArea
+class class FxGridCellRange
+class class FxGridColumn
+class class FxGridLayout extends StatelessWidget
+class class FxGridLayoutManager
+class class FxGridPlacement extends StatelessWidget
+class class FxGridPlacementSpec
+class class FxGridRow
+class class FxGroupBox extends StatelessWidget
+class class FxLabel extends StatelessWidget
+class class FxLayoutSpec
+class class FxListBox extends StatefulWidget
+class class FxListBoxColumn
+class class FxListBoxRow
+class class FxLookupCellType extends FxCellType
+class class FxLookupComboBox<K> extends StatefulWidget
+class class FxLookupItem<K>
+class class FxMapLookupProvider<K> extends FxLookupProvider<K>
+class class FxMaskTextInputFormatter extends TextInputFormatter
+class class FxPagePanel extends StatelessWidget
+class class FxPopupMenu extends StatelessWidget
+class class FxProgressBar extends StatelessWidget
+class class FxProgressWheel extends StatelessWidget
+class class FxRadioButton<T> extends StatelessWidget
+class class FxRadioGroup<T> extends StatelessWidget
+class class FxRadioOption<T>
+class class FxRemainingColumnWidth extends FxColumnWidth
+class class FxSegmentedButton<T> extends StatelessWidget
+class class FxSegmentedOption<T>
+class class FxSeparator extends StatelessWidget
+class class FxSlider extends StatelessWidget
+class class FxStyledLabel extends StatelessWidget
+class class FxStyledTextSpan
+class class FxTabPanel extends StatelessWidget
+class class FxTextArea extends StatefulWidget
+class class FxTextCellType extends FxCellType
+class class FxTextField extends StatefulWidget
+class class FxTextInputConstraints
+class class FxTextInputFormat
+class class FxTheme extends ThemeExtension<FxTheme>
+class class FxTrackSize
+class class FxUndoAction
+class class FxUndoController extends ChangeNotifier
+class class FxUndoScope extends InheritedNotifier<FxUndoController>
+enum enum FxAlignItems
+enum enum FxButtonProminence
+enum enum FxCellAlignment
+enum enum FxChoiceOrientation
+enum enum FxComponentSupportLevel
+enum enum FxControlSize
+enum enum FxDateTimePickerMode
+enum enum FxFlexDirection
+enum enum FxFlexWrap
+enum enum FxGridSelectionMode
+enum enum FxJustifyContent
+enum enum FxLayoutKind
+enum enum FxLayoutOverflow
+enum enum FxListBoxSelectionMode
+enum enum FxSeparatorOrientation
+enum enum FxTableState
+enum enum FxTextInputConstraintKind
+enum enum FxTextInputFormatType
+enum enum FxTrackSizeType
+enum enum FxXojoTarget
