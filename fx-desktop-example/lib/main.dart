@@ -2128,13 +2128,15 @@ class _StateSample extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          label,
-          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+          label.toUpperCase(),
+          style: TextStyle(
+            fontSize: 10,
+            letterSpacing: 0.4,
+            height: 1.0,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
-            fontWeight: FontWeight.w600,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         child,
       ],
     );
@@ -2149,25 +2151,31 @@ class _ComponentRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(vertical: 18),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        border: Border.all(color: const Color(0xffd9dde5)),
-        borderRadius: BorderRadius.circular(6),
+        border: Border(bottom: BorderSide(color: scheme.outlineVariant)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            name,
-            style: Theme.of(
-              context,
-            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+          SizedBox(
+            width: 190,
+            child: Text(
+              name,
+              style: TextStyle(
+                fontFamily: FxThemeData.monoFontFamily,
+                fontFamilyFallback: const [FxThemeData.uiFontFamily],
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                height: 1.3,
+                color: scheme.onSurface,
+              ),
+            ),
           ),
-          const SizedBox(height: 10),
-          child,
+          const SizedBox(width: 20),
+          Expanded(child: child),
         ],
       ),
     );
