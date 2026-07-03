@@ -1,6 +1,9 @@
 .github/
 .idea/
 .dart_tool/
+# Raw font source stash (full Noto family). The package ships only the four
+# declared faces under assets/fonts/. Root-anchored so assets/fonts/ still ships.
+/fonts/
 *.iml
 build/
 coverage/
