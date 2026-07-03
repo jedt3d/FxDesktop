@@ -888,6 +888,7 @@ enum enum FxChoiceOrientation
 enum enum FxComponentSupportLevel
 enum enum FxControlSize
 enum enum FxDateTimePickerMode
+enum enum FxDensityProfile
 enum enum FxFlexDirection
 enum enum FxFlexWrap
 enum enum FxGridSelectionMode

@@ -1,7 +1,7 @@
 # FxDesktop
 
-[![Pub](https://img.shields.io/badge/pub-0.6.0-blue)](https://pub.dev/packages/fx_desktop)
-[![Release](https://img.shields.io/badge/release-v0.6.0-blue)](https://github.com/jedt3d/FxDesktop/releases/tag/v0.6.0)
+[![Pub](https://img.shields.io/badge/pub-0.7.0-ds-blue)](https://pub.dev/packages/fx_desktop)
+[![Release](https://img.shields.io/badge/release-v0.7.0-ds-blue)](https://github.com/jedt3d/FxDesktop/releases/tag/v0.7.0-ds)
 [![CI](https://github.com/jedt3d/FxDesktop/actions/workflows/ci.yml/badge.svg)](https://github.com/jedt3d/FxDesktop/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](https://github.com/jedt3d/FxDesktop/blob/main/LICENSE)
 
@@ -29,7 +29,7 @@ multi-size desktop workflows.
 
 ```yaml
 dependencies:
-  fx_desktop: ^0.6.0
+  fx_desktop: ^0.7.0-ds
 ```
 
 ## Quick Start

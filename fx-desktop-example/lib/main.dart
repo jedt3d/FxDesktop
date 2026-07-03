@@ -2049,9 +2049,8 @@ class _DemoSettingsBar extends StatelessWidget {
               const SizedBox(width: 8),
               Switch(
                 value: themeMode == ThemeMode.dark,
-                onChanged: (dark) => onThemeModeChanged(
-                  dark ? ThemeMode.dark : ThemeMode.light,
-                ),
+                onChanged: (dark) =>
+                    onThemeModeChanged(dark ? ThemeMode.dark : ThemeMode.light),
               ),
             ],
           ),

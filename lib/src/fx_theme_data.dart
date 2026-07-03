@@ -108,10 +108,8 @@ abstract final class FxThemeData {
   /// fallback. Keeps each role's Material 3 size and line-height.
   ///
   /// Use for chrome, labels, buttons, tabs, table headers, and the ribbon.
-  static TextTheme uiTextTheme(TextTheme base) => base.apply(
-    fontFamily: uiFontFamily,
-    fontFamilyFallback: _scriptFallback,
-  );
+  static TextTheme uiTextTheme(TextTheme base) =>
+      base.apply(fontFamily: uiFontFamily, fontFamilyFallback: _scriptFallback);
 
   /// Reading / paragraph type: **Noto Sans Thai Looped** (head) with a ~+25%
   /// line-height on body roles, so Thai tone marks never collide with the
