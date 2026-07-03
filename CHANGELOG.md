@@ -2,6 +2,35 @@
 
 ## Unreleased
 
+## 0.7.0-ds
+
+Reskinned to the **FxDesktop DS** — a Material 3 desktop profile that is
+Thai-first and uses dynamic color. This release re-themes the library to the
+design-system spec **without changing any widget's public API or behavior**;
+`FxUndoScope`/`FxUndoController`, localization (ARB EN/TH/JA/NE +
+`FxLocalizedText`), the `.ribbon` model, lookup providers, and all
+`toJson`/`toTemplateMap` mappings are preserved.
+
+### Added
+- `FxThemeData` — reusable theme factory: `FxThemeData.light()`/`.dark()` build
+  a Material 3 `ThemeData` seeded from `#2563EB` with pinned brand color roles.
+  Dark uses the GitHub-style low-contrast palette verbatim. Registers the
+  `FxTheme` and `FxRibbonThemeData` extensions; dark derives grid tokens from
+  the palette.
+- `FxDensityProfile { desktop, comfortable }` — desktop uses
+  `VisualDensity.compact` (28/34/42 controls); comfortable exposes a
+  touch/mobile profile.
+- Thai-first multi-script typography via `google_fonts`: Noto Sans Thai (UI),
+  Noto Sans Thai Looped (reading, +25% line-height), Roboto Mono (data), with
+  per-script `fontFamilyFallback` (Latin/JP/Devanagari/Arabic/Tamil). A
+  `useBrandFonts` flag lets tests/offline builds use the ambient font.
+
+### Changed
+- Buttons use the desktop control radius (4px; 8px comfortable) instead of the
+  Material 3 `StadiumBorder` pill, per the desktop profile.
+- Example apps consume `FxThemeData` and gain Dark / Touch-density toggles.
+- Release screenshots regenerated to the DS visuals.
+
 ## 0.6.0
 
 Version `0.6.0` reorganizes the example applications into explicit demo
