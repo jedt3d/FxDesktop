@@ -335,4 +335,13 @@ class FxDesktopLocalizationsEn extends FxDesktopLocalizations {
 
   @override
   String get ribbonItemTypeColumnBreak => 'Column break';
+
+  @override
+  String get ribbonDesignerLivePreview => 'Live preview';
+
+  @override
+  String get ribbonDesignerValidation => 'Validation';
+
+  @override
+  String get ribbonDesignerValidationValid => 'Definition valid';
 }

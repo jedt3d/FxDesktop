@@ -103,5 +103,8 @@
   "ribbonItemTypeToggle": "टगल",
   "ribbonItemTypeCheckBox": "चेकबक्स",
   "ribbonItemTypeSeparator": "विभाजक",
-  "ribbonItemTypeColumnBreak": "स्तम्भ ब्रेक"
+  "ribbonItemTypeColumnBreak": "स्तम्भ ब्रेक",
+  "ribbonDesignerLivePreview": "प्रत्यक्ष पूर्वावलोकन",
+  "ribbonDesignerValidation": "प्रमाणीकरण",
+  "ribbonDesignerValidationValid": "परिभाषा मान्य छ"
 }

@@ -16,17 +16,16 @@ class RibbonToolbarDesignerDemoApp extends StatelessWidget {
       locale: const Locale('en'),
       supportedLocales: FxDesktopLocalizations.supportedLocales,
       localizationsDelegates: FxDesktopLocalizations.localizationsDelegates,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xff2563eb)),
-        useMaterial3: true,
-        extensions: const [FxTheme()],
-      ),
-      home: Scaffold(
-        backgroundColor: const Color(0xfff6f7f9),
-        body: SafeArea(
-          child: FxRibbonDesigner(
-            initialDefinition: FxRibbonSamples.explorer(),
-            locale: const Locale('en'),
+      theme: FxThemeData.light(),
+      darkTheme: FxThemeData.dark(),
+      home: Builder(
+        builder: (context) => Scaffold(
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          body: SafeArea(
+            child: FxRibbonDesigner(
+              initialDefinition: FxRibbonSamples.explorer(),
+              locale: const Locale('en'),
+            ),
           ),
         ),
       ),

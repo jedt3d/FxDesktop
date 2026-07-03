@@ -22,6 +22,8 @@ class FxDesktopExampleApp extends StatefulWidget {
 
 class _FxDesktopExampleAppState extends State<FxDesktopExampleApp> {
   Locale _locale = const Locale('en');
+  ThemeMode _themeMode = ThemeMode.light;
+  FxDensityProfile _profile = FxDensityProfile.desktop;
 
   @override
   Widget build(BuildContext context) {
@@ -31,15 +33,21 @@ class _FxDesktopExampleAppState extends State<FxDesktopExampleApp> {
       locale: _locale,
       supportedLocales: FxDesktopLocalizations.supportedLocales,
       localizationsDelegates: FxDesktopLocalizations.localizationsDelegates,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xff2563eb)),
-        useMaterial3: true,
-        extensions: const [FxTheme()],
-      ),
+      theme: FxThemeData.light(profile: _profile),
+      darkTheme: FxThemeData.dark(profile: _profile),
+      themeMode: _themeMode,
       home: ExampleHomePage(
         locale: _locale,
         onLocaleChanged: (locale) {
           setState(() => _locale = locale);
+        },
+        themeMode: _themeMode,
+        onThemeModeChanged: (mode) {
+          setState(() => _themeMode = mode);
+        },
+        profile: _profile,
+        onProfileChanged: (profile) {
+          setState(() => _profile = profile);
         },
       ),
     );
@@ -51,10 +59,18 @@ class ExampleHomePage extends StatefulWidget {
     super.key,
     required this.locale,
     required this.onLocaleChanged,
+    required this.themeMode,
+    required this.onThemeModeChanged,
+    required this.profile,
+    required this.onProfileChanged,
   });
 
   final Locale locale;
   final ValueChanged<Locale> onLocaleChanged;
+  final ThemeMode themeMode;
+  final ValueChanged<ThemeMode> onThemeModeChanged;
+  final FxDensityProfile profile;
+  final ValueChanged<FxDensityProfile> onProfileChanged;
 
   @override
   State<ExampleHomePage> createState() => _ExampleHomePageState();
@@ -177,7 +193,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
     return FxUndoScope(
       controller: undoController,
       child: Scaffold(
-        backgroundColor: const Color(0xfff6f7f9),
+        backgroundColor: Theme.of(context).colorScheme.surface,
         body: SafeArea(
           child: LayoutBuilder(
             builder: (context, constraints) {
@@ -224,6 +240,10 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
                               _DemoSettingsBar(
                                 locale: widget.locale,
                                 onLocaleChanged: widget.onLocaleChanged,
+                                themeMode: widget.themeMode,
+                                onThemeModeChanged: widget.onThemeModeChanged,
+                                profile: widget.profile,
+                                onProfileChanged: widget.onProfileChanged,
                                 showLayoutBounds: _showLayoutBounds,
                                 onShowLayoutBoundsChanged: (value) {
                                   setState(() {
@@ -1981,12 +2001,20 @@ class _DemoSettingsBar extends StatelessWidget {
   const _DemoSettingsBar({
     required this.locale,
     required this.onLocaleChanged,
+    required this.themeMode,
+    required this.onThemeModeChanged,
+    required this.profile,
+    required this.onProfileChanged,
     required this.showLayoutBounds,
     required this.onShowLayoutBoundsChanged,
   });
 
   final Locale locale;
   final ValueChanged<Locale> onLocaleChanged;
+  final ThemeMode themeMode;
+  final ValueChanged<ThemeMode> onThemeModeChanged;
+  final FxDensityProfile profile;
+  final ValueChanged<FxDensityProfile> onProfileChanged;
   final bool showLayoutBounds;
   final ValueChanged<bool> onShowLayoutBoundsChanged;
 
@@ -2013,6 +2041,33 @@ class _DemoSettingsBar extends StatelessWidget {
                 }
               },
             ),
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Dark'),
+              const SizedBox(width: 8),
+              Switch(
+                value: themeMode == ThemeMode.dark,
+                onChanged: (dark) =>
+                    onThemeModeChanged(dark ? ThemeMode.dark : ThemeMode.light),
+              ),
+            ],
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Touch density'),
+              const SizedBox(width: 8),
+              Switch(
+                value: profile == FxDensityProfile.comfortable,
+                onChanged: (touch) => onProfileChanged(
+                  touch
+                      ? FxDensityProfile.comfortable
+                      : FxDensityProfile.desktop,
+                ),
+              ),
+            ],
           ),
           Row(
             mainAxisSize: MainAxisSize.min,
@@ -2073,13 +2128,15 @@ class _StateSample extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          label,
-          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+          label.toUpperCase(),
+          style: TextStyle(
+            fontSize: 10,
+            letterSpacing: 0.4,
+            height: 1.0,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
-            fontWeight: FontWeight.w600,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         child,
       ],
     );
@@ -2094,25 +2151,31 @@ class _ComponentRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(vertical: 18),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        border: Border.all(color: const Color(0xffd9dde5)),
-        borderRadius: BorderRadius.circular(6),
+        border: Border(bottom: BorderSide(color: scheme.outlineVariant)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            name,
-            style: Theme.of(
-              context,
-            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+          SizedBox(
+            width: 190,
+            child: Text(
+              name,
+              style: TextStyle(
+                fontFamily: FxThemeData.monoFontFamily,
+                fontFamilyFallback: const [FxThemeData.uiFontFamily],
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                height: 1.3,
+                color: scheme.onSurface,
+              ),
+            ),
           ),
-          const SizedBox(height: 10),
-          child,
+          const SizedBox(width: 20),
+          Expanded(child: child),
         ],
       ),
     );

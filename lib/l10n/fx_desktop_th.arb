@@ -103,5 +103,8 @@
   "ribbonItemTypeToggle": "สลับ",
   "ribbonItemTypeCheckBox": "เช็กบ็อกซ์",
   "ribbonItemTypeSeparator": "ตัวคั่น",
-  "ribbonItemTypeColumnBreak": "แบ่งคอลัมน์"
+  "ribbonItemTypeColumnBreak": "แบ่งคอลัมน์",
+  "ribbonDesignerLivePreview": "ตัวอย่างสด",
+  "ribbonDesignerValidation": "การตรวจสอบ",
+  "ribbonDesignerValidationValid": "นิยามถูกต้อง"
 }

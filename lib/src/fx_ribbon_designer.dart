@@ -4,7 +4,9 @@ import 'fx_form_inputs.dart';
 import 'fx_localizations.dart';
 import 'fx_ribbon_icons.dart';
 import 'fx_ribbon_models.dart';
+import 'fx_ribbon_theme.dart';
 import 'fx_ribbon_toolbar.dart';
+import 'fx_theme_data.dart';
 import 'l10n/fx_desktop_localizations.dart';
 
 /// Embeddable visual designer for [FxRibbonDefinition].
@@ -46,7 +48,6 @@ class _FxRibbonDesignerState extends State<FxRibbonDesigner> {
   late FxRibbonDefinition _definition;
   late FxRibbonSelection _selection;
   late Locale _previewLocale;
-  String _status = '';
 
   @override
   void initState() {
@@ -77,48 +78,79 @@ class _FxRibbonDesignerState extends State<FxRibbonDesigner> {
       for (final tab in _definition.contextualTabs)
         if (tab.contextGroup != null) tab.contextGroup!,
     };
-    final status = _status.isEmpty
-        ? localizations.ribbonDesignerStatusReady
-        : _status;
-
-    return Material(
-      color: Theme.of(context).colorScheme.surface,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _buildCommandRow(context, localizations),
-          FxRibbonToolbar(
+    final scheme = Theme.of(context).colorScheme;
+    final preview = _DesignerPanel(
+      title: localizations.ribbonDesignerLivePreview,
+      icon: Icons.visibility_outlined,
+      expandChild: false,
+      bodyPadding: const EdgeInsets.all(12),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: SizedBox(
+          width: 1160,
+          height: FxRibbonDensity.regular.expandedHeight,
+          child: FxRibbonToolbar(
             definition: _definition,
             icons: widget.icons,
             locale: _previewLocale,
             visibleContextGroups: visibleContextGroups,
             onDefinitionChanged: _replaceDefinition,
           ),
+        ),
+      ),
+    );
+
+    return Material(
+      color: scheme.surfaceContainerLow,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildCommandRow(context, localizations),
           Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                SizedBox(
-                  width: 260,
-                  child: _buildStructure(context, localizations),
-                ),
-                VerticalDivider(
-                  width: 1,
-                  color: Theme.of(context).dividerColor,
-                ),
-                Expanded(child: _buildJsonPreview(context, localizations)),
-                VerticalDivider(
-                  width: 1,
-                  color: Theme.of(context).dividerColor,
-                ),
-                SizedBox(
-                  width: 320,
-                  child: _buildInspector(context, localizations, validation),
-                ),
-              ],
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  SizedBox(
+                    width: 260,
+                    child: _buildStructure(context, localizations),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        preview,
+                        const SizedBox(height: 12),
+                        Expanded(
+                          child: _buildJsonPreview(context, localizations),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  SizedBox(
+                    width: 300,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(
+                          child: _buildInspector(
+                            context,
+                            localizations,
+                            validation,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        _buildValidation(context, localizations, validation),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-          _buildStatusRow(context, status, validation),
         ],
       ),
     );
@@ -207,9 +239,13 @@ class _FxRibbonDesignerState extends State<FxRibbonDesigner> {
               icon: Icons.ios_share_outlined,
               label: localizations.ribbonDesignerExport,
               onPressed: () {
-                final json = _definition.toJsonString();
-                widget.onExportRequested?.call(json);
-                setState(() => _status = localizations.ribbonDesignerExported);
+                widget.onExportRequested?.call(_definition.toJsonString());
+                ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+                  SnackBar(
+                    content: Text(localizations.ribbonDesignerExported),
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
               },
             ),
           ],
@@ -222,20 +258,16 @@ class _FxRibbonDesignerState extends State<FxRibbonDesigner> {
     BuildContext context,
     FxDesktopLocalizations localizations,
   ) {
-    return Material(
-      color: Theme.of(context).colorScheme.surface,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+    return _DesignerPanel(
+      title: localizations.ribbonDesignerStructure,
+      icon: Icons.account_tree_outlined,
+      bodyPadding: const EdgeInsets.all(4),
+      child: ListView(
+        key: const ValueKey('ribbonDesignerStructureTree'),
+        padding: EdgeInsets.zero,
         children: [
-          _PaneHeader(title: localizations.ribbonDesignerStructure),
-          Expanded(
-            child: ListView(
-              children: [
-                for (var ti = 0; ti < _definition.tabs.length; ti++)
-                  ..._tabStructure(context, ti),
-              ],
-            ),
-          ),
+          for (var ti = 0; ti < _definition.tabs.length; ti++)
+            ..._tabStructure(context, ti),
         ],
       ),
     );
@@ -247,8 +279,9 @@ class _FxRibbonDesignerState extends State<FxRibbonDesigner> {
       _StructureTile(
         depth: 0,
         selected: _selection == FxRibbonSelection(tabIndex: ti),
-        icon: Icons.tab,
+        icon: Icons.tab_outlined,
         label: tab.caption,
+        badge: tab.keyTip,
         onTap: () => _select(FxRibbonSelection(tabIndex: ti)),
       ),
       for (var gi = 0; gi < tab.groups.length; gi++) ...[
@@ -256,7 +289,7 @@ class _FxRibbonDesignerState extends State<FxRibbonDesigner> {
           depth: 1,
           selected:
               _selection == FxRibbonSelection(tabIndex: ti, groupIndex: gi),
-          icon: Icons.view_column,
+          icon: Icons.folder_outlined,
           label: tab.groups[gi].caption,
           onTap: () => _select(FxRibbonSelection(tabIndex: ti, groupIndex: gi)),
         ),
@@ -266,8 +299,9 @@ class _FxRibbonDesignerState extends State<FxRibbonDesigner> {
             selected:
                 _selection ==
                 FxRibbonSelection(tabIndex: ti, groupIndex: gi, itemIndex: ii),
-            icon: _iconForItem(tab.groups[gi].items[ii]),
+            icon: null,
             label: _labelForItem(tab.groups[gi].items[ii]),
+            badge: tab.groups[gi].items[ii].itemType.jsonValue,
             onTap: () => _select(
               FxRibbonSelection(tabIndex: ti, groupIndex: gi, itemIndex: ii),
             ),
@@ -280,32 +314,29 @@ class _FxRibbonDesignerState extends State<FxRibbonDesigner> {
     BuildContext context,
     FxDesktopLocalizations localizations,
   ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _PaneHeader(title: localizations.ribbonDesignerJsonPreview),
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerLowest,
-                border: Border.all(
-                  color: Theme.of(context).colorScheme.outlineVariant,
-                ),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(12),
-                child: SelectableText(
-                  _definition.toJsonString(),
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ),
+    final scheme = Theme.of(context).colorScheme;
+    return _DesignerPanel(
+      title: localizations.ribbonDesignerJsonPreview,
+      icon: Icons.data_object_outlined,
+      bodyPadding: EdgeInsets.zero,
+      child: ColoredBox(
+        color: scheme.surfaceContainerLowest,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(12),
+          child: SelectableText(
+            _definition.toJsonString(),
+            style: TextStyle(
+              fontFamily: FxThemeData.monoFontFamily,
+              // Localized caption values in the JSON can be Thai/JA/NE; fall
+              // back to the UI face (then the platform) for those glyphs.
+              fontFamilyFallback: const [FxThemeData.uiFontFamily],
+              fontSize: 12,
+              height: 17 / 12,
+              color: scheme.onSurface,
             ),
           ),
         ),
-      ],
+      ),
     );
   }
 
@@ -314,17 +345,51 @@ class _FxRibbonDesignerState extends State<FxRibbonDesigner> {
     FxDesktopLocalizations localizations,
     FxRibbonValidationResult validation,
   ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _PaneHeader(title: localizations.ribbonDesignerInspector),
-        Expanded(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(12),
-            child: _inspectorBody(context, localizations, validation),
+    return _DesignerPanel(
+      title: localizations.ribbonDesignerInspector,
+      icon: Icons.tune_outlined,
+      child: SingleChildScrollView(
+        child: _inspectorBody(context, localizations, validation),
+      ),
+    );
+  }
+
+  Widget _buildValidation(
+    BuildContext context,
+    FxDesktopLocalizations localizations,
+    FxRibbonValidationResult validation,
+  ) {
+    final scheme = Theme.of(context).colorScheme;
+    final ok = !validation.hasErrors;
+    final success = Theme.of(context).brightness == Brightness.dark
+        ? FxThemeData.successDark
+        : FxThemeData.successLight;
+    final color = ok ? success : scheme.error;
+    final text = ok
+        ? localizations.ribbonDesignerValidationValid
+        : validation.issues
+              .take(2)
+              .map((issue) => '${issue.code.name}: ${issue.message}')
+              .join('  ');
+    return _DesignerPanel(
+      title: localizations.ribbonDesignerValidation,
+      icon: Icons.check_circle_outline,
+      expandChild: false,
+      bodyPadding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+      child: Row(
+        children: [
+          Icon(ok ? Icons.check_circle : Icons.error, size: 16, color: color),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 12.5, color: color),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -452,6 +517,7 @@ class _FxRibbonDesignerState extends State<FxRibbonDesigner> {
         _InspectorTextField(
           label: localizations.ribbonDesignerCommandTag,
           value: item.tag,
+          mono: true,
           onChanged: (value) =>
               _updateSelectedItem((current) => current.copyWith(tag: value)),
         ),
@@ -478,6 +544,7 @@ class _FxRibbonDesignerState extends State<FxRibbonDesigner> {
         _InspectorTextField(
           label: localizations.ribbonDesignerIconKey,
           value: item.iconKey ?? '',
+          mono: true,
           onChanged: (value) => _updateSelectedItem(
             (current) =>
                 current.copyWith(iconKey: value.isEmpty ? null : value),
@@ -547,48 +614,6 @@ class _FxRibbonDesignerState extends State<FxRibbonDesigner> {
           onChanged: (value) => onChanged(_withLocale(values, 'ne', value)),
         ),
       ],
-    );
-  }
-
-  Widget _buildStatusRow(
-    BuildContext context,
-    String status,
-    FxRibbonValidationResult validation,
-  ) {
-    final scheme = Theme.of(context).colorScheme;
-    final issueText = validation.issues.isEmpty
-        ? ''
-        : validation.issues
-              .take(2)
-              .map((issue) => '${issue.code.name}: ${issue.message}')
-              .join('  ');
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerHighest,
-        border: Border(top: BorderSide(color: scheme.outlineVariant)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        child: Row(
-          children: [
-            Icon(
-              validation.hasErrors
-                  ? Icons.error_outline
-                  : Icons.check_circle_outline,
-              size: 16,
-              color: validation.hasErrors ? scheme.error : scheme.primary,
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                issueText.isEmpty ? status : issueText,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -794,6 +819,76 @@ class _FxRibbonDesignerState extends State<FxRibbonDesigner> {
   }
 }
 
+/// DS card panel: rounded (8px) surface with an uppercase icon header on a
+/// surface-container-low strip. Matches `components/ribbon/FxRibbonDesigner.jsx`.
+class _DesignerPanel extends StatelessWidget {
+  const _DesignerPanel({
+    required this.title,
+    required this.icon,
+    required this.child,
+    this.bodyPadding = const EdgeInsets.all(12),
+    this.expandChild = true,
+  });
+
+  final String title;
+  final IconData icon;
+  final Widget child;
+  final EdgeInsetsGeometry bodyPadding;
+  final bool expandChild;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final body = Padding(padding: bodyPadding, child: child);
+    // Material (not a plain DecoratedBox) so descendant ListTile / ink effects
+    // paint on this surface rather than being hidden by an intermediate
+    // background (Flutter asserts on ListTile-in-DecoratedBox).
+    return Material(
+      color: scheme.surface,
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        side: BorderSide(color: scheme.outlineVariant),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            height: 30,
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            decoration: BoxDecoration(
+              color: scheme.surfaceContainerLow,
+              border: Border(bottom: BorderSide(color: scheme.outlineVariant)),
+            ),
+            child: Row(
+              children: [
+                Icon(icon, size: 15, color: scheme.onSurfaceVariant),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    title.toUpperCase(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.4,
+                      height: 1.0,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (expandChild) Expanded(child: body) else body,
+        ],
+      ),
+    );
+  }
+}
+
+/// Compact icon action used in the command bar / panel headers.
 class _ToolbarButton extends StatelessWidget {
   const _ToolbarButton({
     required this.icon,
@@ -808,89 +903,126 @@ class _ToolbarButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsetsDirectional.only(end: 4),
-      child: FilledButton.tonalIcon(
+      padding: const EdgeInsetsDirectional.only(end: 2),
+      child: TextButton.icon(
         onPressed: onPressed,
-        icon: Icon(icon, size: 18),
+        icon: Icon(icon, size: 16),
         label: Text(label),
-      ),
-    );
-  }
-}
-
-class _PaneHeader extends StatelessWidget {
-  const _PaneHeader({required this.title});
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        border: Border(
-          bottom: BorderSide(
-            color: Theme.of(context).colorScheme.outlineVariant,
-          ),
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        child: Text(
-          title,
-          style: Theme.of(
-            context,
-          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+        style: TextButton.styleFrom(
+          foregroundColor: Theme.of(context).colorScheme.onSurfaceVariant,
+          visualDensity: VisualDensity.compact,
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         ),
       ),
     );
   }
 }
 
-class _StructureTile extends StatelessWidget {
+/// DS structure tree row: 26px, hover / selected (primary @ 12%) states,
+/// primary text + icon when selected, optional mono badge (key tip / kind).
+class _StructureTile extends StatefulWidget {
   const _StructureTile({
     required this.depth,
     required this.selected,
     required this.icon,
     required this.label,
     required this.onTap,
+    this.badge,
   });
 
   final int depth;
   final bool selected;
-  final IconData icon;
+  final IconData? icon;
   final String label;
   final VoidCallback onTap;
+  final String? badge;
+
+  @override
+  State<_StructureTile> createState() => _StructureTileState();
+}
+
+class _StructureTileState extends State<_StructureTile> {
+  bool _hover = false;
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      dense: true,
-      selected: selected,
-      leading: Padding(
-        padding: EdgeInsetsDirectional.only(start: depth * 16),
-        child: Icon(icon, size: 18),
+    final scheme = Theme.of(context).colorScheme;
+    final selected = widget.selected;
+    final background = selected
+        ? scheme.primary.withValues(alpha: 0.12)
+        : _hover
+        ? scheme.primary.withValues(alpha: 0.08)
+        : Colors.transparent;
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hover = true),
+      onExit: (_) => setState(() => _hover = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          height: 26,
+          padding: EdgeInsetsDirectional.only(
+            start: 8 + widget.depth * 16,
+            end: 8,
+          ),
+          decoration: BoxDecoration(
+            color: background,
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Row(
+            children: [
+              if (widget.icon != null) ...[
+                Icon(
+                  widget.icon,
+                  size: 15,
+                  color: selected ? scheme.primary : scheme.onSurfaceVariant,
+                ),
+                const SizedBox(width: 6),
+              ],
+              Expanded(
+                child: Text(
+                  widget.label.isEmpty ? '(untitled)' : widget.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    height: 1.0,
+                    fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                    color: selected ? scheme.primary : scheme.onSurface,
+                  ),
+                ),
+              ),
+              if (widget.badge != null && widget.badge!.isNotEmpty)
+                Text(
+                  widget.badge!,
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontFamily: FxThemeData.monoFontFamily,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
-      title: Text(
-        label.isEmpty ? '-' : label,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      onTap: onTap,
     );
   }
 }
 
+/// DS inspector field: uppercase micro-label over a compact 28px control box
+/// (radius 4, outline-variant border, control-bg fill). Editable.
 class _InspectorTextField extends StatefulWidget {
   const _InspectorTextField({
     required this.label,
     required this.value,
     required this.onChanged,
+    this.mono = false,
   });
 
   final String label;
   final String value;
   final ValueChanged<String> onChanged;
+  final bool mono;
 
   @override
   State<_InspectorTextField> createState() => _InspectorTextFieldState();
@@ -921,14 +1053,49 @@ class _InspectorTextFieldState extends State<_InspectorTextField> {
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      controller: _controller,
-      decoration: InputDecoration(
-        border: const OutlineInputBorder(),
-        isDense: true,
-        labelText: widget.label,
-      ),
-      onChanged: widget.onChanged,
+    final scheme = Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 3),
+          child: Text(
+            widget.label.toUpperCase(),
+            style: TextStyle(
+              fontSize: 10.5,
+              letterSpacing: 0.4,
+              height: 1.0,
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+        TextField(
+          controller: _controller,
+          onChanged: widget.onChanged,
+          style: TextStyle(
+            fontSize: 12.5,
+            fontFamily: widget.mono ? FxThemeData.monoFontFamily : null,
+            color: scheme.onSurface,
+          ),
+          decoration: InputDecoration(
+            isDense: true,
+            filled: true,
+            fillColor: scheme.surfaceContainerLowest,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 8,
+              vertical: 6,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(4),
+              borderSide: BorderSide(color: scheme.outlineVariant),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(4),
+              borderSide: BorderSide(color: scheme.primary, width: 2),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -945,23 +1112,6 @@ Map<String, String> _withLocale(
     next[locale] = value;
   }
   return next;
-}
-
-IconData _iconForItem(FxRibbonItem item) {
-  return switch (item.itemType) {
-    FxRibbonItemType.large => Icons.crop_square,
-    FxRibbonItemType.medium => Icons.table_rows_outlined,
-    FxRibbonItemType.small => Icons.short_text,
-    FxRibbonItemType.dropdown => Icons.arrow_drop_down_circle_outlined,
-    FxRibbonItemType.splitButton => Icons.call_split_outlined,
-    FxRibbonItemType.mediumDropdown => Icons.arrow_drop_down_outlined,
-    FxRibbonItemType.mediumSplitButton => Icons.splitscreen_outlined,
-    FxRibbonItemType.gallery => Icons.view_module_outlined,
-    FxRibbonItemType.toggle => Icons.toggle_on_outlined,
-    FxRibbonItemType.checkBox => Icons.check_box_outlined,
-    FxRibbonItemType.separator => Icons.more_vert,
-    FxRibbonItemType.columnBreak => Icons.view_column_outlined,
-  };
 }
 
 String _labelForItem(FxRibbonItem item) {

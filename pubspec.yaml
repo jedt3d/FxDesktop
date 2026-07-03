@@ -1,6 +1,6 @@
 name: fx_desktop
 description: Desktop-first Flutter components and CSS-like layout contracts for Xojo-style UI design.
-version: 0.6.0
+version: 0.7.0-ds
 homepage: https://github.com/jedt3d/FxDesktop
 repository: https://github.com/jedt3d/FxDesktop
 issue_tracker: https://github.com/jedt3d/FxDesktop/issues
@@ -62,3 +62,19 @@ dev_dependencies:
 
 flutter:
   generate: true
+  fonts:
+    # FxDesktop DS Thai-first, multi-script faces (Noto, OFL). Bundled so the
+    # theme is fully offline — no runtime font fetching. Variable fonts: the
+    # weight (wght) axis responds to FontWeight.
+    - family: Noto Sans Thai
+      fonts:
+        - asset: assets/fonts/NotoSansThai.ttf
+    - family: Noto Sans Thai Looped
+      fonts:
+        - asset: assets/fonts/NotoSansThaiLooped.ttf
+    - family: Noto Sans
+      fonts:
+        - asset: assets/fonts/NotoSans.ttf
+    - family: Noto Sans Mono
+      fonts:
+        - asset: assets/fonts/NotoSansMono.ttf

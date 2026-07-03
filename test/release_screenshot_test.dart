@@ -52,6 +52,26 @@ Future<void> _loadReleaseScreenshotFonts() async {
     );
   }
   await iconsLoader.load();
+
+  // Bundled FxDesktop Noto faces, registered under the package-prefixed names
+  // the theme uses, so widgets that reference them explicitly (mono JSON,
+  // kind badges) render real glyphs in the golden instead of tofu.
+  await _loadFontFamily(
+    'packages/fx_desktop/Noto Sans Mono',
+    'assets/fonts/NotoSansMono.ttf',
+  );
+  await _loadFontFamily(
+    'packages/fx_desktop/Noto Sans Thai',
+    'assets/fonts/NotoSansThai.ttf',
+  );
+  await _loadFontFamily(
+    'packages/fx_desktop/Noto Sans Thai Looped',
+    'assets/fonts/NotoSansThaiLooped.ttf',
+  );
+  await _loadFontFamily(
+    'packages/fx_desktop/Noto Sans',
+    'assets/fonts/NotoSans.ttf',
+  );
 }
 
 Future<void> _loadFontFamily(String family, String path) async {
@@ -328,24 +348,11 @@ class _ReleaseScreenshotShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const seedColor = Color(0xff2563eb);
     return RepaintBoundary(
       key: boundaryKey,
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: seedColor),
-          fontFamily: 'Roboto',
-          scaffoldBackgroundColor: const Color(0xfff6f7f9),
-          extensions: const [
-            FxTheme(
-              gridLineColor: Color(0xffcbd5e1),
-              headerBackground: Color(0xffe8eef8),
-              alternatingRowBackground: Color(0xfff8fafc),
-              selectionBackground: Color(0xffdbeafe),
-            ),
-          ],
-        ),
+        theme: FxThemeData.light(useBrandFonts: false),
         home: Scaffold(
           body: Center(
             child: SizedBox(
@@ -413,25 +420,16 @@ class _LocalizationScreenshotShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const seedColor = Color(0xff2563eb);
+    // DS colors/shape, but keep the loaded system font for this script.
+    final theme = FxThemeData.light(useBrandFonts: false);
     return RepaintBoundary(
       key: boundaryKey,
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         localizationsDelegates: FxDesktopLocalizations.localizationsDelegates,
         supportedLocales: FxDesktopLocalizations.supportedLocales,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: seedColor),
-          fontFamily: scenario.fontFamily,
-          scaffoldBackgroundColor: const Color(0xfff6f7f9),
-          extensions: const [
-            FxTheme(
-              gridLineColor: Color(0xffcbd5e1),
-              headerBackground: Color(0xffe8eef8),
-              alternatingRowBackground: Color(0xfff8fafc),
-              selectionBackground: Color(0xffdbeafe),
-            ),
-          ],
+        theme: theme.copyWith(
+          textTheme: theme.textTheme.apply(fontFamily: scenario.fontFamily),
         ),
         home: Scaffold(
           body: Center(
@@ -546,35 +544,11 @@ class _RibbonMaterialApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const seedColor = Color(0xff0078d7);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       localizationsDelegates: FxDesktopLocalizations.localizationsDelegates,
       supportedLocales: FxDesktopLocalizations.supportedLocales,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: seedColor),
-        fontFamily: 'Roboto',
-        scaffoldBackgroundColor: const Color(0xfff5f5f5),
-        extensions: const [
-          FxTheme(
-            gridLineColor: Color(0xffcbd5e1),
-            headerBackground: Color(0xffe8eef8),
-            alternatingRowBackground: Color(0xfff8fafc),
-            selectionBackground: Color(0xffdbeafe),
-          ),
-          FxRibbonThemeData(
-            density: FxRibbonDensity.regular,
-            backgroundColor: Color(0xfff7f7f7),
-            tabStripColor: Color(0xffffffff),
-            activeTabColor: Color(0xffffffff),
-            groupBackgroundColor: Color(0xfff7f7f7),
-            hoverColor: Color(0xffdbeafe),
-            pressedColor: Color(0xffcfe8ff),
-            keyTipBackgroundColor: Color(0xff111827),
-            keyTipForegroundColor: Colors.white,
-          ),
-        ],
-      ),
+      theme: FxThemeData.light(useBrandFonts: false),
       home: child,
     );
   }
@@ -593,7 +567,8 @@ class _RibbonDesignerScreenshotShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const seedColor = Color(0xff2563eb);
+    // DS colors/shape, but keep the loaded system font for this script.
+    final theme = FxThemeData.light(useBrandFonts: false);
     return RepaintBoundary(
       key: boundaryKey,
       child: MaterialApp(
@@ -601,25 +576,8 @@ class _RibbonDesignerScreenshotShell extends StatelessWidget {
         locale: locale,
         localizationsDelegates: FxDesktopLocalizations.localizationsDelegates,
         supportedLocales: FxDesktopLocalizations.supportedLocales,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: seedColor),
-          fontFamily: fontFamily,
-          scaffoldBackgroundColor: const Color(0xfff6f7f9),
-          extensions: const [
-            FxTheme(
-              gridLineColor: Color(0xffcbd5e1),
-              headerBackground: Color(0xffe8eef8),
-              alternatingRowBackground: Color(0xfff8fafc),
-              selectionBackground: Color(0xffdbeafe),
-            ),
-            FxRibbonThemeData(
-              density: FxRibbonDensity.compact,
-              backgroundColor: Color(0xfffbfdff),
-              tabStripColor: Color(0xffeef4fb),
-              activeTabColor: Colors.white,
-              groupBackgroundColor: Color(0xffffffff),
-            ),
-          ],
+        theme: theme.copyWith(
+          textTheme: theme.textTheme.apply(fontFamily: fontFamily),
         ),
         home: const Scaffold(
           body: Center(

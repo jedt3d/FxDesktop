@@ -282,9 +282,13 @@ class _FxRibbonToolbarState extends State<FxRibbonToolbar> {
                   ),
                 ),
               ),
-              const Padding(
-                padding: EdgeInsetsDirectional.only(end: 4),
-                child: Icon(Icons.help, size: 16, color: Color(0xff0067b8)),
+              Padding(
+                padding: const EdgeInsetsDirectional.only(end: 4),
+                child: Icon(
+                  Icons.help,
+                  size: 16,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
               ),
               const SizedBox(width: 4),
             ],
@@ -454,8 +458,8 @@ class _RibbonGroupView extends StatelessWidget {
                 groupCaption,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: Color(0xff7a7a7a),
+                style: TextStyle(
+                  color: colorScheme.onSurfaceVariant,
                   fontSize: 11,
                   height: 1.0,
                 ),
@@ -923,7 +927,7 @@ class _RibbonCommandChrome extends StatelessWidget {
                   : BoxDecoration(
                       border: Border.all(
                         color: item.isToggleActive
-                            ? const Color(0xff6aa7d9)
+                            ? colorScheme.primary
                             : Colors.transparent,
                       ),
                       borderRadius: BorderRadius.circular(
@@ -1017,17 +1021,26 @@ class _RibbonTabButton extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    if (accent != null)
+                    if (accent != null || selected)
                       Container(
                         height: 2,
                         width: 34,
                         margin: const EdgeInsets.only(bottom: 1),
-                        color: accent,
+                        color: accent ?? colorScheme.primary,
                       ),
                     Text(
                       caption,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 12, height: 1.0),
+                      style: TextStyle(
+                        fontSize: 12,
+                        height: 1.0,
+                        color: selected
+                            ? (accent ?? colorScheme.primary)
+                            : colorScheme.onSurfaceVariant,
+                        fontWeight: selected
+                            ? FontWeight.w600
+                            : FontWeight.w400,
+                      ),
                     ),
                   ],
                 ),
@@ -1053,8 +1066,9 @@ class _ApplicationRibbonButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Material(
-      color: const Color(0xff0078d7),
+      color: colorScheme.primary,
       child: InkWell(
         onTap: () {},
         child: SizedBox(
@@ -1063,8 +1077,8 @@ class _ApplicationRibbonButton extends StatelessWidget {
           child: Center(
             child: Text(
               label,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: colorScheme.onPrimary,
                 fontSize: 12,
                 height: 1.0,
               ),
@@ -1092,6 +1106,7 @@ class _RibbonGalleryView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final entries = item.menuItems
         .where((entry) => !entry.isSeparator)
         .toList();
@@ -1104,8 +1119,8 @@ class _RibbonGalleryView extends StatelessWidget {
           height: 66,
           child: DecoratedBox(
             decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border.all(color: const Color(0xffc8d4e1)),
+              color: colorScheme.surface,
+              border: Border.all(color: colorScheme.outlineVariant),
             ),
             child: Row(
               children: [
@@ -1162,15 +1177,16 @@ class _RibbonGalleryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final caption = menuItem.resolveCaption(locale);
     return Material(
-      color: selected ? const Color(0xffcfe8ff) : Colors.transparent,
+      color: selected ? colorScheme.primaryContainer : Colors.transparent,
       child: InkWell(
         onTap: item.isEnabled ? onPressed : null,
         child: DecoratedBox(
           decoration: BoxDecoration(
             border: Border.all(
-              color: selected ? const Color(0xff5aa4dc) : Colors.transparent,
+              color: selected ? colorScheme.primary : Colors.transparent,
             ),
           ),
           child: Row(
@@ -1179,7 +1195,7 @@ class _RibbonGalleryTile extends StatelessWidget {
               Icon(
                 selected ? Icons.view_list : Icons.crop_square,
                 size: 12,
-                color: const Color(0xff2f5f87),
+                color: colorScheme.primary,
               ),
               const SizedBox(width: 3),
               Expanded(
@@ -1203,20 +1219,22 @@ class _RibbonGalleryScrollStrip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final divider = colorScheme.outlineVariant;
     return DecoratedBox(
-      decoration: const BoxDecoration(
-        color: Color(0xfff5f8fb),
-        border: Border(left: BorderSide(color: Color(0xffc8d4e1))),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerLow,
+        border: Border(left: BorderSide(color: divider)),
       ),
       child: SizedBox(
         width: 16,
         child: Column(
-          children: const [
-            Expanded(child: Icon(Icons.keyboard_arrow_up, size: 13)),
-            Divider(height: 1, thickness: 1, color: Color(0xffc8d4e1)),
-            Expanded(child: Icon(Icons.keyboard_arrow_down, size: 13)),
-            Divider(height: 1, thickness: 1, color: Color(0xffc8d4e1)),
-            Expanded(child: Icon(Icons.arrow_drop_down, size: 13)),
+          children: [
+            const Expanded(child: Icon(Icons.keyboard_arrow_up, size: 13)),
+            Divider(height: 1, thickness: 1, color: divider),
+            const Expanded(child: Icon(Icons.keyboard_arrow_down, size: 13)),
+            Divider(height: 1, thickness: 1, color: divider),
+            const Expanded(child: Icon(Icons.arrow_drop_down, size: 13)),
           ],
         ),
       ),

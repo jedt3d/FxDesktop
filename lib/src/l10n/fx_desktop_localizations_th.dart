@@ -335,4 +335,13 @@ class FxDesktopLocalizationsTh extends FxDesktopLocalizations {
 
   @override
   String get ribbonItemTypeColumnBreak => 'แบ่งคอลัมน์';
+
+  @override
+  String get ribbonDesignerLivePreview => 'ตัวอย่างสด';
+
+  @override
+  String get ribbonDesignerValidation => 'การตรวจสอบ';
+
+  @override
+  String get ribbonDesignerValidationValid => 'นิยามถูกต้อง';
 }

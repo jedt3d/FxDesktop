@@ -198,8 +198,9 @@ class FxRibbonIconView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    // DS ribbon command icons carry the primary/brand color; disabled fades.
     final foreground = enabled
-        ? colorScheme.onSurface
+        ? colorScheme.primary
         : colorScheme.onSurface.withValues(alpha: 0.38);
     final iconSource = source;
     final opacity = enabled ? 1.0 : 0.45;
