@@ -148,11 +148,26 @@ abstract final class FxThemeData {
     final base = ThemeData(useMaterial3: true, colorScheme: scheme);
     final isDesktop = profile == FxDensityProfile.desktop;
 
+    // Desktop uses the 4px control radius (comfortable relaxes to 8px). This
+    // overrides Material 3's default StadiumBorder pills, which the desktop
+    // profile forbids ("2–4px radii, no fully-rounded pills on desktop").
+    final controlRadius = isDesktop ? 4.0 : 8.0;
+    final controlShape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(controlRadius),
+    );
+    final buttonStyle = ButtonStyle(
+      shape: WidgetStatePropertyAll<OutlinedBorder>(controlShape),
+    );
+
     return base.copyWith(
       visualDensity: isDesktop
           ? VisualDensity.compact
           : VisualDensity.comfortable,
       textTheme: uiTextTheme(base.textTheme),
+      filledButtonTheme: FilledButtonThemeData(style: buttonStyle),
+      outlinedButtonTheme: OutlinedButtonThemeData(style: buttonStyle),
+      textButtonTheme: TextButtonThemeData(style: buttonStyle),
+      elevatedButtonTheme: ElevatedButtonThemeData(style: buttonStyle),
       extensions: <ThemeExtension<dynamic>>[
         _fxTheme(scheme, isDesktop, brightness),
         FxRibbonThemeData(
