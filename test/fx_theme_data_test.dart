@@ -60,14 +60,21 @@ void main() {
 
     test('UI theme uses the bundled headless Thai face', () {
       final ui = FxThemeData.uiTextTheme(base);
-      expect(ui.bodyMedium!.fontFamily, 'Noto Sans Thai');
-      expect(ui.bodyMedium!.fontFamilyFallback, contains('Noto Sans'));
+      // Package-bundled fonts resolve under the packages/<pkg>/ prefix.
+      expect(ui.bodyMedium!.fontFamily, 'packages/fx_desktop/Noto Sans Thai');
+      expect(
+        ui.bodyMedium!.fontFamilyFallback,
+        contains('packages/fx_desktop/Noto Sans'),
+      );
     });
 
     test('reading theme uses the looped face with extra line-height', () {
       final ui = FxThemeData.uiTextTheme(base);
       final reading = FxThemeData.readingTextTheme(base);
-      expect(reading.bodyMedium!.fontFamily, 'Noto Sans Thai Looped');
+      expect(
+        reading.bodyMedium!.fontFamily,
+        'packages/fx_desktop/Noto Sans Thai Looped',
+      );
       expect(
         reading.bodyMedium!.height ?? 1.0,
         greaterThan(ui.bodyMedium!.height ?? 1.0),
@@ -75,12 +82,18 @@ void main() {
     });
 
     test('mono style uses the bundled monospace face', () {
-      expect(FxThemeData.monoTextStyle().fontFamily, 'Noto Sans Mono');
+      expect(
+        FxThemeData.monoTextStyle().fontFamily,
+        'packages/fx_desktop/Noto Sans Mono',
+      );
     });
 
     test('useBrandFonts:false keeps the ambient font', () {
       final theme = FxThemeData.light(useBrandFonts: false);
-      expect(theme.textTheme.bodyMedium!.fontFamily, isNot('Noto Sans Thai'));
+      expect(
+        theme.textTheme.bodyMedium!.fontFamily,
+        isNot('packages/fx_desktop/Noto Sans Thai'),
+      );
     });
   });
 }

@@ -90,19 +90,27 @@ abstract final class FxThemeData {
         error: const Color(0xFFF85149),
       );
 
+  /// Prefix Flutter registers package-bundled fonts under. Fonts declared in
+  /// this package's pubspec resolve as `packages/fx_desktop/<family>` in every
+  /// consuming app, so the family names below carry the prefix.
+  static const String _fontPackage = 'packages/fx_desktop/';
+
   /// UI / header / display face: **Noto Sans Thai** (headless). Bundled asset.
-  static const String uiFontFamily = 'Noto Sans Thai';
+  static const String uiFontFamily = '${_fontPackage}Noto Sans Thai';
 
   /// Reading / paragraph face: **Noto Sans Thai Looped** (head). Bundled asset.
-  static const String readingFontFamily = 'Noto Sans Thai Looped';
+  static const String readingFontFamily =
+      '${_fontPackage}Noto Sans Thai Looped';
 
   /// Monospace face for data / numbers / code: **Noto Sans Mono**. Bundled.
-  static const String monoFontFamily = 'Noto Sans Mono';
+  static const String monoFontFamily = '${_fontPackage}Noto Sans Mono';
 
   /// Fallback applied to text roles: bundled **Noto Sans** (Vietnamese-capable
   /// Latin) covers Latin glyphs the Thai face lacks. JP / Devanagari / Arabic /
   /// Tamil resolve through the platform's font fallback on desktop.
-  static const List<String> _scriptFallback = <String>['Noto Sans'];
+  static const List<String> _scriptFallback = <String>[
+    '${_fontPackage}Noto Sans',
+  ];
 
   /// UI / header / display type: **Noto Sans Thai** (headless) with the Latin
   /// fallback. Keeps each role's Material 3 size and line-height.
