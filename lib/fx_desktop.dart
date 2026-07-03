@@ -25,5 +25,6 @@ export 'src/fx_ribbon_toolbar.dart';
 export 'src/fx_styled_text.dart';
 export 'src/fx_tables.dart';
 export 'src/fx_theme.dart';
+export 'src/fx_theme_data.dart';
 export 'src/fx_undo.dart';
 export 'src/fx_utility_controls.dart';
