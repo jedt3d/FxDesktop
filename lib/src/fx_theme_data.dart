@@ -134,14 +134,29 @@ abstract final class FxThemeData {
       GoogleFonts.robotoMono(textStyle: base);
 
   /// The FxDesktop light theme.
-  static ThemeData light({FxDensityProfile profile = FxDensityProfile.desktop}) =>
-      _build(Brightness.light, profile);
+  ///
+  /// Set [useBrandFonts] to `false` to skip the google_fonts text theme and
+  /// keep the ambient font — useful in tests / offline builds that cannot load
+  /// web fonts, or for consumers that bundle their own. Color roles, density,
+  /// shape, and extensions are unchanged either way.
+  static ThemeData light({
+    FxDensityProfile profile = FxDensityProfile.desktop,
+    bool useBrandFonts = true,
+  }) => _build(Brightness.light, profile, useBrandFonts);
 
   /// The FxDesktop dark theme (GitHub-style palette).
-  static ThemeData dark({FxDensityProfile profile = FxDensityProfile.desktop}) =>
-      _build(Brightness.dark, profile);
+  ///
+  /// See [light] for [useBrandFonts].
+  static ThemeData dark({
+    FxDensityProfile profile = FxDensityProfile.desktop,
+    bool useBrandFonts = true,
+  }) => _build(Brightness.dark, profile, useBrandFonts);
 
-  static ThemeData _build(Brightness brightness, FxDensityProfile profile) {
+  static ThemeData _build(
+    Brightness brightness,
+    FxDensityProfile profile,
+    bool useBrandFonts,
+  ) {
     final scheme = brightness == Brightness.light
         ? lightColorScheme
         : darkColorScheme;
@@ -163,7 +178,7 @@ abstract final class FxThemeData {
       visualDensity: isDesktop
           ? VisualDensity.compact
           : VisualDensity.comfortable,
-      textTheme: uiTextTheme(base.textTheme),
+      textTheme: useBrandFonts ? uiTextTheme(base.textTheme) : base.textTheme,
       filledButtonTheme: FilledButtonThemeData(style: buttonStyle),
       outlinedButtonTheme: OutlinedButtonThemeData(style: buttonStyle),
       textButtonTheme: TextButtonThemeData(style: buttonStyle),
