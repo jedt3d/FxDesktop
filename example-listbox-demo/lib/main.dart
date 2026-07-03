@@ -13,13 +13,8 @@ class FxListBoxDemoApp extends StatelessWidget {
     return MaterialApp(
       title: 'FxListBox Interactive Spec Gallery',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xff2563eb)),
-        useMaterial3: true,
-        scaffoldBackgroundColor: const Color(0xfff6f7f9),
-        cardColor: Colors.white,
-        extensions: const [FxTheme()],
-      ),
+      theme: FxThemeData.light(),
+      darkTheme: FxThemeData.dark(),
       home: const DemoGalleryPage(),
     );
   }
