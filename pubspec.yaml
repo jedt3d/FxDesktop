@@ -50,7 +50,6 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   flutter_layout_grid: ^2.0.8
-  google_fonts: ^6.2.1
   intl: ^0.20.2
   two_dimensional_scrollables: ^0.5.2
   flutter_svg: ^2.3.0
@@ -63,3 +62,19 @@ dev_dependencies:
 
 flutter:
   generate: true
+  fonts:
+    # FxDesktop DS Thai-first, multi-script faces (Noto, OFL). Bundled so the
+    # theme is fully offline — no runtime font fetching. Variable fonts: the
+    # weight (wght) axis responds to FontWeight.
+    - family: Noto Sans Thai
+      fonts:
+        - asset: assets/fonts/NotoSansThai.ttf
+    - family: Noto Sans Thai Looped
+      fonts:
+        - asset: assets/fonts/NotoSansThaiLooped.ttf
+    - family: Noto Sans
+      fonts:
+        - asset: assets/fonts/NotoSans.ttf
+    - family: Noto Sans Mono
+      fonts:
+        - asset: assets/fonts/NotoSansMono.ttf

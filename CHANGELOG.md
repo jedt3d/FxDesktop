@@ -20,10 +20,12 @@ design-system spec **without changing any widget's public API or behavior**;
 - `FxDensityProfile { desktop, comfortable }` — desktop uses
   `VisualDensity.compact` (28/34/42 controls); comfortable exposes a
   touch/mobile profile.
-- Thai-first multi-script typography via `google_fonts`: Noto Sans Thai (UI),
-  Noto Sans Thai Looped (reading, +25% line-height), Roboto Mono (data), with
-  per-script `fontFamilyFallback` (Latin/JP/Devanagari/Arabic/Tamil). A
-  `useBrandFonts` flag lets tests/offline builds use the ambient font.
+- Thai-first multi-script typography with **bundled Noto faces** (no runtime
+  font fetching, fully offline): Noto Sans Thai (UI/headless), Noto Sans Thai
+  Looped (reading, +25% line-height), Noto Sans (Latin fallback), Noto Sans
+  Mono (data). Exotic scripts (JP/Devanagari/Arabic/Tamil) resolve through the
+  platform's font fallback on desktop. A `useBrandFonts` flag lets consumers
+  keep the ambient font.
 
 ### Changed
 - Buttons use the desktop control radius (4px; 8px comfortable) instead of the

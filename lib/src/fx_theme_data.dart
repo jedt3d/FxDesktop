@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'fx_ribbon_theme.dart';
 import 'fx_theme.dart';
@@ -91,34 +90,39 @@ abstract final class FxThemeData {
         error: const Color(0xFFF85149),
       );
 
-  /// Per-script fallback chain applied to every text role, so Thai renders from
-  /// the primary face and JP / Devanagari / Arabic / Tamil each resolve through
-  /// their Noto face. Latin (Vietnamese-capable) leads the chain.
-  static final List<String> _scriptFallback = <String>[
-    GoogleFonts.notoSans().fontFamily!,
-    GoogleFonts.notoSansJp().fontFamily!,
-    GoogleFonts.notoSansDevanagari().fontFamily!,
-    GoogleFonts.notoSansArabic().fontFamily!,
-    GoogleFonts.notoSansTamil().fontFamily!,
-  ];
+  /// UI / header / display face: **Noto Sans Thai** (headless). Bundled asset.
+  static const String uiFontFamily = 'Noto Sans Thai';
 
-  /// UI / header / display type: **Noto Sans Thai** (headless) with the
-  /// per-script fallback. Keeps each role's Material 3 size and line-height.
+  /// Reading / paragraph face: **Noto Sans Thai Looped** (head). Bundled asset.
+  static const String readingFontFamily = 'Noto Sans Thai Looped';
+
+  /// Monospace face for data / numbers / code: **Noto Sans Mono**. Bundled.
+  static const String monoFontFamily = 'Noto Sans Mono';
+
+  /// Fallback applied to text roles: bundled **Noto Sans** (Vietnamese-capable
+  /// Latin) covers Latin glyphs the Thai face lacks. JP / Devanagari / Arabic /
+  /// Tamil resolve through the platform's font fallback on desktop.
+  static const List<String> _scriptFallback = <String>['Noto Sans'];
+
+  /// UI / header / display type: **Noto Sans Thai** (headless) with the Latin
+  /// fallback. Keeps each role's Material 3 size and line-height.
   ///
   /// Use for chrome, labels, buttons, tabs, table headers, and the ribbon.
-  static TextTheme uiTextTheme(TextTheme base) => GoogleFonts.notoSansThaiTextTheme(
-    base,
-  ).apply(fontFamilyFallback: _scriptFallback);
+  static TextTheme uiTextTheme(TextTheme base) => base.apply(
+    fontFamily: uiFontFamily,
+    fontFamilyFallback: _scriptFallback,
+  );
 
-  /// Reading / paragraph type: **Noto Sans Thai Looped** (head) with the
-  /// per-script fallback and a ~+25% line-height on body roles, so Thai tone
-  /// marks never collide with the descenders of the line above.
+  /// Reading / paragraph type: **Noto Sans Thai Looped** (head) with a ~+25%
+  /// line-height on body roles, so Thai tone marks never collide with the
+  /// descenders of the line above.
   ///
   /// Use for long-form text and read (non-edited) cell text.
   static TextTheme readingTextTheme(TextTheme base) {
-    final looped = GoogleFonts.notoSansThaiLoopedTextTheme(
-      base,
-    ).apply(fontFamilyFallback: _scriptFallback);
+    final looped = base.apply(
+      fontFamily: readingFontFamily,
+      fontFamilyFallback: _scriptFallback,
+    );
     TextStyle? bump(TextStyle? style) =>
         style?.copyWith(height: (style.height ?? 1.4) * 1.25);
     return looped.copyWith(
@@ -128,16 +132,16 @@ abstract final class FxThemeData {
     );
   }
 
-  /// Monospace type for data / numbers / code: **Roboto Mono**. Never used for
-  /// complex-script body (mono has no Thai/Arabic/Tamil shaping).
+  /// Monospace type for data / numbers / code: **Noto Sans Mono**. Never used
+  /// for complex-script body (mono has no Thai/Arabic/Tamil shaping).
   static TextStyle monoTextStyle([TextStyle? base]) =>
-      GoogleFonts.robotoMono(textStyle: base);
+      (base ?? const TextStyle()).copyWith(fontFamily: monoFontFamily);
 
   /// The FxDesktop light theme.
   ///
-  /// Set [useBrandFonts] to `false` to skip the google_fonts text theme and
-  /// keep the ambient font — useful in tests / offline builds that cannot load
-  /// web fonts, or for consumers that bundle their own. Color roles, density,
+  /// Set [useBrandFonts] to `false` to skip the bundled Noto brand faces and
+  /// keep Flutter's ambient font — useful for tests that assert on the default
+  /// font, or for consumers that supply their own type. Color roles, density,
   /// shape, and extensions are unchanged either way.
   static ThemeData light({
     FxDensityProfile profile = FxDensityProfile.desktop,
