@@ -840,50 +840,49 @@ class _DesignerPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final body = Padding(padding: bodyPadding, child: child);
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: scheme.surface,
-        border: Border.all(color: scheme.outlineVariant),
+    // Material (not a plain DecoratedBox) so descendant ListTile / ink effects
+    // paint on this surface rather than being hidden by an intermediate
+    // background (Flutter asserts on ListTile-in-DecoratedBox).
+    return Material(
+      color: scheme.surface,
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        side: BorderSide(color: scheme.outlineVariant),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Container(
-              height: 30,
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              decoration: BoxDecoration(
-                color: scheme.surfaceContainerLow,
-                border: Border(
-                  bottom: BorderSide(color: scheme.outlineVariant),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Icon(icon, size: 15, color: scheme.onSurfaceVariant),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      title.toUpperCase(),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.4,
-                        height: 1.0,
-                        color: scheme.onSurfaceVariant,
-                      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            height: 30,
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            decoration: BoxDecoration(
+              color: scheme.surfaceContainerLow,
+              border: Border(bottom: BorderSide(color: scheme.outlineVariant)),
+            ),
+            child: Row(
+              children: [
+                Icon(icon, size: 15, color: scheme.onSurfaceVariant),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    title.toUpperCase(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.4,
+                      height: 1.0,
+                      color: scheme.onSurfaceVariant,
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            if (expandChild) Expanded(child: body) else body,
-          ],
-        ),
+          ),
+          if (expandChild) Expanded(child: body) else body,
+        ],
       ),
     );
   }
