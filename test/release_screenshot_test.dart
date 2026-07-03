@@ -52,6 +52,26 @@ Future<void> _loadReleaseScreenshotFonts() async {
     );
   }
   await iconsLoader.load();
+
+  // Bundled FxDesktop Noto faces, registered under the package-prefixed names
+  // the theme uses, so widgets that reference them explicitly (mono JSON,
+  // kind badges) render real glyphs in the golden instead of tofu.
+  await _loadFontFamily(
+    'packages/fx_desktop/Noto Sans Mono',
+    'assets/fonts/NotoSansMono.ttf',
+  );
+  await _loadFontFamily(
+    'packages/fx_desktop/Noto Sans Thai',
+    'assets/fonts/NotoSansThai.ttf',
+  );
+  await _loadFontFamily(
+    'packages/fx_desktop/Noto Sans Thai Looped',
+    'assets/fonts/NotoSansThaiLooped.ttf',
+  );
+  await _loadFontFamily(
+    'packages/fx_desktop/Noto Sans',
+    'assets/fonts/NotoSans.ttf',
+  );
 }
 
 Future<void> _loadFontFamily(String family, String path) async {

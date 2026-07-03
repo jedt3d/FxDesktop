@@ -103,5 +103,8 @@
   "ribbonItemTypeToggle": "トグル",
   "ribbonItemTypeCheckBox": "チェックボックス",
   "ribbonItemTypeSeparator": "区切り",
-  "ribbonItemTypeColumnBreak": "列区切り"
+  "ribbonItemTypeColumnBreak": "列区切り",
+  "ribbonDesignerLivePreview": "ライブプレビュー",
+  "ribbonDesignerValidation": "検証",
+  "ribbonDesignerValidationValid": "定義は有効です"
 }

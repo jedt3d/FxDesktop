@@ -569,5 +569,20 @@
   "@ribbonItemTypeColumnBreak": {
     "description": "Ribbon item type name.",
     "context": "ribbon.item_type.column_break"
+  },
+  "ribbonDesignerLivePreview": "Live preview",
+  "ribbonDesignerValidation": "Validation",
+  "ribbonDesignerValidationValid": "Definition valid",
+  "@ribbonDesignerLivePreview": {
+    "description": "Ribbon designer live preview panel header.",
+    "context": "ribbon_designer.live_preview"
+  },
+  "@ribbonDesignerValidation": {
+    "description": "Ribbon designer validation panel header.",
+    "context": "ribbon_designer.validation"
+  },
+  "@ribbonDesignerValidationValid": {
+    "description": "Ribbon designer definition-valid message.",
+    "context": "ribbon_designer.validation.valid"
   }
 }

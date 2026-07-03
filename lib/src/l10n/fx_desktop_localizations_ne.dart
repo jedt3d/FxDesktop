@@ -336,4 +336,13 @@ class FxDesktopLocalizationsNe extends FxDesktopLocalizations {
 
   @override
   String get ribbonItemTypeColumnBreak => 'स्तम्भ ब्रेक';
+
+  @override
+  String get ribbonDesignerLivePreview => 'प्रत्यक्ष पूर्वावलोकन';
+
+  @override
+  String get ribbonDesignerValidation => 'प्रमाणीकरण';
+
+  @override
+  String get ribbonDesignerValidationValid => 'परिभाषा मान्य छ';
 }

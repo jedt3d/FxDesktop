@@ -86,7 +86,12 @@ void main() {
       ),
     );
 
-    await tester.tap(find.widgetWithText(ListTile, 'Clipboard'));
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const ValueKey('ribbonDesignerStructureTree')),
+        matching: find.text('Clipboard'),
+      ),
+    );
     await tester.pump();
     expect(selection?.groupIndex, 0);
 
@@ -98,7 +103,12 @@ void main() {
     await tester.pump();
     expect(changed?.tabs.first.groups.first.localizedCaptions['th'], 'คลิป');
 
-    await tester.tap(find.widgetWithText(ListTile, 'Paste'));
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const ValueKey('ribbonDesignerStructureTree')),
+        matching: find.text('Paste'),
+      ),
+    );
     await tester.pump();
     final selectedItem = changed!
         .tabs[selection!.tabIndex]

@@ -335,4 +335,13 @@ class FxDesktopLocalizationsJa extends FxDesktopLocalizations {
 
   @override
   String get ribbonItemTypeColumnBreak => '列区切り';
+
+  @override
+  String get ribbonDesignerLivePreview => 'ライブプレビュー';
+
+  @override
+  String get ribbonDesignerValidation => '検証';
+
+  @override
+  String get ribbonDesignerValidationValid => '定義は有効です';
 }

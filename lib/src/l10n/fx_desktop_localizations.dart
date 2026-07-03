@@ -728,6 +728,24 @@ abstract class FxDesktopLocalizations {
   /// In en, this message translates to:
   /// **'Column break'**
   String get ribbonItemTypeColumnBreak;
+
+  /// Ribbon designer live preview panel header.
+  ///
+  /// In en, this message translates to:
+  /// **'Live preview'**
+  String get ribbonDesignerLivePreview;
+
+  /// Ribbon designer validation panel header.
+  ///
+  /// In en, this message translates to:
+  /// **'Validation'**
+  String get ribbonDesignerValidation;
+
+  /// Ribbon designer definition-valid message.
+  ///
+  /// In en, this message translates to:
+  /// **'Definition valid'**
+  String get ribbonDesignerValidationValid;
 }
 
 class _FxDesktopLocalizationsDelegate
